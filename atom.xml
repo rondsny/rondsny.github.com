@@ -272,80 +272,6 @@ init([JobRef, Job]) -&gt;
   </entry>
   
   <entry>
-    <title>[linux]树莓派入手体验和系统安装</title>
-    <link href="http://rondsny.github.io/2015/11/14/501-Raspberrypi_Init/"/>
-    <id>http://rondsny.github.io/2015/11/14/501-Raspberrypi_Init/</id>
-    <published>2015-11-14T09:15:57.000Z</published>
-    <updated>2016-11-24T06:41:29.505Z</updated>
-    
-    <content type="html"><![CDATA[<p><img src="http://i.imgur.com/iAoxxbE.png" alt="树莓派"></p>
-<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>一直想捣鼓点什么东西。当看到树莓派的时候，就是它了。</p>
-<p>树莓派可以安装<code>Linux</code>系统，而我在工作当中，可以说<code>Linux</code>是一半工作环境。树莓派真是个好东西，这个东西应该在我学习<code>linxu/Unix</code>的时候就该接触了。想想大学的时候，在<code>windows</code>下安装虚拟机，安装<code>Linux</code>是件多么痛苦的事情。而且那时的电脑配置也不算高，才2G内存，还要开虚拟机。玩个蛋蛋。</p>
-<p>对<code>Linux</code>也算比较熟吧，入手一个树莓派应该可以玩很多好玩的事情。</p>
-<h3 id="购买硬件"><a href="#购买硬件" class="headerlink" title="购买硬件"></a>购买硬件</h3><p>直接在某宝搜索入手。必须内容：</p>
-<ul>
-<li>树莓派一个（<code>Raspberry Pi 2</code>）</li>
-<li>小usb口电源（5V2A的充电器随便找一个）</li>
-<li>4G或者更大存储空间的SD卡一张（树莓派本身不带存储空间）</li>
-</ul>
-<p>以下非必需： </p>
-<ul>
-<li>散热器三片（风扇什么的觉得也太夸张了）</li>
-<li>无线网卡（本身有网卡入口，所以不是必须的）</li>
-<li>SD卡读卡器（安装系统的时候会用到）</li>
-</ul>
-<p><img src="http://i.imgur.com/0LQEdsC.jpg" alt="树莓派连接外置硬件"></p>
-<h3 id="安装系统"><a href="#安装系统" class="headerlink" title="安装系统"></a>安装系统</h3><p>树莓派得到了各种<code>Linux</code>发行版本的支持，甚至微软在自己的<code>windows 10</code>上也发行了一个支持树莓派的版本。最常见的，还是在树莓派上面安装<code>RASPBIAN</code>和<code>Ubuntu</code>。<code>RASPBIAN</code>是树莓派官方出品基于<code>Debian</code>的<code>Linux</code>系统。也有喜欢在树莓派上面玩<code>windows 10</code>的。相关的系统官方都有提供下载。（<a href="https://www.raspberrypi.org/downloads/" title="https://www.raspberrypi.org/downloads/" target="_blank" rel="external">https://www.raspberrypi.org/downloads/</a>）。</p>
-<p>我本人安装的是官方提供的<code>RASPBIAN</code>系统，基于<code>Debian</code>实现。可以说对<code>Debian</code>比较了解，所以<code>RASPBIAN</code>对我来说是一个比较好的选择。以安装<code>RASPBIAN</code>为例，有多种安装方式。</p>
-<p>树莓派官方推荐的是使用其官方工具<code>NOOBS</code>安装工具。</p>
-<ol>
-<li>下载<code>NOOBS</code>工具（<a href="https://www.raspberrypi.org/downloads/noobs/" title="https://www.raspberrypi.org/downloads/noobs/" target="_blank" rel="external">https://www.raspberrypi.org/downloads/noobs/</a>）；</li>
-<li>下载SD卡格式化工具（<a href="https://www.sdcard.org/downloads/formatter_4/eula_windows/" target="_blank" rel="external">https://www.sdcard.org/downloads/formatter_4/eula_windows/</a>）；<ol>
-<li>安装SD卡格式工具；</li>
-<li>在选项Option里面设置“FORMAT SIZE ADJUSTMENT”为开启ON状态；</li>
-<li>检查SD卡是否插入电脑；</li>
-<li>点击格式化工具的【格式化(Format)】按钮格式化SD卡。</li>
-</ol>
-</li>
-<li>解压NOOBS.zip文件；</li>
-<li>将解压的文件复制到SD卡上面；</li>
-<li>将SD卡插入到树莓派里面；</li>
-<li>接上鼠标、键盘、显示器（这一部非必需）；</li>
-<li>接上网线（无线网卡也可以）、电源，然后就自动开机启动了。</li>
-</ol>
-<p>开机启动后，树莓派会自行安装系统，看sd卡的写的速度时间会不一样，10~60分钟估计就好了。然后就会进入了树莓派的系统界面。至此，算是大功告成了。<br><img src="http://i.imgur.com/pHuni3O.jpg" alt="安装系统"></p>
-<h4 id="关于系统"><a href="#关于系统" class="headerlink" title="关于系统"></a>关于系统</h4><p>树莓派官方系统<code>RASPBIAN</code>是基于<code>Debian</code>修改而来的。所以熟悉<code>Debian</code>和<code>Ubuntu</code>的话，对<code>RASPBIAN</code>是完全没有任何入门门槛的。<code>RASPBIAN</code>使用的是树莓派自己的镜像。其服务器在国外，访问起来可能有速度慢的情况，建议修改成网易的<code>Debian</code>镜像(<a href="http://mirrors.163.com/.help/debian.html)。" target="_blank" rel="external">http://mirrors.163.com/.help/debian.html)。</a><br>编辑/etc/apt/sources.list文件, 在文件最前面添加以下条目(操作前请做好相应备份)</p>
-<pre><code>deb http://mirrors.163.com/debian/ wheezy main non-free contrib
-deb http://mirrors.163.com/debian/ wheezy-updates main non-free contrib
-deb http://mirrors.163.com/debian/ wheezy-backports main non-free contrib
-deb-src http://mirrors.163.com/debian/ wheezy main non-free contrib
-deb-src http://mirrors.163.com/debian/ wheezy-updates main non-free contrib
-deb-src http://mirrors.163.com/debian/ wheezy-backports main non-free contrib
-deb http://mirrors.163.com/debian-security/ wheezy/updates main non-free contrib
-deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free contrib
-</code></pre><p>执行<code>sudo apt-get update</code>更新软件包列表。详细可以查看网易<code>Debian</code>镜像的使用帮助（<a href="http://mirrors.163.com/.help/debian.html）。" target="_blank" rel="external">http://mirrors.163.com/.help/debian.html）。</a></p>
-<h3 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h3><p>树莓派最大的优势在于便宜，而且资料方面也算比较充足。个人觉得最大的价值还是拿来学习Linux的知识。独立的Linux机器，比起虚拟机，给人带来的学习积极性和成就感感觉是完全不一样的。当然，在可玩性方面，树莓派也可以做很多有趣的事情。倒腾飞行器、遥控玩具车、控制家庭电器、控制门禁、制作超级电脑等等。最主要的还是要有兴趣。而我，是想让树莓派来实现一些没有必要使用PC、需要长时间、或者定期任务的执行。</p>
-<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><ul>
-<li><a href="http://mirrors.163.com/.help/debian.html" target="_blank" rel="external">http://mirrors.163.com/.help/debian.html</a></li>
-<li><a href="https://www.raspberrypi.org/help/quick-start-guide/" target="_blank" rel="external">https://www.raspberrypi.org/help/quick-start-guide/</a></li>
-</ul>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;&lt;img src=&quot;http://i.imgur.com/iAoxxbE.png&quot; alt=&quot;树莓派&quot;&gt;&lt;/p&gt;
-&lt;h3 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h3&gt;&lt;p&gt;一直想捣鼓点什么东西
-    
-    </summary>
-    
-    
-      <category term="linux" scheme="http://rondsny.github.io/tags/linux/"/>
-    
-      <category term="respberrypi" scheme="http://rondsny.github.io/tags/respberrypi/"/>
-    
-  </entry>
-  
-  <entry>
     <title>[windows]快速从ftp下载最新软件包的批处理脚本 </title>
     <link href="http://rondsny.github.io/2015/11/14/601-Ftp_bat_help/"/>
     <id>http://rondsny.github.io/2015/11/14/601-Ftp_bat_help/</id>
@@ -458,6 +384,80 @@ ftp -v -n -s:%f_info%
     
     
       <category term="windows" scheme="http://rondsny.github.io/tags/windows/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>[linux]树莓派入手体验和系统安装</title>
+    <link href="http://rondsny.github.io/2015/11/05/501-Raspberrypi_Init/"/>
+    <id>http://rondsny.github.io/2015/11/05/501-Raspberrypi_Init/</id>
+    <published>2015-11-05T12:00:00.000Z</published>
+    <updated>2016-11-24T10:23:31.704Z</updated>
+    
+    <content type="html"><![CDATA[<p><img src="http://i.imgur.com/iAoxxbE.png" alt="树莓派"></p>
+<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>一直想捣鼓点什么东西。当看到树莓派的时候，就是它了。</p>
+<p>树莓派可以安装<code>Linux</code>系统，而我在工作当中，可以说<code>Linux</code>是一半工作环境。树莓派真是个好东西，这个东西应该在我学习<code>linxu/Unix</code>的时候就该接触了。想想大学的时候，在<code>windows</code>下安装虚拟机，安装<code>Linux</code>是件多么痛苦的事情。而且那时的电脑配置也不算高，才2G内存，还要开虚拟机。玩个蛋蛋。</p>
+<p>对<code>Linux</code>也算比较熟吧，入手一个树莓派应该可以玩很多好玩的事情。</p>
+<h3 id="购买硬件"><a href="#购买硬件" class="headerlink" title="购买硬件"></a>购买硬件</h3><p>直接在某宝搜索入手。必须内容：</p>
+<ul>
+<li>树莓派一个（<code>Raspberry Pi 2</code>）</li>
+<li>小usb口电源（5V2A的充电器随便找一个）</li>
+<li>4G或者更大存储空间的SD卡一张（树莓派本身不带存储空间）</li>
+</ul>
+<p>以下非必需： </p>
+<ul>
+<li>散热器三片（风扇什么的觉得也太夸张了）</li>
+<li>无线网卡（本身有网卡入口，所以不是必须的）</li>
+<li>SD卡读卡器（安装系统的时候会用到）</li>
+</ul>
+<p><img src="http://i.imgur.com/0LQEdsC.jpg" alt="树莓派连接外置硬件"></p>
+<h3 id="安装系统"><a href="#安装系统" class="headerlink" title="安装系统"></a>安装系统</h3><p>树莓派得到了各种<code>Linux</code>发行版本的支持，甚至微软在自己的<code>windows 10</code>上也发行了一个支持树莓派的版本。最常见的，还是在树莓派上面安装<code>RASPBIAN</code>和<code>Ubuntu</code>。<code>RASPBIAN</code>是树莓派官方出品基于<code>Debian</code>的<code>Linux</code>系统。也有喜欢在树莓派上面玩<code>windows 10</code>的。相关的系统官方都有提供下载。（<a href="https://www.raspberrypi.org/downloads/" title="https://www.raspberrypi.org/downloads/" target="_blank" rel="external">https://www.raspberrypi.org/downloads/</a>）。</p>
+<p>我本人安装的是官方提供的<code>RASPBIAN</code>系统，基于<code>Debian</code>实现。可以说对<code>Debian</code>比较了解，所以<code>RASPBIAN</code>对我来说是一个比较好的选择。以安装<code>RASPBIAN</code>为例，有多种安装方式。</p>
+<p>树莓派官方推荐的是使用其官方工具<code>NOOBS</code>安装工具。</p>
+<ol>
+<li>下载<code>NOOBS</code>工具（<a href="https://www.raspberrypi.org/downloads/noobs/" title="https://www.raspberrypi.org/downloads/noobs/" target="_blank" rel="external">https://www.raspberrypi.org/downloads/noobs/</a>）；</li>
+<li>下载SD卡格式化工具（<a href="https://www.sdcard.org/downloads/formatter_4/eula_windows/" target="_blank" rel="external">https://www.sdcard.org/downloads/formatter_4/eula_windows/</a>）；<ol>
+<li>安装SD卡格式工具；</li>
+<li>在选项Option里面设置“FORMAT SIZE ADJUSTMENT”为开启ON状态；</li>
+<li>检查SD卡是否插入电脑；</li>
+<li>点击格式化工具的【格式化(Format)】按钮格式化SD卡。</li>
+</ol>
+</li>
+<li>解压NOOBS.zip文件；</li>
+<li>将解压的文件复制到SD卡上面；</li>
+<li>将SD卡插入到树莓派里面；</li>
+<li>接上鼠标、键盘、显示器（这一部非必需）；</li>
+<li>接上网线（无线网卡也可以）、电源，然后就自动开机启动了。</li>
+</ol>
+<p>开机启动后，树莓派会自行安装系统，看sd卡的写的速度时间会不一样，10~60分钟估计就好了。然后就会进入了树莓派的系统界面。至此，算是大功告成了。<br><img src="http://i.imgur.com/pHuni3O.jpg" alt="安装系统"></p>
+<h4 id="关于系统"><a href="#关于系统" class="headerlink" title="关于系统"></a>关于系统</h4><p>树莓派官方系统<code>RASPBIAN</code>是基于<code>Debian</code>修改而来的。所以熟悉<code>Debian</code>和<code>Ubuntu</code>的话，对<code>RASPBIAN</code>是完全没有任何入门门槛的。<code>RASPBIAN</code>使用的是树莓派自己的镜像。其服务器在国外，访问起来可能有速度慢的情况，建议修改成网易的<code>Debian</code>镜像(<a href="http://mirrors.163.com/.help/debian.html)。" target="_blank" rel="external">http://mirrors.163.com/.help/debian.html)。</a><br>编辑/etc/apt/sources.list文件, 在文件最前面添加以下条目(操作前请做好相应备份)</p>
+<pre><code>deb http://mirrors.163.com/debian/ wheezy main non-free contrib
+deb http://mirrors.163.com/debian/ wheezy-updates main non-free contrib
+deb http://mirrors.163.com/debian/ wheezy-backports main non-free contrib
+deb-src http://mirrors.163.com/debian/ wheezy main non-free contrib
+deb-src http://mirrors.163.com/debian/ wheezy-updates main non-free contrib
+deb-src http://mirrors.163.com/debian/ wheezy-backports main non-free contrib
+deb http://mirrors.163.com/debian-security/ wheezy/updates main non-free contrib
+deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free contrib
+</code></pre><p>执行<code>sudo apt-get update</code>更新软件包列表。详细可以查看网易<code>Debian</code>镜像的使用帮助（<a href="http://mirrors.163.com/.help/debian.html）。" target="_blank" rel="external">http://mirrors.163.com/.help/debian.html）。</a></p>
+<h3 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h3><p>树莓派最大的优势在于便宜，而且资料方面也算比较充足。个人觉得最大的价值还是拿来学习Linux的知识。独立的Linux机器，比起虚拟机，给人带来的学习积极性和成就感感觉是完全不一样的。当然，在可玩性方面，树莓派也可以做很多有趣的事情。倒腾飞行器、遥控玩具车、控制家庭电器、控制门禁、制作超级电脑等等。最主要的还是要有兴趣。而我，是想让树莓派来实现一些没有必要使用PC、需要长时间、或者定期任务的执行。</p>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><ul>
+<li><a href="http://mirrors.163.com/.help/debian.html" target="_blank" rel="external">http://mirrors.163.com/.help/debian.html</a></li>
+<li><a href="https://www.raspberrypi.org/help/quick-start-guide/" target="_blank" rel="external">https://www.raspberrypi.org/help/quick-start-guide/</a></li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;img src=&quot;http://i.imgur.com/iAoxxbE.png&quot; alt=&quot;树莓派&quot;&gt;&lt;/p&gt;
+&lt;h3 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h3&gt;&lt;p&gt;一直想捣鼓点什么东西
+    
+    </summary>
+    
+    
+      <category term="linux" scheme="http://rondsny.github.io/tags/linux/"/>
+    
+      <category term="respberrypi" scheme="http://rondsny.github.io/tags/respberrypi/"/>
     
   </entry>
   
@@ -759,11 +759,11 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
     </summary>
     
     
+      <category term="linux" scheme="http://rondsny.github.io/tags/linux/"/>
+    
       <category term="samba" scheme="http://rondsny.github.io/tags/samba/"/>
     
       <category term="selinux" scheme="http://rondsny.github.io/tags/selinux/"/>
-    
-      <category term="linux" scheme="http://rondsny.github.io/tags/linux/"/>
     
   </entry>
   
