@@ -1,0 +1,40 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="author" content="Ron_N"><meta name="description" content="一、安装Node.js在官网http://nodejs.org/下载winwos版本，点击安装完成即可。二、git环境安装对于git的安装，网上已经大量资料，就不赘述了。三、安装hexo启动cmd，输入命令npminstallhexo-cli-g即可完成hex"><meta name="keywords" content="hexo"><title>[hexo]搭载hexo+github博客系统 · Ron Ngai</title><link rel="icon" href="/favicon.ico"><link rel="canonical" href="http://rondsny.github.io/2015/03/06/201-Deploy_Hexo_github/"><link rel="alternate" href="/atom.xml" title="Ron Ngai"><link rel="stylesheet" href="/css/style.css"><script type="text/javascript">var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?Your baidu Analytics ID";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script><script type="text/javascript">(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'Your Google Analytics ID', 'auto');
+ga('send', 'pageview');</script></head><body><div id="main"><header><a href="/." class="logo">Ron Ngai</a><ul class="nav"><li class="nav-link"><a href="/" target="_self">Home</a></li><li class="nav-link"><a href="/archives/" target="_self">Archives</a></li></ul></header><section id="container"><article class="post"><h1 class="post-title">[hexo]搭载hexo+github博客系统</h1><span class="post-time">2015年3月6日</span><div id="sidebar" class="post-sidebar"><h3 class="heading">Contents</h3><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#一、安装-Node-js"><span class="toc-text">一、安装 Node.js</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#二、git环境安装"><span class="toc-text">二、git环境安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#三、安装-hexo"><span class="toc-text">三、安装 hexo</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#四、初始化博客"><span class="toc-text">四、初始化博客</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#五、配置和发布到github"><span class="toc-text">五、配置和发布到github</span></a></li></ol></div><div class="post-content"><h3 id="一、安装-Node-js"><a href="#一、安装-Node-js" class="headerlink" title="一、安装 Node.js"></a>一、安装 Node.js</h3><p>在官网 <a href="http://nodejs.org/" target="_blank" rel="external">http://nodejs.org/</a> 下载winwos版本，点击安装完成即可。</p>
+<h3 id="二、git环境安装"><a href="#二、git环境安装" class="headerlink" title="二、git环境安装"></a>二、git环境安装</h3><p>对于git的安装，网上已经大量资料，就不赘述了。</p>
+<h3 id="三、安装-hexo"><a href="#三、安装-hexo" class="headerlink" title="三、安装 hexo"></a>三、安装 hexo</h3><p>启动cmd，输入命令<code>npm install hexo-cli -g</code> 即可完成hexo的安装。</p>
+<h3 id="四、初始化博客"><a href="#四、初始化博客" class="headerlink" title="四、初始化博客"></a>四、初始化博客</h3><p>随便找一个目录。在cmd里面执行命令<code>hexo init blog</code> (blog为文件夹名称，与github的项目名称一致)。<br><code>cd blog</code>进入目录。执行<code>hexo g</code>和<code>hexo s</code>就可以生成静态html文件和启动一个http服务器。<br>按照提示，访问 <a href="http://127.0.0.1:4000/" target="_blank" rel="external">http://127.0.0.1:4000/</a> 就可以看到一个博客网站了。</p>
+<pre><code>hexo init blog
+hexo generate     # hexo g
+hexo server       # hexo s
+</code></pre><h3 id="五、配置和发布到github"><a href="#五、配置和发布到github" class="headerlink" title="五、配置和发布到github"></a>五、配置和发布到github</h3><p>编辑 <code>_config.yml</code> 文件。在<code>deploy</code>字段配置以下内容</p>
+<pre><code>deploy:
+  type: git
+  repo: git@github.com:rondsny/rondsny.github.com.git
+</code></pre><p><code>git@github.com:rondsny/blog.git</code> 是在github上面托管博客的项目地址。譬如我的github 是<a href="http://github.com/rondsny/" target="_blank" rel="external">http://github.com/rondsny/</a> 然后我建立用于托管的项目是<code>rondsny.github.com</code>。</p>
+<p>执行命令 <code>hexo deploy</code> 或 <code>hexo d</code> 就可以将博客发布到github上面。</p>
+<p>访问 <a href="http://rondsny.github.io/">http://rondsny.github.io/</a> 就可以看到效果了。</p>
+</div></article><div class="tags"><a href="/tags/hexo/">hexo</a></div><div class="paginator"><a href="/2015/03/12/202-Add_rss_in_Hexo/" class="prev"><i class="iconfont icon-left"></i><span> Prev</span></a></div><section id="comments"><div id="disqus_thread"></div></section><script type="text/javascript">var disqus_config = function () {
+    this.page.url = 'http://rondsny.github.io/2015/03/06/201-Deploy_Hexo_github/';
+    this.page.identifier = '2015/03/06/201-Deploy_Hexo_github/';
+    this.page.title = '[hexo]搭载hexo+github博客系统';
+};
+(function() {
+var d = document, s = d.createElement('script');
+
+s.src = '//Your disqus ID.disqus.com/embed.js';
+
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();</script></section><footer><div class="social"><a href="mailto:your@email.com" title="email" class="iconfont icon-email"></a><a href="/atom.xml" title="rss" class="iconfont icon-rss"></a></div><div class="copyright"><p class="power">Powered by <a href="https://hexo.io/">Hexo</a> and Theme by <a href="https://github.com/ahonn/hexo-theme-even"> Even</a></p><p class="since">&copy;2016<span class="heart"><i class="iconfont icon-heart"></i></span><span class="author">Ron_N</span></p></div><div id="back2top"><i class="iconfont icon-up"></i></div></footer></div><script src="/js/zepto.min.js"></script><script src="/js/theme.js"></script></body></html>

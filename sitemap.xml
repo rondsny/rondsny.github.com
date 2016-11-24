@@ -2,51 +2,79 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://rondsny.github.io/2015/03/06/201-deploy-hexo-github/</loc>
+    <loc>http://rondsny.github.io/2015/04/07/402-Stop_Selinux/</loc>
+    
+    <lastmod>2016-11-24T10:09:12.449Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://rondsny.github.io/2015/05/25/801-Game_Server_Design/</loc>
+    
+    <lastmod>2016-11-24T10:03:38.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://rondsny.github.io/2016/11/23/711-Cowboy_Handlers/</loc>
+    
+    <lastmod>2016-11-24T09:55:19.105Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://rondsny.github.io/2016/11/23/710-Cowboy_Routing/</loc>
+    
+    <lastmod>2016-11-24T09:55:02.687Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://rondsny.github.io/2015/11/14/601-Ftp_bat_help/</loc>
+    
+    <lastmod>2016-11-24T09:53:18.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://rondsny.github.io/2015/03/06/201-Deploy_Hexo_github/</loc>
     
     <lastmod>2016-11-24T06:50:02.316Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://rondsny.github.io/2015/04/28/401-deploy-tmux/</loc>
+    <loc>http://rondsny.github.io/2015/04/28/401-Deploy_Tmux/</loc>
     
     <lastmod>2016-11-24T06:48:36.264Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://rondsny.github.io/2015/03/17/301-how-to-set-svn-ignore/</loc>
+    <loc>http://rondsny.github.io/2015/03/17/403-Set_svn_ignore/</loc>
     
     <lastmod>2016-11-24T06:48:29.008Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://rondsny.github.io/2015/03/12/202-add-rss-sitemap-in-hexo/</loc>
+    <loc>http://rondsny.github.io/2015/03/12/202-Add_rss_in_Hexo/</loc>
     
     <lastmod>2016-11-24T06:48:18.943Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://rondsny.github.io/2015/11/14/501-raspberrypi-init/</loc>
+    <loc>http://rondsny.github.io/2015/11/14/501-Raspberrypi_Init/</loc>
     
     <lastmod>2016-11-24T06:41:29.505Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://rondsny.github.io/2016/03/24/701-erlang-erlcron-crash/</loc>
+    <loc>http://rondsny.github.io/2016/03/24/701-Erlang_erlcron_crash/</loc>
     
     <lastmod>2016-03-24T05:42:26.709Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://rondsny.github.io/2015/11/14/601-ftp-batch-help/</loc>
-    
-    <lastmod>2015-11-14T09:15:30.791Z</lastmod>
     
   </url>
   

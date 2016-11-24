@@ -11,7 +11,118 @@ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
 ga('create', 'Your Google Analytics ID', 'auto');
-ga('send', 'pageview');</script></head><body><div id="main"><header><a href="/." class="logo">Ron Ngai</a><ul class="nav"><li class="nav-link"><a href="/" class="active">Home</a></li><li class="nav-link"><a href="/archives/" target="_self">Archives</a></li></ul></header><section id="container"><ul class="home"><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2016/03/24/701-erlang-erlcron-crash/" class="post-link">[erlang]一次erlcron崩溃引起的事故分析</a></h2><span class="post-time">2016年3月24日</span><div class="post-content"><h3 id="事故背景"><a href="#事故背景" class="headerlink" title="事故背景"></a>事故背景</h3><p>由于误操作在<code>erlcron</code>设置了一个超过3个月后的定时任务。然后第二天之后发现每天的daily reset没有被执行，一些定时任务也没有被执行。瞬间感觉整个人都不好了，怎么无端端就不执行了呢。</p>
+ga('send', 'pageview');</script></head><body><div id="main"><header><a href="/." class="logo">Ron Ngai</a><ul class="nav"><li class="nav-link"><a href="/" class="active">Home</a></li><li class="nav-link"><a href="/archives/" target="_self">Archives</a></li></ul></header><section id="container"><ul class="home"><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2016/11/23/711-Cowboy_Handlers/" class="post-link">[翻译][erlang]cowboy handler模块的使用</a></h2><span class="post-time">2016年11月23日</span><div class="post-content"><h3 id="关于Cowboy"><a href="#关于Cowboy" class="headerlink" title="关于Cowboy"></a>关于Cowboy</h3><p>Cowboy是基于Erlang实现的一个轻量级、快速、模块化的http web服务器。</p>
+<h3 id="Handlers"><a href="#Handlers" class="headerlink" title="Handlers"></a>Handlers</h3><p>用于处理HTTP请求的程序处理模块。</p>
+<h3 id="Plain-HTTP-Handlers（常规Handlers）"><a href="#Plain-HTTP-Handlers（常规Handlers）" class="headerlink" title="Plain HTTP Handlers（常规Handlers）"></a>Plain HTTP Handlers（常规Handlers）</h3><p>Cowboy里面的handler最基础的事情就是实现 <code>init/2</code> 回调函数，处理请求，发送客户端响应（可选），最后返回。<br>Cowboy根据 <code>router configuration</code> （路由配置）接收请求并初始化State。<br>下面是一个不做任何处理的handler：</p>
+<pre><code>init(Req, State) -&gt;
+    {ok, Req, State}
+</code></pre><p>Cowboy为了保证每一个相应都能有客户端响应，尽管上面例子没有发送客户端返回，客户端仍然会收到一个 <code>204 No Content</code> 的响应。</p>
+<p>下面是一个有返回响应的例子：</p>
+<pre><code>init(Req0, State) -&gt;
+    Req = cowboy_req:reply(200, [
+        {&lt;&lt;&quot;content-type&quot;&gt;&gt;, &lt;&lt;&quot;text/plain&quot;&gt;&gt;}
+    ], &lt;&lt;&quot;Hello, World!&quot;&gt;&gt;, Req0),
+    {ok, Req, State}.
+</code></pre><p>当调用了 <code>cowboy:req/4</code>, Cowboy会马上返回一个客户端响应。</p>
+<p>最后我们返回一个三元组。<code>ok</code> 表示handler允许成功，然后返回处理过后的 <code>Req</code> 给Cowboy。<br>三元组的最后一个元素是一个贯穿在handler所有回调一个state。常规的HTTP handlers一般只附加一个回调函数，<code>terminate/2</code>是一个很少使用的可选的回调函数。</p>
+<h3 id="Other-Handlers（其它Handlers）"><a href="#Other-Handlers（其它Handlers）" class="headerlink" title="Other Handlers（其它Handlers）"></a>Other Handlers（其它Handlers）</h3><p><code>init/2</code> 回调函数也可以用来告诉cowboy，这是一个不同类型的handler，Cowboy应该做一些其他处理。为了方便使用，如果返回handler类型的模块名称，就可以切换handler处理模块。</p>
+<p>Cowboy提供了三种可选handler类型：cowboy_reset, Cowboy_websocke和cowboy_loop。另外也可以自己定义handler类型。</p>
+<p>切换非常简单，用handler类型替换掉返回的 <code>ok</code> 就可以了。下面是一个切换为 Websocket handler 的代码片段。</p>
+<pre><code>init(Req, State) -&gt;
+    {cowboy_websocket, Req, State}.
+</code></pre><p>也可以切换到一个自定义的handler模块：</p>
+<pre><code>init(Req, State) -&gt;
+    {my_handler_type, Req, State}.
+</code></pre><p>如何使用自定义的handler类型可以查看<code>Sub protocols</code> 章节（<a href="https://ninenines.eu/docs/en/cowboy/2.0/guide/sub_protocols）。" target="_blank" rel="external">https://ninenines.eu/docs/en/cowboy/2.0/guide/sub_protocols）。</a></p>
+<h3 id="Cleaning-up"><a href="#Cleaning-up" class="headerlink" title="Cleaning up"></a>Cleaning up</h3><p>除了Websocket handlers，其它所有类型都提供可选回调函数<code>terminate/3</code>：</p>
+<pre><code>terminate(_Reason, _Req, _State) -&gt;
+    ok.
+</code></pre><p>这个回调函数是为了cleanup保留下来的。该函数不能发送响应给客户端。也没有其他返回值（只能返回<code>ok</code>）。</p>
+<p><code>terminate/3</code>之所以是可选是因为其极少会用到。Cleanup应该在各自的进程中直接处理。（通过监控handler进程来知道其何时退出）</p>
+<p>Cowboy不会在不同的请求重复使用进程（应该是http短链接设计引起的）。进程在返回之后很快就会被销毁。</p>
+<h3 id="Others"><a href="#Others" class="headerlink" title="Others"></a>Others</h3><p>英文官方原文：</p>
+<p><a href="https://ninenines.eu/docs/en/cowboy/2.0/guide/handlers/#_plain_http_handlers" target="_blank" rel="external">https://ninenines.eu/docs/en/cowboy/2.0/guide/handlers/#_plain_http_handlers</a></p>
+</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2016/11/23/710-Cowboy_Routing/" class="post-link">[翻译][erlang]cowboy路由模块使用</a></h2><span class="post-time">2016年11月23日</span><div class="post-content"><h3 id="关于Cowboy"><a href="#关于Cowboy" class="headerlink" title="关于Cowboy"></a>关于Cowboy</h3><p>Cowboy是基于Erlang实现的一个轻量级、快速、模块化的http web服务器。</p>
+<h3 id="Routing（路由）"><a href="#Routing（路由）" class="headerlink" title="Routing（路由）"></a>Routing（路由）</h3><p>本文官方原文：<a href="http://ninenines.eu/docs/en/cowboy/1.0/guide/routing/" target="_blank" rel="external">http://ninenines.eu/docs/en/cowboy/1.0/guide/routing/</a></p>
+<p>默认情况下，Cowboy不会做什么事情。<br>为了使Cowboy可用，需要映射URL和处理请求的Erlang模型（Module），这个过程，我们称之为路由（routing）。<br>当Cowboy接收到一个请求，通过路由，Cowboy就会尝试去匹配到相应请求的主机和资源路径。如果匹配成功，那么相关的Erlang代码就会被执行。<br>每个主机会给出相应的路由规则。Cowboy首先会匹配主机，然后尝试寻找匹配的路径。<br>在使用Cowboy之前需要先编译路由。</p>
+<h3 id="Structure（结构）"><a href="#Structure（结构）" class="headerlink" title="Structure（结构）"></a>Structure（结构）</h3><p>路由一般定义成以下结构</p>
+<pre><code>Routes = [Host1, Host2, ... HostN].
+</code></pre><p>每个主机包含匹配规则（HostMatch）、限制规则（非必须）（Constraints）和一个由路径组成的路由列表（PathsList）。</p>
+<pre><code>Host1 = {HostMatch, PathsList}.
+Host2 = {HostMatch, Constraints, PathsList}.
+</code></pre><p>由路径组成的路由列表与主机列表类似。</p>
+<pre><code>PathsList = [Path1, Path2, ... PathN].
+</code></pre><p>而路径（path）包含匹配路径规则、限制规则（非必须）、处理逻辑的module和会被初始化的选项参数。</p>
+<pre><code>Path1 = {PathMatch, Handler, Opts}.
+Path2 = {PathMatch, Constraints, Handler, Opts}.
+</code></pre><p>下面内容为匹配语法和限制选项。</p>
+<h3 id="Match-syntax（匹配语法）"><a href="#Match-syntax（匹配语法）" class="headerlink" title="Match syntax（匹配语法）"></a>Match syntax（匹配语法）</h3><p>匹配语法用来关联主机名字和相应的handler路径。<br>主机的匹配语法和路径的匹配语法类似，只有轻微的区别。譬如，他们分隔符是不一样的。而且主机是从最后开始匹配的，而路径是不是。<br>（其实说了老半天，这不就是一个普通的URL嘛。URL的前半部分为主机IP或域名，这里称之为HOST，即主机。而后半部分为路径）<br>除了特殊情况，最简单的匹配就是只有主机或者只有路径的匹配。他的值可以为string() 或binary() 类型。</p>
+<pre><code>PathMatch1 = &quot;/&quot;.
+PathMatch2 = &quot;/path/to/resource&quot;.
+
+HostMatch1 = &quot;cowboy.example.org&quot;.
+</code></pre><p>正如你所见，所有的路径都是由斜杠开始的。注意，下面两条路径对于路由而言是一样的。</p>
+<pre><code>PathMatch2 = &quot;/path/to/resource&quot;.
+PathMatch3 = &quot;/path/to/resource/&quot;.
+</code></pre><p>而对于主机名，最后有点和没有点对于路由来说也是一样的。同样，在前面多一个点和少一个点也是一样的。</p>
+<pre><code>HostMatch1 = &quot;cowboy.example.org&quot;.
+HostMatch2 = &quot;cowboy.example.org.&quot;.
+HostMatch3 = &quot;.cowboy.example.org&quot;.
+</code></pre><p>因此能够提取主机和路径的数据段并且存储在Req 对象供后面使用。我们称之为值绑定。<br>绑定语法非常简单。由冒号字符（:）开头，一直到数据段的结尾的这个数据段是我们的绑定名称，会被保存。</p>
+<pre><code>PathMatch = &quot;/hats/:name/prices&quot;.
+HostMatch = &quot;:subdomain.example.org&quot;.
+</code></pre><p>如果这两个最终匹配，那么就会有两个绑定定义，分布是:subdomain 和:name ，每个包含被定义的数据段。例如，这个URL地址 <a href="http://test.example.org/hats/wild_cowboy_legendary/prices" target="_blank" rel="external">http://test.example.org/hats/wild_cowboy_legendary/prices</a> 会将 test绑定到subdomain ,并将wild_cowboy_legendary 绑定到 name 。他们通过cowboy_req:binding/{2,3} 函数检索出来的。绑定名字必须是原子（atom）类型。</p>
+<p>还有一种特殊的绑定名字，它模仿erlang的下划线变量。任意内容都能与下划线（_）相匹配，但是数据会被丢弃。最有用的场景就是去匹配多个域名。</p>
+<pre><code>HostMatch = &quot;ninenines.:_&quot;.
+</code></pre><p>类似地，也可以添加可选内容。中括号内的内容都是可选的。</p>
+<pre><code>PathMatch = &quot;/hats/[page/:number]&quot;.
+HostMatch = &quot;[www.]ninenines.eu&quot;.
+</code></pre><p>并且可选内容可以内嵌</p>
+<pre><code>PathMatch = &quot;/hats/[page/[:number]]&quot;.
+</code></pre><p>还可以使用[…] 来获取主机名或路径剩余的部分。匹配主机的时候，需要放在最前面；匹配路径的时候是放在最后面。分别使用cowboy_req:host_info/1 和 cowboy_req:path_info/1 函数可以找到他们。</p>
+<pre><code>PathMatch = &quot;/hats/[...]&quot;.
+HostMatch = &quot;[...]ninenines.eu&quot;.
+</code></pre><p>如果一个绑定变量出现了两次，那么只有这两个位置的值相同的时候才会匹配成功。</p>
+<pre><code>PathMatch = &quot;/hats/:name/:name&quot;.
+</code></pre><p>在可选变量里面也是一样的，在下面这个例子中，如果可选变量有值，必须两个绑定变量的值都一样才可匹配到。</p>
+<pre><code>PathMatch = &quot;/hats/:name/[:name]&quot;.
+</code></pre><p>如果一个绑定变量出现在主机名和路径当中，他们需要是相同的才能匹配。</p>
+<pre><code>PathMatch = &quot;/:user/[...]&quot;.
+HostMatch = &quot;:user.github.com&quot;.
+</code></pre><p>当然也有两种特殊情况，第一种使用下划线变量（_）可以匹配任意的主机名和路径。</p>
+<pre><code>PathMatch = &apos;_&apos;.
+HostMatch = &apos;_&apos;.
+</code></pre><p>第二种，使用通配符星号（*）来匹配。</p>
+<pre><code>HostMatch = &quot;*&quot;.
+</code></pre><h3 id="Constraints（约束）"><a href="#Constraints（约束）" class="headerlink" title="Constraints（约束）"></a>Constraints（约束）</h3><p>关于这段没看懂，下面是英文原文：</p>
+<blockquote>
+<p>After the matching has completed, the resulting bindings can be tested against a set of constraints. Constraints are only tested when the binding is defined. They run in the order you defined them. The match will succeed only if they all succeed.</p>
+<p>They are always given as a two or three elements tuple, where the first element is the name of the binding, the second element is the constraint’s name, and the optional third element is the constraint’s arguments.</p>
+<p>The following constraints are currently defined:</p>
+<ul>
+<li>{Name, int}</li>
+<li>{Name, function, fun ((Value) -&gt; true | {true, NewValue} | false)}</li>
+</ul>
+<p>The int constraint will check if the binding is a binary string representing an integer, and if it is, will convert the value to integer.</p>
+<p>The function constraint will pass the binding value to a user specified function that receives the binary value as its only argument and must return whether it fulfills the constraint, optionally modifying the value. The value thus returned can be of any type.</p>
+<p>Note that constraint functions SHOULD be pure and MUST NOT crash.</p>
+</blockquote>
+<h3 id="Compilation（编译-收集）"><a href="#Compilation（编译-收集）" class="headerlink" title="Compilation（编译/收集）"></a>Compilation（编译/收集）</h3><p>在传递给Cowboy之前，定义的结构首先要先编译。才能是Cowboy有效查找到正确的handler，并执行，而不必重复地解析路由。<br>编译通过调用cow_router:compile/1 函数进行。</p>
+<pre><code>Dispatch = cowboy_router:compile([
+    %% {HostMatch, list({PathMatch, Handler, Opts})}
+    {&apos;_&apos;, [{&apos;_&apos;, my_handler, []}]}
+]),
+%% Name, NbAcceptors, TransOpts, ProtoOpts
+cowboy:start_http(my_http_listener, 100,
+    [{port, 8080}],
+    [{env, [{dispatch, Dispatch}]}]
+).
+</code></pre><p>注意，如果结构不正确，函数会返回{error, badarg}。</p>
+<h3 id="Live-update（热更新）"><a href="#Live-update（热更新）" class="headerlink" title="Live update（热更新）"></a>Live update（热更新）</h3><p>使用cowboy:set_env/3 函数可以更新当前的路由列表。这会应用到所有的监听器中。</p>
+<pre><code>cowboy:set_env(my_http_listener, dispatch,
+    cowboy_router:compile(Dispatch)).
+</code></pre><p>注意，设置之前还是需要编译的哦。</p>
+</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2016/03/24/701-Erlang_erlcron_crash/" class="post-link">[erlang]一次erlcron崩溃引起的事故分析</a></h2><span class="post-time">2016年3月24日</span><div class="post-content"><h3 id="事故背景"><a href="#事故背景" class="headerlink" title="事故背景"></a>事故背景</h3><p>由于误操作在<code>erlcron</code>设置了一个超过3个月后的定时任务。然后第二天之后发现每天的daily reset没有被执行，一些定时任务也没有被执行。瞬间感觉整个人都不好了，怎么无端端就不执行了呢。</p>
 <p>通过排查日志，发现了以下报错：</p>
 <pre><code>2016-03-22 16:54:32.014 [error] gen_server ecrn_control terminated with reason: no case clause matching {ok,[&lt;0.14123.1577&gt;,&lt;0.13079.1576&gt;,&lt;0.25254.1569&gt;,&lt;0.13402.1577&gt;,...]} in ecrn_control:internal_cancel/1 line 111
 2016-03-22 16:54:32.015 [error] CRASH REPORT Process ecrn_control with 0 neighbours exited with reason: no case clause matching {ok,[&lt;0.14123.1577&gt;,&lt;0.13079.1576&gt;,&lt;0.25254.1569&gt;,&lt;0.13402.1577&gt;,...]} in ecrn_control:internal_cancel/1 line 111 in gen_server:terminate/6 line 744
@@ -92,7 +203,7 @@ init([JobRef, Job]) -&gt;
 &apos;receive&apos;(_, _) -&gt;
     erlang:nif_error(stub).
 </code></pre><p><em>与君共勉</em></p>
-</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/11/14/501-raspberrypi-init/" class="post-link">[linux]树莓派入手体验和系统安装</a></h2><span class="post-time">2015年11月14日</span><div class="post-content"><p><img src="http://i.imgur.com/iAoxxbE.png" alt="树莓派"></p>
+</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/11/14/501-Raspberrypi_Init/" class="post-link">[linux]树莓派入手体验和系统安装</a></h2><span class="post-time">2015年11月14日</span><div class="post-content"><p><img src="http://i.imgur.com/iAoxxbE.png" alt="树莓派"></p>
 <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>一直想捣鼓点什么东西。当看到树莓派的时候，就是它了。</p>
 <p>树莓派可以安装<code>Linux</code>系统，而我在工作当中，可以说<code>Linux</code>是一半工作环境。树莓派真是个好东西，这个东西应该在我学习<code>linxu/Unix</code>的时候就该接触了。想想大学的时候，在<code>windows</code>下安装虚拟机，安装<code>Linux</code>是件多么痛苦的事情。而且那时的电脑配置也不算高，才2G内存，还要开虚拟机。玩个蛋蛋。</p>
 <p>对<code>Linux</code>也算比较熟吧，入手一个树莓派应该可以玩很多好玩的事情。</p>
@@ -143,7 +254,7 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
 <li><a href="http://mirrors.163.com/.help/debian.html" target="_blank" rel="external">http://mirrors.163.com/.help/debian.html</a></li>
 <li><a href="https://www.raspberrypi.org/help/quick-start-guide/" target="_blank" rel="external">https://www.raspberrypi.org/help/quick-start-guide/</a></li>
 </ul>
-</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/11/14/601-ftp-batch-help/" class="post-link">[windows]快速从ftp下载最新软件包的批处理脚本 </a></h2><span class="post-time">2015年11月14日</span><div class="post-content"><h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>由于敏捷开发，快速迭代，我们项目一天会有三个版本，也就意味着我一天要去获取三次软件包。我负责服务端开发，所以我经常需要去拿最新的客户端。我们的客户端放置在一个公共的ftp上面。每天频繁登陆ftp下载，或者使用ftp工具，每次都要点击同步，都不太方便。如果在linux下就好了，然而在windows也是可以运行脚本的，何不尝试下呢。</p>
+</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/11/14/601-Ftp_bat_help/" class="post-link">[windows]快速从ftp下载最新软件包的批处理脚本 </a></h2><span class="post-time">2015年11月14日</span><div class="post-content"><h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>由于敏捷开发，快速迭代，我们项目一天会有三个版本，也就意味着我一天要去获取三次软件包。我负责服务端开发，所以我经常需要去拿最新的客户端。我们的客户端放置在一个公共的ftp上面。每天频繁登陆ftp下载，或者使用ftp工具，每次都要点击同步，都不太方便。如果在linux下就好了，然而在windows也是可以运行脚本的，何不尝试下呢。</p>
 <h3 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h3><pre><code>@echo off
 rem for download file
 rem ftp config 
@@ -239,7 +350,19 @@ ftp -v -n -s:%f_info%
 <li><a href="http://occool.com/2012/03/【转载】命令行压缩解压7z/" target="_blank" rel="external">http://occool.com/2012/03/【转载】命令行压缩解压7z/</a></li>
 <li><a href="http://www.robvanderwoude.com/ftp.php" target="_blank" rel="external">http://www.robvanderwoude.com/ftp.php</a></li>
 </ul>
-</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/04/28/401-deploy-tmux/" class="post-link">[linux]CentOS下安装和使用tmux</a></h2><span class="post-time">2015年4月28日</span><div class="post-content"><p>前天随意点开博客园，看到了一篇关于tmux的文章 <a href="http://cenalulu.github.io/linux/tmux/" target="_blank" rel="external">Tmux - Linux从业者必备利器</a>，特意还点进去看了。毕竟Linux对于做游戏服务端开发的我来说，太熟悉不过了。不过我就粗略地看了一眼，就关掉了。直到第二天<code>码农周刊</code>就推荐了这篇文章，才引起我真正的关注。<code>tmux</code>真的那么好用吗？所以我自己也倒腾来一遍，的确在许多场景下还是非常有用的。如：</p>
+</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/05/25/801-Game_Server_Design/" class="post-link">[game]游戏服务端的逻辑分服与物理分服</a></h2><span class="post-time">2015年5月25日</span><div class="post-content"><h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>工作室也经历过好几个游戏了。服务端的架构跟实际业务需求出现过不少的冲突。导致后来花了挺多时间去擦屁股的。以最近的一个游戏举例，原本的世界观设想是一个大服的世界观。也就是只有一个服，撑下百万用户，数万同时在线的设计。而后随着业务变化和线上表现，原本大服的设计并不能满足，最终变成了滚服玩法。由于大服变滚服，在原来的服务器架构约束下，对于后续增加的跨服玩法和合服实现都带来了比较大的麻烦和不少的工作量。</p>
+<p><img src="http://i.imgur.com/SORhqLU.png" alt="物理分服和逻辑分服"></p>
+<h3 id="物理分服"><a href="#物理分服" class="headerlink" title="物理分服"></a>物理分服</h3><p>原来的架构是按照大服设计的，所以在数据库上面的设计一个服对应一个数据库。假设我们滚了500个服，就需要建500个数据库，部署500个游戏服。无论后续跨服、合服的业务扩展，还是运维的维护方面，都变得比较复杂和困难。特别是合服的需求上面，需要将两个数据库甚至多个数据库合并成一个数据库。在量上来的时候，这一切都变得无比繁琐和复杂。开发人员也需要花费较多的人力和时间去写相应的工具。而且操作相对复杂，也比较容易出bug。而且后续新增的业务如果出现了持久化数据就需要增加相应的合服处理。</p>
+<h3 id="逻辑分服"><a href="#逻辑分服" class="headerlink" title="逻辑分服"></a>逻辑分服</h3><p>如果说我们一开始就已经将数据库合并了呢，是不是后续根本就不需要去合并数据库了。所以如果在当初框架设计的时候就已经按照逻辑来分服的话，后续的事情处理起来就简单多了。问过同行业的一些游戏架构，他们也是这么处理的。</p>
+<h4 id="对于合服"><a href="#对于合服" class="headerlink" title="对于合服"></a>对于合服</h4><p>因为数据其实还是在同一个库里面，而且也是在同一个服务器里面。只要简单处理，或者甚至不需要任何处理，就可以将两个或多个服合并。只需要在后台设置一下入口配置、可见配置就可以解决合服的问题了。</p>
+<h4 id="对于跨服"><a href="#对于跨服" class="headerlink" title="对于跨服"></a>对于跨服</h4><p>跨服原本的问题就是需要从不同库读取数据和与不同服进行交互。如果本身就不存在多服的问题，也不存在跨服的问题。</p>
+<p>虽然逻辑分服可以比较完美解决合服的问题，但是对于跨服还是需要单独处理。毕竟如果一个逻辑分服的服务器真的扛不住的时候，就会出现真的物理分服。对于跨服的需求来说，可能都是需要跨的。</p>
+<h4 id="维护成本"><a href="#维护成本" class="headerlink" title="维护成本"></a>维护成本</h4><p>相对于物理分服，逻辑分服可以极大地降低运维成本。数据库数量级可以极大减少，服务器数量也可以减少。对于备份、更新等运维操作都相对变得简单。甚至可以不依赖于运维工具，就可以简单地维护机器了。一台机器部署一个服(多个逻辑服)对比一台机器部署多个游戏服(一个逻辑服)，需要初始化的内存一般来说会变小(不排除不一样的情况)，机器的资源占用一般来说会小很多。所以对物理机的利用效率可以提高很多。</p>
+<h4 id="用户数量级的问题"><a href="#用户数量级的问题" class="headerlink" title="用户数量级的问题"></a>用户数量级的问题</h4><p>逻辑分服必然会出现性能瓶颈，不可避免地出现了物理分服、分库的情况。而对于合服来说，合服本身就是发生在用户数量或者同时在线数量不足的情况下出现的。如果用户数量过大，基本上不太可能出现合服的需求。如果前期量级大，已经物理分服了。后期量级小了，其实重新叠回去也不是什么大的问题。只需要跟运营沟通好了，还是可以使用逻辑分服的事情去解决合服的事情。当然如果运营需要真的在不同物理服上面进行合服，我也没有想到比较好的办法，只能又苦逼地去处理的样子。</p>
+<h4 id="开发成本"><a href="#开发成本" class="headerlink" title="开发成本"></a>开发成本</h4><p>由于逻辑分服，的确是增加了一些内容，譬如玩家所在的服务器ID。但是这个处理起来并没有多大的难度，而且对key值也并没有多大的影响。</p>
+<p>逻辑分服的架构对于大世界和滚服都是支持的，只是对于大世界的话，就浪费了一个存储空间和一点点内存。但是这样的框架可以自如应对大世界到滚服之间的变化。如果一开始就按照大世界来设计，万一某一天滚服了，就要麻烦地多。</p>
+<p>所以逻辑分服并不会提升多大的开发成本。</p>
+</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/04/28/401-Deploy_Tmux/" class="post-link">[linux]CentOS下安装和使用tmux</a></h2><span class="post-time">2015年4月28日</span><div class="post-content"><p>前天随意点开博客园，看到了一篇关于tmux的文章 <a href="http://cenalulu.github.io/linux/tmux/" target="_blank" rel="external">Tmux - Linux从业者必备利器</a>，特意还点进去看了。毕竟Linux对于做游戏服务端开发的我来说，太熟悉不过了。不过我就粗略地看了一眼，就关掉了。直到第二天<code>码农周刊</code>就推荐了这篇文章，才引起我真正的关注。<code>tmux</code>真的那么好用吗？所以我自己也倒腾来一遍，的确在许多场景下还是非常有用的。如：</p>
 <ul>
 <li>做服务器的，肯定需要关注性能的，而tmux多个pane可以很方便同时关注多项性能指标；</li>
 <li>我们的游戏服刚好有多个服务存在，而联调多个服务的时候，可以同时看到多个控制台确实很方便。</li>
@@ -445,7 +568,27 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
 <li><a href="http://elroyjetson.org/dev-notes/centos/installing-tmux-on-centos-6-2" title="Installing tmux on CentOS 6.2" target="_blank" rel="external">http://elroyjetson.org/dev-notes/centos/installing-tmux-on-centos-6-2</a></li>
 <li><a href="http://www.nigeldunn.com/2011/12/11/libevent-2-0-so-5-cannot-open-shared-object-file-no-such-file-or-directory/" title="libevent-2.0.so.5: cannot open shared object file: No such file or directory" target="_blank" rel="external">http://www.nigeldunn.com/2011/12/11/libevent-2-0-so-5-cannot-open-shared-object-file-no-such-file-or-directory/</a></li>
 </ol>
-</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/03/17/301-how-to-set-svn-ignore/" class="post-link">[svn]如何在linux设置svn忽略列表</a></h2><span class="post-time">2015年3月17日</span><div class="post-content"><h3 id="管理属性变量的命令"><a href="#管理属性变量的命令" class="headerlink" title="管理属性变量的命令"></a>管理属性变量的命令</h3><p>svn客户端有个属性<code>ignore</code> 用于保存忽略的文件或者目录。除此之外，svn其实有好多属性变量用来自定义，如在windows下svn客户端里面属性截图：<br><img src="/images/301-01.png" alt="windows svn" title="windows svn"></p>
+</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/04/07/402-Stop_Selinux/" class="post-link">[linux]windows无法访问samba的安全性问题(关闭selinux)</a></h2><span class="post-time">2015年4月7日</span><div class="post-content"><h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>在某一天重启了虚拟机的 <code>linux</code> 之后，我的 <code>windows</code> 在连接上 <code>samba</code> 之后，点击某些文件夹的时候，会出现没有权限打开的情况。这问题折腾了我一度重新配置了好几次 <code>samba</code> 的配置，然而无果。</p>
+<h4 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h4><p>经过搜索，发现有两个办法可以解决samba的某些文件夹无法访问的问题。</p>
+<ul>
+<li>方法一 修改文件和文件夹的安全策略；</li>
+<li>方法二 关闭 <code>selinux</code>；</li>
+</ul>
+<p>第一种方法并不合适，只是临时解决的一种方案。因为在 <code>windows</code> 下新建了一个 <code>linux</code> 文件夹之后，下一次重启了 <code>linux</code> ，新的文件夹又无法访问了。麻烦。第二种方法就简单了，一劳永逸。</p>
+<p>虽然网上又说关闭 <code>selinux</code> 会有安全问题。然而只是我虚拟机的 <code>linux</code> 开发机而已，并不是生产环境，没有太高的安全问题。</p>
+<h4 id="方法一-修改安全策略"><a href="#方法一-修改安全策略" class="headerlink" title="方法一 修改安全策略"></a>方法一 修改安全策略</h4><pre><code>chcon -t samba_share_t share
+</code></pre><p>chcon 可以修改文件的安全上下文。重置windows建立的文件、文件夹的安全信息。也可以解决，但是比较麻烦，不方便。</p>
+<h4 id="方法二-关闭-selinux"><a href="#方法二-关闭-selinux" class="headerlink" title="方法二 关闭 selinux"></a>方法二 关闭 selinux</h4><h5 id="永久关闭"><a href="#永久关闭" class="headerlink" title="永久关闭"></a>永久关闭</h5><p>修改 <code>/etc/selinux/config</code> 文件，设置</p>
+<pre><code>SELINUX=disabled
+</code></pre><p>然后重启linux。</p>
+<h5 id="临时关闭"><a href="#临时关闭" class="headerlink" title="临时关闭"></a>临时关闭</h5><p>使用 <code>setenforce</code> 命令可以修改 <code>selinux</code> 模式。</p>
+<ul>
+<li><code>setenforce 1</code> 设置 <code>selinux</code> 为 <code>enforcing</code> 模式；</li>
+<li><code>setenforce 0</code> 设置 <code>selinux</code> 为 <code>permissive</code> 模式。</li>
+</ul>
+<h4 id="其它方案"><a href="#其它方案" class="headerlink" title="其它方案"></a>其它方案</h4><p><a href="https://wiki.centos.org/zh/HowTos/SetUpSamba" title="https://wiki.centos.org/zh/HowTos/SetUpSamba" target="_blank" rel="external">https://wiki.centos.org/zh/HowTos/SetUpSamba</a> 有相当详细的解释和解决办法。有时间折腾的可以看看。</p>
+<p>以上。</p>
+</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/03/17/403-Set_svn_ignore/" class="post-link">[svn]如何在linux设置svn忽略列表</a></h2><span class="post-time">2015年3月17日</span><div class="post-content"><h3 id="管理属性变量的命令"><a href="#管理属性变量的命令" class="headerlink" title="管理属性变量的命令"></a>管理属性变量的命令</h3><p>svn客户端有个属性<code>ignore</code> 用于保存忽略的文件或者目录。除此之外，svn其实有好多属性变量用来自定义，如在windows下svn客户端里面属性截图：<br><img src="/images/301-01.png" alt="windows svn" title="windows svn"></p>
 <p>但是在linux 下，不可像windows那样有可视化界面进行管理。<br>执行svn help 命令可以知道有五个命令用于管理svn 属性变量。</p>
 <pre><code>propdel (pdel, pd)                # 删除属性
 propedit (pedit, pe)              # 编辑属性
@@ -468,7 +611,7 @@ propset (pset, ps)                # 设置属性的值
 <li><code>svn st | grep ^! | sed &#39;s/!    //&#39; | xargs svn rm</code>    删除svn里面已经不存在的文件（本地尚存）</li>
 </ul>
 <p>当然避免误操作，我经常先执行<code>svn st | grep ^? | sed &#39;s/?    //&#39;</code> 先确认下文件列表。<br><img src="/images/301-04.png" alt="svn skill" title="svn skill"></p>
-</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/03/12/202-add-rss-sitemap-in-hexo/" class="post-link">[hexo]在hexo内添加RSS和sitemap</a></h2><span class="post-time">2015年3月12日</span><div class="post-content"><h3 id="一、添加RSS"><a href="#一、添加RSS" class="headerlink" title="一、添加RSS"></a>一、添加RSS</h3><p>博客来说，RSS的重要性可想而知。</p>
+</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/03/12/202-Add_rss_in_Hexo/" class="post-link">[hexo]在hexo内添加RSS和sitemap</a></h2><span class="post-time">2015年3月12日</span><div class="post-content"><h3 id="一、添加RSS"><a href="#一、添加RSS" class="headerlink" title="一、添加RSS"></a>一、添加RSS</h3><p>博客来说，RSS的重要性可想而知。</p>
 <h4 id="1-安装hexo-rss插件"><a href="#1-安装hexo-rss插件" class="headerlink" title="1. 安装hexo rss插件"></a>1. 安装hexo rss插件</h4><p>hexo提供了生成RSS xml的插件<code>hexo-generator-feed</code>，执行<code>npm install hexo-generator-feed</code>即可。</p>
 <h4 id="2-配置"><a href="#2-配置" class="headerlink" title="2. 配置"></a>2. 配置</h4><p>编辑<code>blog/_config.yml</code>文件。在里面添加查看配置，如下</p>
 <pre><code>plugins: 
@@ -492,18 +635,4 @@ propset (pset, ps)                # 设置属性的值
 &lt;li&gt;&lt;a href=&quot;/atom.xml&quot;&gt;RSS&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 </code></pre><p>可以不配置menu达到相同的效果。</p>
-</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/03/06/201-deploy-hexo-github/" class="post-link">[hexo]搭载hexo+github博客系统</a></h2><span class="post-time">2015年3月6日</span><div class="post-content"><h3 id="一、安装-Node-js"><a href="#一、安装-Node-js" class="headerlink" title="一、安装 Node.js"></a>一、安装 Node.js</h3><p>在官网 <a href="http://nodejs.org/" target="_blank" rel="external">http://nodejs.org/</a> 下载winwos版本，点击安装完成即可。</p>
-<h3 id="二、git环境安装"><a href="#二、git环境安装" class="headerlink" title="二、git环境安装"></a>二、git环境安装</h3><p>对于git的安装，网上已经大量资料，就不赘述了。</p>
-<h3 id="三、安装-hexo"><a href="#三、安装-hexo" class="headerlink" title="三、安装 hexo"></a>三、安装 hexo</h3><p>启动cmd，输入命令<code>npm install hexo-cli -g</code> 即可完成hexo的安装。</p>
-<h3 id="四、初始化博客"><a href="#四、初始化博客" class="headerlink" title="四、初始化博客"></a>四、初始化博客</h3><p>随便找一个目录。在cmd里面执行命令<code>hexo init blog</code> (blog为文件夹名称，与github的项目名称一致)。<br><code>cd blog</code>进入目录。执行<code>hexo g</code>和<code>hexo s</code>就可以生成静态html文件和启动一个http服务器。<br>按照提示，访问 <a href="http://127.0.0.1:4000/" target="_blank" rel="external">http://127.0.0.1:4000/</a> 就可以看到一个博客网站了。</p>
-<pre><code>hexo init blog
-hexo generate     # hexo g
-hexo server       # hexo s
-</code></pre><h3 id="五、配置和发布到github"><a href="#五、配置和发布到github" class="headerlink" title="五、配置和发布到github"></a>五、配置和发布到github</h3><p>编辑 <code>_config.yml</code> 文件。在<code>deploy</code>字段配置以下内容</p>
-<pre><code>deploy:
-  type: git
-  repo: git@github.com:rondsny/rondsny.github.com.git
-</code></pre><p><code>git@github.com:rondsny/blog.git</code> 是在github上面托管博客的项目地址。譬如我的github 是<a href="http://github.com/rondsny/" target="_blank" rel="external">http://github.com/rondsny/</a> 然后我建立用于托管的项目是<code>rondsny.github.com</code>。</p>
-<p>执行命令 <code>hexo deploy</code> 或 <code>hexo d</code> 就可以将博客发布到github上面。</p>
-<p>访问 <a href="http://rondsny.github.io/">http://rondsny.github.io/</a> 就可以看到效果了。</p>
-</div></article></li></ul><div class="paginator"></div></section><footer><div class="social"><a href="mailto:your@email.com" title="email" class="iconfont icon-email"></a><a href="/atom.xml" title="rss" class="iconfont icon-rss"></a></div><div class="copyright"><p class="power">Powered by <a href="https://hexo.io/">Hexo</a> and Theme by <a href="https://github.com/ahonn/hexo-theme-even"> Even</a></p><p class="since">&copy;2016<span class="heart"><i class="iconfont icon-heart"></i></span><span class="author">Ron_N</span></p></div><div id="back2top"><i class="iconfont icon-up"></i></div></footer></div><script src="/js/zepto.min.js"></script><script src="/js/theme.js"></script></body></html>
+</div></article></li></ul><div class="paginator"><a href="/page/2/" class="next"><span>Next</span><i class="iconfont icon-right"></i></a></div></section><footer><div class="social"><a href="mailto:your@email.com" title="email" class="iconfont icon-email"></a><a href="/atom.xml" title="rss" class="iconfont icon-rss"></a></div><div class="copyright"><p class="power">Powered by <a href="https://hexo.io/">Hexo</a> and Theme by <a href="https://github.com/ahonn/hexo-theme-even"> Even</a></p><p class="since">&copy;2016<span class="heart"><i class="iconfont icon-heart"></i></span><span class="author">Ron_N</span></p></div><div id="back2top"><i class="iconfont icon-up"></i></div></footer></div><script src="/js/zepto.min.js"></script><script src="/js/theme.js"></script></body></html>

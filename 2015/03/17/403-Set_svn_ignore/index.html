@@ -1,0 +1,49 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="author" content="Ron_N"><meta name="description" content="管理属性变量的命令svn客户端有个属性ignore用于保存忽略的文件或者目录。除此之外，svn其实有好多属性变量用来自定义，如在windows下svn客户端里面属性截图：但是在linux下，不可像windows那样有可视化界面进行管理。执行svnhelp命令可以知道有五"><meta name="keywords" content="svn,linux"><title>[svn]如何在linux设置svn忽略列表 · Ron Ngai</title><link rel="icon" href="/favicon.ico"><link rel="canonical" href="http://rondsny.github.io/2015/03/17/403-Set_svn_ignore/"><link rel="alternate" href="/atom.xml" title="Ron Ngai"><link rel="stylesheet" href="/css/style.css"><script type="text/javascript">var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?Your baidu Analytics ID";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script><script type="text/javascript">(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'Your Google Analytics ID', 'auto');
+ga('send', 'pageview');</script></head><body><div id="main"><header><a href="/." class="logo">Ron Ngai</a><ul class="nav"><li class="nav-link"><a href="/" target="_self">Home</a></li><li class="nav-link"><a href="/archives/" target="_self">Archives</a></li></ul></header><section id="container"><article class="post"><h1 class="post-title">[svn]如何在linux设置svn忽略列表</h1><span class="post-time">2015年3月17日</span><div id="sidebar" class="post-sidebar"><h3 class="heading">Contents</h3><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#管理属性变量的命令"><span class="toc-text">管理属性变量的命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#方法1："><span class="toc-text">方法1：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#方法2："><span class="toc-text">方法2：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#属性变量文件"><span class="toc-text">属性变量文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#查看状态"><span class="toc-text">查看状态</span></a></li></ol></div><div class="post-content"><h3 id="管理属性变量的命令"><a href="#管理属性变量的命令" class="headerlink" title="管理属性变量的命令"></a>管理属性变量的命令</h3><p>svn客户端有个属性<code>ignore</code> 用于保存忽略的文件或者目录。除此之外，svn其实有好多属性变量用来自定义，如在windows下svn客户端里面属性截图：<br><img src="/images/301-01.png" alt="windows svn" title="windows svn"></p>
+<p>但是在linux 下，不可像windows那样有可视化界面进行管理。<br>执行svn help 命令可以知道有五个命令用于管理svn 属性变量。</p>
+<pre><code>propdel (pdel, pd)                # 删除属性
+propedit (pedit, pe)              # 编辑属性
+propget (pget, pg)                # 获取属性的值
+proplist (plist, pl)              # 列出所有的属性
+propset (pset, ps)                # 设置属性的值
+</code></pre><p>那么有这几个命令，想要编辑<code>svn:ignore</code> 变量还不轻而易举。</p>
+<h3 id="方法1："><a href="#方法1：" class="headerlink" title="方法1："></a>方法1：</h3><p>首先要给SVN指定默认的编辑器，如下。当然改成其它编辑器也可以。</p>
+<ul>
+<li><code>export SVN_EDITOR=/usr/bin/vim</code> 已经设置的话，可以忽略这一步</li>
+<li><code>svn propedit svn:ignore [目录]</code></li>
+</ul>
+<p>然后可以在vim编辑器中写上需要过滤的目录或者文件。换行隔开，据说空格也可以，但是我没有试过。</p>
+<h3 id="方法2："><a href="#方法2：" class="headerlink" title="方法2："></a>方法2：</h3><p>除了propedit可以设置，当然propset 也可以设置。<br><img src="/images/301-02.png" alt="svn propset" title="svn propset"><br>图片表示将pet目录下的xg_pet.erl文件加入到忽略列表。</p>
+<h3 id="属性变量文件"><a href="#属性变量文件" class="headerlink" title="属性变量文件"></a>属性变量文件</h3><p>在当前目录，有一个<code>.svn</code> 目录。当有属性变量的时候，<code>.svn</code>目录会生成一个<code>dir-props</code>文件用来保存属性变量，如下：<br><img src="/images/301-03.png" alt="svn properties file" title=".svn/dir-props"></p>
+<h3 id="查看状态"><a href="#查看状态" class="headerlink" title="查看状态"></a>查看状态</h3><p>另外说一个linux下很常用的命令。相当于windows下commit的时候出现的文件列表。而linux下需要用<code>svn status</code>来查看。<br><code>svn status/svn st/svn stat</code></p>
+<p>延伸一下，下面两个命令：</p>
+<ul>
+<li><code>svn st | grep ^? | sed &#39;s/?    //&#39; | xargs svn add</code>  增加尚未增加到svn的文件</li>
+<li><code>svn st | grep ^! | sed &#39;s/!    //&#39; | xargs svn rm</code>    删除svn里面已经不存在的文件（本地尚存）</li>
+</ul>
+<p>当然避免误操作，我经常先执行<code>svn st | grep ^? | sed &#39;s/?    //&#39;</code> 先确认下文件列表。<br><img src="/images/301-04.png" alt="svn skill" title="svn skill"></p>
+</div></article><div class="tags"><a href="/tags/svn/">svn</a><a href="/tags/linux/">linux</a></div><div class="paginator"><a href="/2015/04/07/402-Stop_Selinux/" class="prev"><i class="iconfont icon-left"></i><span> Prev</span></a><a href="/2015/03/12/202-Add_rss_in_Hexo/" class="next"><span>Next</span><i class="iconfont icon-right"></i></a></div><section id="comments"><div id="disqus_thread"></div></section><script type="text/javascript">var disqus_config = function () {
+    this.page.url = 'http://rondsny.github.io/2015/03/17/403-Set_svn_ignore/';
+    this.page.identifier = '2015/03/17/403-Set_svn_ignore/';
+    this.page.title = '[svn]如何在linux设置svn忽略列表';
+};
+(function() {
+var d = document, s = d.createElement('script');
+
+s.src = '//Your disqus ID.disqus.com/embed.js';
+
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();</script></section><footer><div class="social"><a href="mailto:your@email.com" title="email" class="iconfont icon-email"></a><a href="/atom.xml" title="rss" class="iconfont icon-rss"></a></div><div class="copyright"><p class="power">Powered by <a href="https://hexo.io/">Hexo</a> and Theme by <a href="https://github.com/ahonn/hexo-theme-even"> Even</a></p><p class="since">&copy;2016<span class="heart"><i class="iconfont icon-heart"></i></span><span class="author">Ron_N</span></p></div><div id="back2top"><i class="iconfont icon-up"></i></div></footer></div><script src="/js/zepto.min.js"></script><script src="/js/theme.js"></script></body></html>

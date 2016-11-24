@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://rondsny.github.io/"/>
-  <updated>2016-03-24T05:42:26.709Z</updated>
+  <updated>2016-11-24T09:55:19.105Z</updated>
   <id>http://rondsny.github.io/</id>
   
   <author>
@@ -16,9 +16,164 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>[翻译][erlang]cowboy handler模块的使用</title>
+    <link href="http://rondsny.github.io/2016/11/23/711-Cowboy_Handlers/"/>
+    <id>http://rondsny.github.io/2016/11/23/711-Cowboy_Handlers/</id>
+    <published>2016-11-23T12:00:00.000Z</published>
+    <updated>2016-11-24T09:55:19.105Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="关于Cowboy"><a href="#关于Cowboy" class="headerlink" title="关于Cowboy"></a>关于Cowboy</h3><p>Cowboy是基于Erlang实现的一个轻量级、快速、模块化的http web服务器。</p>
+<h3 id="Handlers"><a href="#Handlers" class="headerlink" title="Handlers"></a>Handlers</h3><p>用于处理HTTP请求的程序处理模块。</p>
+<h3 id="Plain-HTTP-Handlers（常规Handlers）"><a href="#Plain-HTTP-Handlers（常规Handlers）" class="headerlink" title="Plain HTTP Handlers（常规Handlers）"></a>Plain HTTP Handlers（常规Handlers）</h3><p>Cowboy里面的handler最基础的事情就是实现 <code>init/2</code> 回调函数，处理请求，发送客户端响应（可选），最后返回。<br>Cowboy根据 <code>router configuration</code> （路由配置）接收请求并初始化State。<br>下面是一个不做任何处理的handler：</p>
+<pre><code>init(Req, State) -&gt;
+    {ok, Req, State}
+</code></pre><p>Cowboy为了保证每一个相应都能有客户端响应，尽管上面例子没有发送客户端返回，客户端仍然会收到一个 <code>204 No Content</code> 的响应。</p>
+<p>下面是一个有返回响应的例子：</p>
+<pre><code>init(Req0, State) -&gt;
+    Req = cowboy_req:reply(200, [
+        {&lt;&lt;&quot;content-type&quot;&gt;&gt;, &lt;&lt;&quot;text/plain&quot;&gt;&gt;}
+    ], &lt;&lt;&quot;Hello, World!&quot;&gt;&gt;, Req0),
+    {ok, Req, State}.
+</code></pre><p>当调用了 <code>cowboy:req/4</code>, Cowboy会马上返回一个客户端响应。</p>
+<p>最后我们返回一个三元组。<code>ok</code> 表示handler允许成功，然后返回处理过后的 <code>Req</code> 给Cowboy。<br>三元组的最后一个元素是一个贯穿在handler所有回调一个state。常规的HTTP handlers一般只附加一个回调函数，<code>terminate/2</code>是一个很少使用的可选的回调函数。</p>
+<h3 id="Other-Handlers（其它Handlers）"><a href="#Other-Handlers（其它Handlers）" class="headerlink" title="Other Handlers（其它Handlers）"></a>Other Handlers（其它Handlers）</h3><p><code>init/2</code> 回调函数也可以用来告诉cowboy，这是一个不同类型的handler，Cowboy应该做一些其他处理。为了方便使用，如果返回handler类型的模块名称，就可以切换handler处理模块。</p>
+<p>Cowboy提供了三种可选handler类型：cowboy_reset, Cowboy_websocke和cowboy_loop。另外也可以自己定义handler类型。</p>
+<p>切换非常简单，用handler类型替换掉返回的 <code>ok</code> 就可以了。下面是一个切换为 Websocket handler 的代码片段。</p>
+<pre><code>init(Req, State) -&gt;
+    {cowboy_websocket, Req, State}.
+</code></pre><p>也可以切换到一个自定义的handler模块：</p>
+<pre><code>init(Req, State) -&gt;
+    {my_handler_type, Req, State}.
+</code></pre><p>如何使用自定义的handler类型可以查看<code>Sub protocols</code> 章节（<a href="https://ninenines.eu/docs/en/cowboy/2.0/guide/sub_protocols）。" target="_blank" rel="external">https://ninenines.eu/docs/en/cowboy/2.0/guide/sub_protocols）。</a></p>
+<h3 id="Cleaning-up"><a href="#Cleaning-up" class="headerlink" title="Cleaning up"></a>Cleaning up</h3><p>除了Websocket handlers，其它所有类型都提供可选回调函数<code>terminate/3</code>：</p>
+<pre><code>terminate(_Reason, _Req, _State) -&gt;
+    ok.
+</code></pre><p>这个回调函数是为了cleanup保留下来的。该函数不能发送响应给客户端。也没有其他返回值（只能返回<code>ok</code>）。</p>
+<p><code>terminate/3</code>之所以是可选是因为其极少会用到。Cleanup应该在各自的进程中直接处理。（通过监控handler进程来知道其何时退出）</p>
+<p>Cowboy不会在不同的请求重复使用进程（应该是http短链接设计引起的）。进程在返回之后很快就会被销毁。</p>
+<h3 id="Others"><a href="#Others" class="headerlink" title="Others"></a>Others</h3><p>英文官方原文：</p>
+<p><a href="https://ninenines.eu/docs/en/cowboy/2.0/guide/handlers/#_plain_http_handlers" target="_blank" rel="external">https://ninenines.eu/docs/en/cowboy/2.0/guide/handlers/#_plain_http_handlers</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;关于Cowboy&quot;&gt;&lt;a href=&quot;#关于Cowboy&quot; class=&quot;headerlink&quot; title=&quot;关于Cowboy&quot;&gt;&lt;/a&gt;关于Cowboy&lt;/h3&gt;&lt;p&gt;Cowboy是基于Erlang实现的一个轻量级、快速、模块化的http web服务器。&lt;/p
+    
+    </summary>
+    
+    
+      <category term="erlang" scheme="http://rondsny.github.io/tags/erlang/"/>
+    
+      <category term="cowboy" scheme="http://rondsny.github.io/tags/cowboy/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>[翻译][erlang]cowboy路由模块使用</title>
+    <link href="http://rondsny.github.io/2016/11/23/710-Cowboy_Routing/"/>
+    <id>http://rondsny.github.io/2016/11/23/710-Cowboy_Routing/</id>
+    <published>2016-11-23T06:00:00.000Z</published>
+    <updated>2016-11-24T09:55:02.687Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="关于Cowboy"><a href="#关于Cowboy" class="headerlink" title="关于Cowboy"></a>关于Cowboy</h3><p>Cowboy是基于Erlang实现的一个轻量级、快速、模块化的http web服务器。</p>
+<h3 id="Routing（路由）"><a href="#Routing（路由）" class="headerlink" title="Routing（路由）"></a>Routing（路由）</h3><p>本文官方原文：<a href="http://ninenines.eu/docs/en/cowboy/1.0/guide/routing/" target="_blank" rel="external">http://ninenines.eu/docs/en/cowboy/1.0/guide/routing/</a></p>
+<p>默认情况下，Cowboy不会做什么事情。<br>为了使Cowboy可用，需要映射URL和处理请求的Erlang模型（Module），这个过程，我们称之为路由（routing）。<br>当Cowboy接收到一个请求，通过路由，Cowboy就会尝试去匹配到相应请求的主机和资源路径。如果匹配成功，那么相关的Erlang代码就会被执行。<br>每个主机会给出相应的路由规则。Cowboy首先会匹配主机，然后尝试寻找匹配的路径。<br>在使用Cowboy之前需要先编译路由。</p>
+<h3 id="Structure（结构）"><a href="#Structure（结构）" class="headerlink" title="Structure（结构）"></a>Structure（结构）</h3><p>路由一般定义成以下结构</p>
+<pre><code>Routes = [Host1, Host2, ... HostN].
+</code></pre><p>每个主机包含匹配规则（HostMatch）、限制规则（非必须）（Constraints）和一个由路径组成的路由列表（PathsList）。</p>
+<pre><code>Host1 = {HostMatch, PathsList}.
+Host2 = {HostMatch, Constraints, PathsList}.
+</code></pre><p>由路径组成的路由列表与主机列表类似。</p>
+<pre><code>PathsList = [Path1, Path2, ... PathN].
+</code></pre><p>而路径（path）包含匹配路径规则、限制规则（非必须）、处理逻辑的module和会被初始化的选项参数。</p>
+<pre><code>Path1 = {PathMatch, Handler, Opts}.
+Path2 = {PathMatch, Constraints, Handler, Opts}.
+</code></pre><p>下面内容为匹配语法和限制选项。</p>
+<h3 id="Match-syntax（匹配语法）"><a href="#Match-syntax（匹配语法）" class="headerlink" title="Match syntax（匹配语法）"></a>Match syntax（匹配语法）</h3><p>匹配语法用来关联主机名字和相应的handler路径。<br>主机的匹配语法和路径的匹配语法类似，只有轻微的区别。譬如，他们分隔符是不一样的。而且主机是从最后开始匹配的，而路径是不是。<br>（其实说了老半天，这不就是一个普通的URL嘛。URL的前半部分为主机IP或域名，这里称之为HOST，即主机。而后半部分为路径）<br>除了特殊情况，最简单的匹配就是只有主机或者只有路径的匹配。他的值可以为string() 或binary() 类型。</p>
+<pre><code>PathMatch1 = &quot;/&quot;.
+PathMatch2 = &quot;/path/to/resource&quot;.
+
+HostMatch1 = &quot;cowboy.example.org&quot;.
+</code></pre><p>正如你所见，所有的路径都是由斜杠开始的。注意，下面两条路径对于路由而言是一样的。</p>
+<pre><code>PathMatch2 = &quot;/path/to/resource&quot;.
+PathMatch3 = &quot;/path/to/resource/&quot;.
+</code></pre><p>而对于主机名，最后有点和没有点对于路由来说也是一样的。同样，在前面多一个点和少一个点也是一样的。</p>
+<pre><code>HostMatch1 = &quot;cowboy.example.org&quot;.
+HostMatch2 = &quot;cowboy.example.org.&quot;.
+HostMatch3 = &quot;.cowboy.example.org&quot;.
+</code></pre><p>因此能够提取主机和路径的数据段并且存储在Req 对象供后面使用。我们称之为值绑定。<br>绑定语法非常简单。由冒号字符（:）开头，一直到数据段的结尾的这个数据段是我们的绑定名称，会被保存。</p>
+<pre><code>PathMatch = &quot;/hats/:name/prices&quot;.
+HostMatch = &quot;:subdomain.example.org&quot;.
+</code></pre><p>如果这两个最终匹配，那么就会有两个绑定定义，分布是:subdomain 和:name ，每个包含被定义的数据段。例如，这个URL地址 <a href="http://test.example.org/hats/wild_cowboy_legendary/prices" target="_blank" rel="external">http://test.example.org/hats/wild_cowboy_legendary/prices</a> 会将 test绑定到subdomain ,并将wild_cowboy_legendary 绑定到 name 。他们通过cowboy_req:binding/{2,3} 函数检索出来的。绑定名字必须是原子（atom）类型。</p>
+<p>还有一种特殊的绑定名字，它模仿erlang的下划线变量。任意内容都能与下划线（_）相匹配，但是数据会被丢弃。最有用的场景就是去匹配多个域名。</p>
+<pre><code>HostMatch = &quot;ninenines.:_&quot;.
+</code></pre><p>类似地，也可以添加可选内容。中括号内的内容都是可选的。</p>
+<pre><code>PathMatch = &quot;/hats/[page/:number]&quot;.
+HostMatch = &quot;[www.]ninenines.eu&quot;.
+</code></pre><p>并且可选内容可以内嵌</p>
+<pre><code>PathMatch = &quot;/hats/[page/[:number]]&quot;.
+</code></pre><p>还可以使用[…] 来获取主机名或路径剩余的部分。匹配主机的时候，需要放在最前面；匹配路径的时候是放在最后面。分别使用cowboy_req:host_info/1 和 cowboy_req:path_info/1 函数可以找到他们。</p>
+<pre><code>PathMatch = &quot;/hats/[...]&quot;.
+HostMatch = &quot;[...]ninenines.eu&quot;.
+</code></pre><p>如果一个绑定变量出现了两次，那么只有这两个位置的值相同的时候才会匹配成功。</p>
+<pre><code>PathMatch = &quot;/hats/:name/:name&quot;.
+</code></pre><p>在可选变量里面也是一样的，在下面这个例子中，如果可选变量有值，必须两个绑定变量的值都一样才可匹配到。</p>
+<pre><code>PathMatch = &quot;/hats/:name/[:name]&quot;.
+</code></pre><p>如果一个绑定变量出现在主机名和路径当中，他们需要是相同的才能匹配。</p>
+<pre><code>PathMatch = &quot;/:user/[...]&quot;.
+HostMatch = &quot;:user.github.com&quot;.
+</code></pre><p>当然也有两种特殊情况，第一种使用下划线变量（_）可以匹配任意的主机名和路径。</p>
+<pre><code>PathMatch = &apos;_&apos;.
+HostMatch = &apos;_&apos;.
+</code></pre><p>第二种，使用通配符星号（*）来匹配。</p>
+<pre><code>HostMatch = &quot;*&quot;.
+</code></pre><h3 id="Constraints（约束）"><a href="#Constraints（约束）" class="headerlink" title="Constraints（约束）"></a>Constraints（约束）</h3><p>关于这段没看懂，下面是英文原文：</p>
+<blockquote>
+<p>After the matching has completed, the resulting bindings can be tested against a set of constraints. Constraints are only tested when the binding is defined. They run in the order you defined them. The match will succeed only if they all succeed.</p>
+<p>They are always given as a two or three elements tuple, where the first element is the name of the binding, the second element is the constraint’s name, and the optional third element is the constraint’s arguments.</p>
+<p>The following constraints are currently defined:</p>
+<ul>
+<li>{Name, int}</li>
+<li>{Name, function, fun ((Value) -&gt; true | {true, NewValue} | false)}</li>
+</ul>
+<p>The int constraint will check if the binding is a binary string representing an integer, and if it is, will convert the value to integer.</p>
+<p>The function constraint will pass the binding value to a user specified function that receives the binary value as its only argument and must return whether it fulfills the constraint, optionally modifying the value. The value thus returned can be of any type.</p>
+<p>Note that constraint functions SHOULD be pure and MUST NOT crash.</p>
+</blockquote>
+<h3 id="Compilation（编译-收集）"><a href="#Compilation（编译-收集）" class="headerlink" title="Compilation（编译/收集）"></a>Compilation（编译/收集）</h3><p>在传递给Cowboy之前，定义的结构首先要先编译。才能是Cowboy有效查找到正确的handler，并执行，而不必重复地解析路由。<br>编译通过调用cow_router:compile/1 函数进行。</p>
+<pre><code>Dispatch = cowboy_router:compile([
+    %% {HostMatch, list({PathMatch, Handler, Opts})}
+    {&apos;_&apos;, [{&apos;_&apos;, my_handler, []}]}
+]),
+%% Name, NbAcceptors, TransOpts, ProtoOpts
+cowboy:start_http(my_http_listener, 100,
+    [{port, 8080}],
+    [{env, [{dispatch, Dispatch}]}]
+).
+</code></pre><p>注意，如果结构不正确，函数会返回{error, badarg}。</p>
+<h3 id="Live-update（热更新）"><a href="#Live-update（热更新）" class="headerlink" title="Live update（热更新）"></a>Live update（热更新）</h3><p>使用cowboy:set_env/3 函数可以更新当前的路由列表。这会应用到所有的监听器中。</p>
+<pre><code>cowboy:set_env(my_http_listener, dispatch,
+    cowboy_router:compile(Dispatch)).
+</code></pre><p>注意，设置之前还是需要编译的哦。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;关于Cowboy&quot;&gt;&lt;a href=&quot;#关于Cowboy&quot; class=&quot;headerlink&quot; title=&quot;关于Cowboy&quot;&gt;&lt;/a&gt;关于Cowboy&lt;/h3&gt;&lt;p&gt;Cowboy是基于Erlang实现的一个轻量级、快速、模块化的http web服务器。&lt;/p
+    
+    </summary>
+    
+    
+      <category term="erlang" scheme="http://rondsny.github.io/tags/erlang/"/>
+    
+      <category term="cowboy" scheme="http://rondsny.github.io/tags/cowboy/"/>
+    
+  </entry>
+  
+  <entry>
     <title>[erlang]一次erlcron崩溃引起的事故分析</title>
-    <link href="http://rondsny.github.io/2016/03/24/701-erlang-erlcron-crash/"/>
-    <id>http://rondsny.github.io/2016/03/24/701-erlang-erlcron-crash/</id>
+    <link href="http://rondsny.github.io/2016/03/24/701-Erlang_erlcron_crash/"/>
+    <id>http://rondsny.github.io/2016/03/24/701-Erlang_erlcron_crash/</id>
     <published>2016-03-24T05:34:57.000Z</published>
     <updated>2016-03-24T05:42:26.709Z</updated>
     
@@ -118,8 +273,8 @@ init([JobRef, Job]) -&gt;
   
   <entry>
     <title>[linux]树莓派入手体验和系统安装</title>
-    <link href="http://rondsny.github.io/2015/11/14/501-raspberrypi-init/"/>
-    <id>http://rondsny.github.io/2015/11/14/501-raspberrypi-init/</id>
+    <link href="http://rondsny.github.io/2015/11/14/501-Raspberrypi_Init/"/>
+    <id>http://rondsny.github.io/2015/11/14/501-Raspberrypi_Init/</id>
     <published>2015-11-14T09:15:57.000Z</published>
     <updated>2016-11-24T06:41:29.505Z</updated>
     
@@ -192,10 +347,10 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
   
   <entry>
     <title>[windows]快速从ftp下载最新软件包的批处理脚本 </title>
-    <link href="http://rondsny.github.io/2015/11/14/601-ftp-batch-help/"/>
-    <id>http://rondsny.github.io/2015/11/14/601-ftp-batch-help/</id>
+    <link href="http://rondsny.github.io/2015/11/14/601-Ftp_bat_help/"/>
+    <id>http://rondsny.github.io/2015/11/14/601-Ftp_bat_help/</id>
     <published>2015-11-14T09:15:57.000Z</published>
-    <updated>2015-11-14T09:15:30.791Z</updated>
+    <updated>2016-11-24T09:53:18.000Z</updated>
     
     <content type="html"><![CDATA[<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>由于敏捷开发，快速迭代，我们项目一天会有三个版本，也就意味着我一天要去获取三次软件包。我负责服务端开发，所以我经常需要去拿最新的客户端。我们的客户端放置在一个公共的ftp上面。每天频繁登陆ftp下载，或者使用ftp工具，每次都要点击同步，都不太方便。如果在linux下就好了，然而在windows也是可以运行脚本的，何不尝试下呢。</p>
 <h3 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h3><pre><code>@echo off
@@ -307,9 +462,41 @@ ftp -v -n -s:%f_info%
   </entry>
   
   <entry>
+    <title>[game]游戏服务端的逻辑分服与物理分服</title>
+    <link href="http://rondsny.github.io/2015/05/25/801-Game_Server_Design/"/>
+    <id>http://rondsny.github.io/2015/05/25/801-Game_Server_Design/</id>
+    <published>2015-05-25T04:00:00.000Z</published>
+    <updated>2016-11-24T10:03:38.000Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>工作室也经历过好几个游戏了。服务端的架构跟实际业务需求出现过不少的冲突。导致后来花了挺多时间去擦屁股的。以最近的一个游戏举例，原本的世界观设想是一个大服的世界观。也就是只有一个服，撑下百万用户，数万同时在线的设计。而后随着业务变化和线上表现，原本大服的设计并不能满足，最终变成了滚服玩法。由于大服变滚服，在原来的服务器架构约束下，对于后续增加的跨服玩法和合服实现都带来了比较大的麻烦和不少的工作量。</p>
+<p><img src="http://i.imgur.com/SORhqLU.png" alt="物理分服和逻辑分服"></p>
+<h3 id="物理分服"><a href="#物理分服" class="headerlink" title="物理分服"></a>物理分服</h3><p>原来的架构是按照大服设计的，所以在数据库上面的设计一个服对应一个数据库。假设我们滚了500个服，就需要建500个数据库，部署500个游戏服。无论后续跨服、合服的业务扩展，还是运维的维护方面，都变得比较复杂和困难。特别是合服的需求上面，需要将两个数据库甚至多个数据库合并成一个数据库。在量上来的时候，这一切都变得无比繁琐和复杂。开发人员也需要花费较多的人力和时间去写相应的工具。而且操作相对复杂，也比较容易出bug。而且后续新增的业务如果出现了持久化数据就需要增加相应的合服处理。</p>
+<h3 id="逻辑分服"><a href="#逻辑分服" class="headerlink" title="逻辑分服"></a>逻辑分服</h3><p>如果说我们一开始就已经将数据库合并了呢，是不是后续根本就不需要去合并数据库了。所以如果在当初框架设计的时候就已经按照逻辑来分服的话，后续的事情处理起来就简单多了。问过同行业的一些游戏架构，他们也是这么处理的。</p>
+<h4 id="对于合服"><a href="#对于合服" class="headerlink" title="对于合服"></a>对于合服</h4><p>因为数据其实还是在同一个库里面，而且也是在同一个服务器里面。只要简单处理，或者甚至不需要任何处理，就可以将两个或多个服合并。只需要在后台设置一下入口配置、可见配置就可以解决合服的问题了。</p>
+<h4 id="对于跨服"><a href="#对于跨服" class="headerlink" title="对于跨服"></a>对于跨服</h4><p>跨服原本的问题就是需要从不同库读取数据和与不同服进行交互。如果本身就不存在多服的问题，也不存在跨服的问题。</p>
+<p>虽然逻辑分服可以比较完美解决合服的问题，但是对于跨服还是需要单独处理。毕竟如果一个逻辑分服的服务器真的扛不住的时候，就会出现真的物理分服。对于跨服的需求来说，可能都是需要跨的。</p>
+<h4 id="维护成本"><a href="#维护成本" class="headerlink" title="维护成本"></a>维护成本</h4><p>相对于物理分服，逻辑分服可以极大地降低运维成本。数据库数量级可以极大减少，服务器数量也可以减少。对于备份、更新等运维操作都相对变得简单。甚至可以不依赖于运维工具，就可以简单地维护机器了。一台机器部署一个服(多个逻辑服)对比一台机器部署多个游戏服(一个逻辑服)，需要初始化的内存一般来说会变小(不排除不一样的情况)，机器的资源占用一般来说会小很多。所以对物理机的利用效率可以提高很多。</p>
+<h4 id="用户数量级的问题"><a href="#用户数量级的问题" class="headerlink" title="用户数量级的问题"></a>用户数量级的问题</h4><p>逻辑分服必然会出现性能瓶颈，不可避免地出现了物理分服、分库的情况。而对于合服来说，合服本身就是发生在用户数量或者同时在线数量不足的情况下出现的。如果用户数量过大，基本上不太可能出现合服的需求。如果前期量级大，已经物理分服了。后期量级小了，其实重新叠回去也不是什么大的问题。只需要跟运营沟通好了，还是可以使用逻辑分服的事情去解决合服的事情。当然如果运营需要真的在不同物理服上面进行合服，我也没有想到比较好的办法，只能又苦逼地去处理的样子。</p>
+<h4 id="开发成本"><a href="#开发成本" class="headerlink" title="开发成本"></a>开发成本</h4><p>由于逻辑分服，的确是增加了一些内容，譬如玩家所在的服务器ID。但是这个处理起来并没有多大的难度，而且对key值也并没有多大的影响。</p>
+<p>逻辑分服的架构对于大世界和滚服都是支持的，只是对于大世界的话，就浪费了一个存储空间和一点点内存。但是这样的框架可以自如应对大世界到滚服之间的变化。如果一开始就按照大世界来设计，万一某一天滚服了，就要麻烦地多。</p>
+<p>所以逻辑分服并不会提升多大的开发成本。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h3&gt;&lt;p&gt;工作室也经历过好几个游戏了。服务端的架构跟实际业务需求出现过不少的冲突。导致后来花了挺多时间去擦屁股的。以最近的一个游戏举例，原本的世界观设
+    
+    </summary>
+    
+    
+      <category term="game" scheme="http://rondsny.github.io/tags/game/"/>
+    
+  </entry>
+  
+  <entry>
     <title>[linux]CentOS下安装和使用tmux</title>
-    <link href="http://rondsny.github.io/2015/04/28/401-deploy-tmux/"/>
-    <id>http://rondsny.github.io/2015/04/28/401-deploy-tmux/</id>
+    <link href="http://rondsny.github.io/2015/04/28/401-Deploy_Tmux/"/>
+    <id>http://rondsny.github.io/2015/04/28/401-Deploy_Tmux/</id>
     <published>2015-04-28T10:27:54.000Z</published>
     <updated>2016-11-24T06:48:36.264Z</updated>
     
@@ -537,9 +724,53 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
   </entry>
   
   <entry>
+    <title>[linux]windows无法访问samba的安全性问题(关闭selinux)</title>
+    <link href="http://rondsny.github.io/2015/04/07/402-Stop_Selinux/"/>
+    <id>http://rondsny.github.io/2015/04/07/402-Stop_Selinux/</id>
+    <published>2015-04-07T10:00:00.000Z</published>
+    <updated>2016-11-24T10:09:12.449Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>在某一天重启了虚拟机的 <code>linux</code> 之后，我的 <code>windows</code> 在连接上 <code>samba</code> 之后，点击某些文件夹的时候，会出现没有权限打开的情况。这问题折腾了我一度重新配置了好几次 <code>samba</code> 的配置，然而无果。</p>
+<h4 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h4><p>经过搜索，发现有两个办法可以解决samba的某些文件夹无法访问的问题。</p>
+<ul>
+<li>方法一 修改文件和文件夹的安全策略；</li>
+<li>方法二 关闭 <code>selinux</code>；</li>
+</ul>
+<p>第一种方法并不合适，只是临时解决的一种方案。因为在 <code>windows</code> 下新建了一个 <code>linux</code> 文件夹之后，下一次重启了 <code>linux</code> ，新的文件夹又无法访问了。麻烦。第二种方法就简单了，一劳永逸。</p>
+<p>虽然网上又说关闭 <code>selinux</code> 会有安全问题。然而只是我虚拟机的 <code>linux</code> 开发机而已，并不是生产环境，没有太高的安全问题。</p>
+<h4 id="方法一-修改安全策略"><a href="#方法一-修改安全策略" class="headerlink" title="方法一 修改安全策略"></a>方法一 修改安全策略</h4><pre><code>chcon -t samba_share_t share
+</code></pre><p>chcon 可以修改文件的安全上下文。重置windows建立的文件、文件夹的安全信息。也可以解决，但是比较麻烦，不方便。</p>
+<h4 id="方法二-关闭-selinux"><a href="#方法二-关闭-selinux" class="headerlink" title="方法二 关闭 selinux"></a>方法二 关闭 selinux</h4><h5 id="永久关闭"><a href="#永久关闭" class="headerlink" title="永久关闭"></a>永久关闭</h5><p>修改 <code>/etc/selinux/config</code> 文件，设置</p>
+<pre><code>SELINUX=disabled
+</code></pre><p>然后重启linux。</p>
+<h5 id="临时关闭"><a href="#临时关闭" class="headerlink" title="临时关闭"></a>临时关闭</h5><p>使用 <code>setenforce</code> 命令可以修改 <code>selinux</code> 模式。</p>
+<ul>
+<li><code>setenforce 1</code> 设置 <code>selinux</code> 为 <code>enforcing</code> 模式；</li>
+<li><code>setenforce 0</code> 设置 <code>selinux</code> 为 <code>permissive</code> 模式。</li>
+</ul>
+<h4 id="其它方案"><a href="#其它方案" class="headerlink" title="其它方案"></a>其它方案</h4><p><a href="https://wiki.centos.org/zh/HowTos/SetUpSamba" title="https://wiki.centos.org/zh/HowTos/SetUpSamba" target="_blank" rel="external">https://wiki.centos.org/zh/HowTos/SetUpSamba</a> 有相当详细的解释和解决办法。有时间折腾的可以看看。</p>
+<p>以上。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h4&gt;&lt;p&gt;在某一天重启了虚拟机的 &lt;code&gt;linux&lt;/code&gt; 之后，我的 &lt;code&gt;windows&lt;/code&gt; 在连接上 &lt;code&gt;s
+    
+    </summary>
+    
+    
+      <category term="linux" scheme="http://rondsny.github.io/tags/linux/"/>
+    
+      <category term="samba" scheme="http://rondsny.github.io/tags/samba/"/>
+    
+      <category term="selinux" scheme="http://rondsny.github.io/tags/selinux/"/>
+    
+  </entry>
+  
+  <entry>
     <title>[svn]如何在linux设置svn忽略列表</title>
-    <link href="http://rondsny.github.io/2015/03/17/301-how-to-set-svn-ignore/"/>
-    <id>http://rondsny.github.io/2015/03/17/301-how-to-set-svn-ignore/</id>
+    <link href="http://rondsny.github.io/2015/03/17/403-Set_svn_ignore/"/>
+    <id>http://rondsny.github.io/2015/03/17/403-Set_svn_ignore/</id>
     <published>2015-03-17T10:35:20.000Z</published>
     <updated>2016-11-24T06:48:29.008Z</updated>
     
@@ -583,8 +814,8 @@ propset (pset, ps)                # 设置属性的值
   
   <entry>
     <title>[hexo]在hexo内添加RSS和sitemap</title>
-    <link href="http://rondsny.github.io/2015/03/12/202-add-rss-sitemap-in-hexo/"/>
-    <id>http://rondsny.github.io/2015/03/12/202-add-rss-sitemap-in-hexo/</id>
+    <link href="http://rondsny.github.io/2015/03/12/202-Add_rss_in_Hexo/"/>
+    <id>http://rondsny.github.io/2015/03/12/202-Add_rss_in_Hexo/</id>
     <published>2015-03-12T07:28:01.000Z</published>
     <updated>2016-11-24T06:48:18.943Z</updated>
     
@@ -628,8 +859,8 @@ propset (pset, ps)                # 设置属性的值
   
   <entry>
     <title>[hexo]搭载hexo+github博客系统</title>
-    <link href="http://rondsny.github.io/2015/03/06/201-deploy-hexo-github/"/>
-    <id>http://rondsny.github.io/2015/03/06/201-deploy-hexo-github/</id>
+    <link href="http://rondsny.github.io/2015/03/06/201-Deploy_Hexo_github/"/>
+    <id>http://rondsny.github.io/2015/03/06/201-Deploy_Hexo_github/</id>
     <published>2015-03-06T07:16:57.000Z</published>
     <updated>2016-11-24T06:50:02.316Z</updated>
     
