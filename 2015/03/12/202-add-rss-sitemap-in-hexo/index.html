@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>在hexo内添加RSS和sitemap | Ron Ngai</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="一、添加RSS博客来说，RSS的重要性可想而知。
+1. 安装hexo rss插件hexo提供了生成RSS xml的插件hexo-generator-feed，执行npm install hexo-generator-feed即可。
+2. 配置编辑blog/_config.yml文件。在里面添加查看配置，如下
+plugins: 
+  hexo-generator-feed
+还要修改主题的配置文件bl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在hexo内添加RSS和sitemap">
+<meta property="og:url" content="http://rondsny.github.io/2015/03/12/202-add-rss-sitemap-in-hexo/index.html">
+<meta property="og:site_name" content="Ron Ngai">
+<meta property="og:description" content="一、添加RSS博客来说，RSS的重要性可想而知。
+1. 安装hexo rss插件hexo提供了生成RSS xml的插件hexo-generator-feed，执行npm install hexo-generator-feed即可。
+2. 配置编辑blog/_config.yml文件。在里面添加查看配置，如下
+plugins: 
+  hexo-generator-feed
+还要修改主题的配置文件bl">
+<meta property="og:updated_time" content="2015-03-12T07:51:53.664Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="在hexo内添加RSS和sitemap">
+<meta name="twitter:description" content="一、添加RSS博客来说，RSS的重要性可想而知。
+1. 安装hexo rss插件hexo提供了生成RSS xml的插件hexo-generator-feed，执行npm install hexo-generator-feed即可。
+2. 配置编辑blog/_config.yml文件。在里面添加查看配置，如下
+plugins: 
+  hexo-generator-feed
+还要修改主题的配置文件bl">
+  
+    <link rel="alternate" href="/atom.xml" title="Ron Ngai" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Ron Ngai</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">养猫的码农</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://rondsny.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-202-add-rss-sitemap-in-hexo" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/03/12/202-add-rss-sitemap-in-hexo/" class="article-date">
+  <time datetime="2015-03-12T07:28:01.000Z" itemprop="datePublished">2015-03-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      在hexo内添加RSS和sitemap
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="一、添加RSS"><a href="#一、添加RSS" class="headerlink" title="一、添加RSS"></a>一、添加RSS</h3><p>博客来说，RSS的重要性可想而知。</p>
+<h4 id="1-安装hexo-rss插件"><a href="#1-安装hexo-rss插件" class="headerlink" title="1. 安装hexo rss插件"></a>1. 安装hexo rss插件</h4><p>hexo提供了生成RSS xml的插件<code>hexo-generator-feed</code>，执行<code>npm install hexo-generator-feed</code>即可。</p>
+<h4 id="2-配置"><a href="#2-配置" class="headerlink" title="2. 配置"></a>2. 配置</h4><p>编辑<code>blog/_config.yml</code>文件。在里面添加查看配置，如下</p>
+<pre><code>plugins: 
+  hexo-generator-feed
+</code></pre><p>还要修改主题的配置文件<code>blog/theme/_config.yml</code>。在rss里面配置<code>rss: /atom.xml</code>。在菜单里面添加RSS菜单。</p>
+<pre><code>menu: 
+  Home: / 
+  Archives: /archives 
+  Rss: /atom.xml
+</code></pre><h3 id="二、添加sitemap"><a href="#二、添加sitemap" class="headerlink" title="二、添加sitemap"></a>二、添加sitemap</h3><p>当关注seo的时候，sitemap也同样重要。</p>
+<h4 id="1-安装hexo-sitemap插件"><a href="#1-安装hexo-sitemap插件" class="headerlink" title="1. 安装hexo sitemap插件"></a>1. 安装hexo sitemap插件</h4><p>同样，执行命令<code>npm install hexo-generator-sitemap</code>即可完成插件的安装。</p>
+<h4 id="2-配置-1"><a href="#2-配置-1" class="headerlink" title="2. 配置"></a>2. 配置</h4><p>一样修改<code>blog/_config.yml</code>文件，添加上插件名称</p>
+<pre><code>plugins: 
+  hexo-generator-feed
+  hexo-generator-sitemap 
+</code></pre><h3 id="三、其它"><a href="#三、其它" class="headerlink" title="三、其它"></a>三、其它</h3><p>其实两个插件是在<code>hexo g</code>的时候生成atom.xml 文件和sitemap.xml 文件。由于sitemap.xml 是对搜索引擎服务的，所以不需要显示在博客里面。而Rss是要给读者收藏的，需要在菜单里面添加显示。当然你不喜欢在菜单里面显示可以直接修改模板显示在你喜欢的地方。如编辑<code>blog/theme/[light]/layout/_partial/header.ejs</code>文件：</p>
+<pre><code>&lt;ul&gt;
+&lt;% for (var i in theme.menu){ %&gt;
+  &lt;li&gt;&lt;a href=&quot;&lt;%- theme.menu[i] %&gt;&quot;&gt;&lt;%= i %&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;% } %&gt;
+&lt;li&gt;&lt;a href=&quot;/atom.xml&quot;&gt;RSS&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</code></pre><p>可以不配置menu达到相同的效果。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://rondsny.github.io/2015/03/12/202-add-rss-sitemap-in-hexo/" data-id="civvr3f3t0001f4geet29b8xz" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/03/17/301-how-to-set-svn-ignore/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          如何在linux设置svn忽略列表
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/03/06/201-deploy-hexo-github/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">搭载hexo+github博客系统</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/centos/">centos</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/erlang/">erlang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux-tools/">linux tools</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux-respberrypi/">linux, respberrypi</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svn/">svn</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/centos/" style="font-size: 10px;">centos</a> <a href="/tags/erlang/" style="font-size: 10px;">erlang</a> <a href="/tags/hexo/" style="font-size: 20px;">hexo</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/linux-tools/" style="font-size: 10px;">linux tools</a> <a href="/tags/linux-respberrypi/" style="font-size: 10px;">linux, respberrypi</a> <a href="/tags/svn/" style="font-size: 10px;">svn</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/03/">三月 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/03/24/701-erlang-erlcron-crash/">[erlang]一次erlcron崩溃引起的事故分析</a>
+          </li>
+        
+          <li>
+            <a href="/2015/11/14/501-raspberrypi-init/">[linux]树莓派入手体验和系统安装</a>
+          </li>
+        
+          <li>
+            <a href="/2015/11/14/601-ftp-batch-help/">[windows]快速从ftp下载最新软件包的批处理脚本 </a>
+          </li>
+        
+          <li>
+            <a href="/2015/04/28/401-deploy-tmux/">CentOS下安装和使用tmux</a>
+          </li>
+        
+          <li>
+            <a href="/2015/03/17/301-how-to-set-svn-ignore/">如何在linux设置svn忽略列表</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 Ron_N<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

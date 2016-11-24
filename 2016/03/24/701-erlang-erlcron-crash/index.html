@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>[erlang]一次erlcron崩溃引起的事故分析 | Ron Ngai</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="事故背景由于误操作在erlcron设置了一个超过3个月后的定时任务。然后第二天之后发现每天的daily reset没有被执行，一些定时任务也没有被执行。瞬间感觉整个人都不好了，怎么无端端就不执行了呢。
+通过排查日志，发现了以下报错：
+2016-03-22 16:54:32.014 [error] gen_server ecrn_control terminated with reason: no">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[erlang]一次erlcron崩溃引起的事故分析">
+<meta property="og:url" content="http://rondsny.github.io/2016/03/24/701-erlang-erlcron-crash/index.html">
+<meta property="og:site_name" content="Ron Ngai">
+<meta property="og:description" content="事故背景由于误操作在erlcron设置了一个超过3个月后的定时任务。然后第二天之后发现每天的daily reset没有被执行，一些定时任务也没有被执行。瞬间感觉整个人都不好了，怎么无端端就不执行了呢。
+通过排查日志，发现了以下报错：
+2016-03-22 16:54:32.014 [error] gen_server ecrn_control terminated with reason: no">
+<meta property="og:image" content="http://i.imgur.com/H4oSaR0.png">
+<meta property="og:image" content="http://i.imgur.com/TSYo5CH.png">
+<meta property="og:image" content="http://i.imgur.com/w9NJViE.png">
+<meta property="og:updated_time" content="2016-03-24T05:42:26.709Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[erlang]一次erlcron崩溃引起的事故分析">
+<meta name="twitter:description" content="事故背景由于误操作在erlcron设置了一个超过3个月后的定时任务。然后第二天之后发现每天的daily reset没有被执行，一些定时任务也没有被执行。瞬间感觉整个人都不好了，怎么无端端就不执行了呢。
+通过排查日志，发现了以下报错：
+2016-03-22 16:54:32.014 [error] gen_server ecrn_control terminated with reason: no">
+<meta name="twitter:image" content="http://i.imgur.com/H4oSaR0.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Ron Ngai" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Ron Ngai</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">养猫的码农</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://rondsny.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-701-erlang-erlcron-crash" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/24/701-erlang-erlcron-crash/" class="article-date">
+  <time datetime="2016-03-24T05:34:57.000Z" itemprop="datePublished">2016-03-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      [erlang]一次erlcron崩溃引起的事故分析
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="事故背景"><a href="#事故背景" class="headerlink" title="事故背景"></a>事故背景</h3><p>由于误操作在<code>erlcron</code>设置了一个超过3个月后的定时任务。然后第二天之后发现每天的daily reset没有被执行，一些定时任务也没有被执行。瞬间感觉整个人都不好了，怎么无端端就不执行了呢。</p>
+<p>通过排查日志，发现了以下报错：</p>
+<pre><code>2016-03-22 16:54:32.014 [error] gen_server ecrn_control terminated with reason: no case clause matching {ok,[&lt;0.14123.1577&gt;,&lt;0.13079.1576&gt;,&lt;0.25254.1569&gt;,&lt;0.13402.1577&gt;,...]} in ecrn_control:internal_cancel/1 line 111
+2016-03-22 16:54:32.015 [error] CRASH REPORT Process ecrn_control with 0 neighbours exited with reason: no case clause matching {ok,[&lt;0.14123.1577&gt;,&lt;0.13079.1576&gt;,&lt;0.25254.1569&gt;,&lt;0.13402.1577&gt;,...]} in ecrn_control:internal_cancel/1 line 111 in gen_server:terminate/6 line 744
+</code></pre><p>我擦，<code>ecrn_control</code>都崩了，怎么回事。</p>
+<p>找到具体出错的代码：</p>
+<pre><code>internal_cancel(AlarmRef) -&gt;
+    case ecrn_reg:get(AlarmRef) of
+        undefined -&gt;
+            undefined;
+        {ok, [Pid]} -&gt;
+            ecrn_agent:cancel(Pid)
+    end.
+</code></pre><p>发现调用<code>ecrn_reg:get(AlarmRef)</code>被返回了{ok, List}，而且这个List的数据远不止一个。明显在设置那个超过3个月的定时任务的时候，<code>ecrn_reg</code>被注册进了脏数据。</p>
+<h3 id="事故重现"><a href="#事故重现" class="headerlink" title="事故重现"></a>事故重现</h3><h4 id="先设置几个正常的定时任务"><a href="#先设置几个正常的定时任务" class="headerlink" title="先设置几个正常的定时任务"></a>先设置几个正常的定时任务</h4><pre><code>&gt; erlcron:cron({{once, 1000}, {io, fwrite, ["Hello, world!~n"]}}).
+&gt; erlcron:cron({{once, 1000}, {io, fwrite, ["Hello, world!~n"]}}).
+&gt; erlcron:cron({{once, 1000}, {io, fwrite, ["Hello, world!~n"]}}).
+</code></pre><p>查看<code>observer:start()</code> 可以看到进程树如下：</p>
+<p><img src="http://i.imgur.com/H4oSaR0.png" alt=""></p>
+<h4 id="再设置一个4294968秒之后的定时任务"><a href="#再设置一个4294968秒之后的定时任务" class="headerlink" title="再设置一个4294968秒之后的定时任务"></a>再设置一个4294968秒之后的定时任务</h4><pre><code>&gt; erlcron:cron({{once, 4294968}, {io, fwrite, ["Hello, world!~n"]}}).
+</code></pre><p>结果就gg了，好多崩溃信息是不是：</p>
+<pre><code>22:49:16.818 [error] CRASH REPORT Process &lt;0.5822.64&gt; with 0 neighbours crashed with reason: timeout_value in gen_server:loop/6 line 358
+22:49:16.818 [error] Supervisor ecrn_cron_sup had child ecrn_agent started with ecrn_agent:start_link(#Ref&lt;0.0.11.11209&gt;, {{once,4294968},{io,fwrite,["Hello, world!~n"]}}) at &lt;0.5822.64&gt; exit with reason timeout_value in context child_terminated
+22:49:16.819 [error] CRASH REPORT Process &lt;0.5701.64&gt; with 0 neighbours crashed with reason: timeout_value in gen_server:loop/6 line 358
+22:49:16.821 [error] Supervisor ecrn_cron_sup had child ecrn_agent started with ecrn_agent:start_link(#Ref&lt;0.0.11.11209&gt;, {{once,4294968},{io,fwrite,["Hello, world!~n"]}}) at &lt;0.5701.64&gt; exit with reason timeout_value in context child_terminated
+22:49:16.821 [error] CRASH REPORT Process &lt;0.6237.64&gt; with 0 neighbours crashed with reason: timeout_value in gen_server:loop/6 line 358
+22:49:16.821 [error] Supervisor ecrn_cron_sup had child ecrn_agent started with ecrn_agent:start_link(#Ref&lt;0.0.11.11209&gt;, {{once,4294968},{io,fwrite,["Hello, world!~n"]}}) at &lt;0.6237.64&gt; exit with reason timeout_value in context child_terminated
+22:49:16.821 [error] CRASH REPORT Process &lt;0.5862.64&gt; with 0 neighbours crashed with reason: timeout_value in gen_server:loop/6 line 358
+22:49:16.821 [error] Supervisor ecrn_cron_sup had child ecrn_agent started with ecrn_agent:start_link(#Ref&lt;0.0.11.11209&gt;, {{once,4294968},{io,fwrite,["Hello, world!~n"]}}) at &lt;0.5862.64&gt; exit with reason timeout_value in context child_terminated
+
+...(总共有25条)
+</code></pre><p>再看一下进程数：</p>
+<p><img src="http://i.imgur.com/TSYo5CH.png" alt=""></p>
+<p>我擦，为毛原来的 scrn_agent 进程也没有了。</p>
+<p>可以发现，erlcron 在尝试了25次设置 这个定时任务之后，也就是 scrn_agent 崩溃了25次之后，原来设置的三个正常的定时任务的scrn_agent 进程也没有掉了。<br>也就是说，不但我新设置的定时任务没有成功，而且我原来正常的定时任务也没有掉了。</p>
+<p>再看一下崩溃日志里面的崩掉的进程号，每一个都是不一样的。可以推算其实原来的报错<code>ecrn_reg:get(AlarmRef)</code>获取到了多个Pid，其实就是这里插入失败的定时任务产生的25个Pid。也就是说，虽然<code>ecrn_agent</code>进程崩溃了，但是<code>ecrn_reg</code>还是保存了这些Pid。所以在取消这些定时任务的时候，<code>ecrn_reg:get(AlarmRef)</code>返回的内容在<code>internal_cancel(AlarmRef)</code>没有被匹配到。</p>
+<h3 id="为什么是4294968，其实是2-32"><a href="#为什么是4294968，其实是2-32" class="headerlink" title="为什么是4294968，其实是2^32"></a>为什么是4294968，其实是2^32</h3><p>为什么设置了<code>4294968</code>秒后的定时任务就崩溃了。这个数估计很多人很熟悉，<code>2^32=4294967296</code>，而<code>4294968000</code>也就是刚好大于<code>2^32</code>。即，如果设置的定时任务超过了<code>2^32</code>毫秒，在<code>erlcron</code>里面就不支持了。</p>
+<p>查看<code>gen_server:loop</code>的源码，找到引起崩溃的代码：</p>
+<p><img src="http://i.imgur.com/w9NJViE.png" alt=""></p>
+<pre><code>loop(Parent, Name, State, Mod, hibernate, Debug) -&gt;
+    proc_lib:hibernate(?MODULE,wake_hib,[Parent, Name, State, Mod, Debug]);
+loop(Parent, Name, State, Mod, Time, Debug) -&gt;
+    Msg = receive
+          Input -&gt;
+            Input
+      after Time -&gt;
+          timeout
+      end,
+    decode_msg(Msg, Parent, Name, State, Mod, Time, Debug, false).
+</code></pre><p>可以发现引起崩溃的，358行是一段<code>receive</code>代码。也就是说<code>receive</code>是不支持超过<code>2^32</code>大小的。</p>
+<p>自测了一下，的确如果<code>receive</code>的<code>after</code>后面如果是大于等于<code>2^32</code>的数值就会出现<code>bad receive timeout value</code>的报错。查看官方解释，已经明确说明不能大于<code>32位</code>大小。</p>
+<blockquote>
+<p>ExprT is to evaluate to an integer. The highest allowed value is 16#FFFFFFFF, that is, the value must fit in 32 bits. receive..after works exactly as receive, except that if no matching message has arrived within ExprT milliseconds, then BodyT is evaluated instead. The return value of BodyT then becomes the return value of the receive..after expression.</p>
+</blockquote>
+<p><em>引用自：<a href="http://erlang.org/doc/reference_manual/expressions.html" target="_blank" rel="external">http://erlang.org/doc/reference_manual/expressions.html</a></em></p>
+<p>再回到<code>erlcron</code>， 在 <code>ecrn_agent:start_link</code>的时候，<code>ecrn_agent:init</code>执行完<code>ecrn_reg:register(JobRef, self())</code>返回<code>{ok, NewState, Millis}</code>到<code>gen_server</code>之后，Millis如果超过<code>2^32</code>在<code>gen_server:loop</code>就会引起<code>gen_server</code>的<code>timeout_value</code>异常退出。</p>
+<pre><code>%% @private
+init([JobRef, Job]) -&gt;
+    State = #state{job=Job,
+                   alarm_ref=JobRef},
+    {DateTime, Actual} = ecrn_control:datetime(),
+    NewState = set_internal_time(State, DateTime, Actual),
+    case until_next_milliseconds(NewState, Job) of
+        {ok, Millis} when is_integer(Millis) -&gt;
+            ecrn_reg:register(JobRef, self()),
+            {ok, NewState, Millis};
+        {error, _}  -&gt;
+            {stop, normal}
+    end.
+</code></pre><h3 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h3><p>这坑踩的，有点郁闷。其实这跟<code>erlcron</code>也没关系，也不是<code>gen_server</code>的问题。而是<code>erlang</code>自身<code>receive</code>不支持2^32引起的。继续往下查其实可以发现，再往下是其它语言写的了。</p>
+<pre><code>-module(prim_eval).
+
+%% This module is simply a stub which abstract code gets included in the result
+%% of compilation of prim_eval.S, to keep Dialyzer happy.
+
+-export([&apos;receive&apos;/2]).
+
+-spec &apos;receive&apos;(fun((term()) -&gt; nomatch | T), timeout()) -&gt; T.
+&apos;receive&apos;(_, _) -&gt;
+    erlang:nif_error(stub).
+</code></pre><p><em>与君共勉</em></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://rondsny.github.io/2016/03/24/701-erlang-erlcron-crash/" data-id="civvr3f4a000cf4gegvvk2btl" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2015/11/14/501-raspberrypi-init/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">[linux]树莓派入手体验和系统安装</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/centos/">centos</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/erlang/">erlang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux-tools/">linux tools</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux-respberrypi/">linux, respberrypi</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svn/">svn</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/centos/" style="font-size: 10px;">centos</a> <a href="/tags/erlang/" style="font-size: 10px;">erlang</a> <a href="/tags/hexo/" style="font-size: 20px;">hexo</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/linux-tools/" style="font-size: 10px;">linux tools</a> <a href="/tags/linux-respberrypi/" style="font-size: 10px;">linux, respberrypi</a> <a href="/tags/svn/" style="font-size: 10px;">svn</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/03/">三月 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/03/24/701-erlang-erlcron-crash/">[erlang]一次erlcron崩溃引起的事故分析</a>
+          </li>
+        
+          <li>
+            <a href="/2015/11/14/501-raspberrypi-init/">[linux]树莓派入手体验和系统安装</a>
+          </li>
+        
+          <li>
+            <a href="/2015/11/14/601-ftp-batch-help/">[windows]快速从ftp下载最新软件包的批处理脚本 </a>
+          </li>
+        
+          <li>
+            <a href="/2015/04/28/401-deploy-tmux/">CentOS下安装和使用tmux</a>
+          </li>
+        
+          <li>
+            <a href="/2015/03/17/301-how-to-set-svn-ignore/">如何在linux设置svn忽略列表</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 Ron_N<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

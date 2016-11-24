@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Ron Ngai</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Ron Ngai">
+<meta property="og:url" content="http://rondsny.github.io/index.html">
+<meta property="og:site_name" content="Ron Ngai">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ron Ngai">
+  
+    <link rel="alternate" href="/atom.xml" title="Ron Ngai" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Ron Ngai</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">养猫的码农</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://rondsny.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-701-erlang-erlcron-crash" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/24/701-erlang-erlcron-crash/" class="article-date">
+  <time datetime="2016-03-24T05:34:57.000Z" itemprop="datePublished">2016-03-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/24/701-erlang-erlcron-crash/">[erlang]一次erlcron崩溃引起的事故分析</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="事故背景"><a href="#事故背景" class="headerlink" title="事故背景"></a>事故背景</h3><p>由于误操作在<code>erlcron</code>设置了一个超过3个月后的定时任务。然后第二天之后发现每天的daily reset没有被执行，一些定时任务也没有被执行。瞬间感觉整个人都不好了，怎么无端端就不执行了呢。</p>
+<p>通过排查日志，发现了以下报错：</p>
+<pre><code>2016-03-22 16:54:32.014 [error] gen_server ecrn_control terminated with reason: no case clause matching {ok,[&lt;0.14123.1577&gt;,&lt;0.13079.1576&gt;,&lt;0.25254.1569&gt;,&lt;0.13402.1577&gt;,...]} in ecrn_control:internal_cancel/1 line 111
+2016-03-22 16:54:32.015 [error] CRASH REPORT Process ecrn_control with 0 neighbours exited with reason: no case clause matching {ok,[&lt;0.14123.1577&gt;,&lt;0.13079.1576&gt;,&lt;0.25254.1569&gt;,&lt;0.13402.1577&gt;,...]} in ecrn_control:internal_cancel/1 line 111 in gen_server:terminate/6 line 744
+</code></pre><p>我擦，<code>ecrn_control</code>都崩了，怎么回事。</p>
+<p>找到具体出错的代码：</p>
+<pre><code>internal_cancel(AlarmRef) -&gt;
+    case ecrn_reg:get(AlarmRef) of
+        undefined -&gt;
+            undefined;
+        {ok, [Pid]} -&gt;
+            ecrn_agent:cancel(Pid)
+    end.
+</code></pre><p>发现调用<code>ecrn_reg:get(AlarmRef)</code>被返回了{ok, List}，而且这个List的数据远不止一个。明显在设置那个超过3个月的定时任务的时候，<code>ecrn_reg</code>被注册进了脏数据。</p>
+<h3 id="事故重现"><a href="#事故重现" class="headerlink" title="事故重现"></a>事故重现</h3><h4 id="先设置几个正常的定时任务"><a href="#先设置几个正常的定时任务" class="headerlink" title="先设置几个正常的定时任务"></a>先设置几个正常的定时任务</h4><pre><code>&gt; erlcron:cron({{once, 1000}, {io, fwrite, ["Hello, world!~n"]}}).
+&gt; erlcron:cron({{once, 1000}, {io, fwrite, ["Hello, world!~n"]}}).
+&gt; erlcron:cron({{once, 1000}, {io, fwrite, ["Hello, world!~n"]}}).
+</code></pre><p>查看<code>observer:start()</code> 可以看到进程树如下：</p>
+<p><img src="http://i.imgur.com/H4oSaR0.png" alt=""></p>
+<h4 id="再设置一个4294968秒之后的定时任务"><a href="#再设置一个4294968秒之后的定时任务" class="headerlink" title="再设置一个4294968秒之后的定时任务"></a>再设置一个4294968秒之后的定时任务</h4><pre><code>&gt; erlcron:cron({{once, 4294968}, {io, fwrite, ["Hello, world!~n"]}}).
+</code></pre><p>结果就gg了，好多崩溃信息是不是：</p>
+<pre><code>22:49:16.818 [error] CRASH REPORT Process &lt;0.5822.64&gt; with 0 neighbours crashed with reason: timeout_value in gen_server:loop/6 line 358
+22:49:16.818 [error] Supervisor ecrn_cron_sup had child ecrn_agent started with ecrn_agent:start_link(#Ref&lt;0.0.11.11209&gt;, {{once,4294968},{io,fwrite,["Hello, world!~n"]}}) at &lt;0.5822.64&gt; exit with reason timeout_value in context child_terminated
+22:49:16.819 [error] CRASH REPORT Process &lt;0.5701.64&gt; with 0 neighbours crashed with reason: timeout_value in gen_server:loop/6 line 358
+22:49:16.821 [error] Supervisor ecrn_cron_sup had child ecrn_agent started with ecrn_agent:start_link(#Ref&lt;0.0.11.11209&gt;, {{once,4294968},{io,fwrite,["Hello, world!~n"]}}) at &lt;0.5701.64&gt; exit with reason timeout_value in context child_terminated
+22:49:16.821 [error] CRASH REPORT Process &lt;0.6237.64&gt; with 0 neighbours crashed with reason: timeout_value in gen_server:loop/6 line 358
+22:49:16.821 [error] Supervisor ecrn_cron_sup had child ecrn_agent started with ecrn_agent:start_link(#Ref&lt;0.0.11.11209&gt;, {{once,4294968},{io,fwrite,["Hello, world!~n"]}}) at &lt;0.6237.64&gt; exit with reason timeout_value in context child_terminated
+22:49:16.821 [error] CRASH REPORT Process &lt;0.5862.64&gt; with 0 neighbours crashed with reason: timeout_value in gen_server:loop/6 line 358
+22:49:16.821 [error] Supervisor ecrn_cron_sup had child ecrn_agent started with ecrn_agent:start_link(#Ref&lt;0.0.11.11209&gt;, {{once,4294968},{io,fwrite,["Hello, world!~n"]}}) at &lt;0.5862.64&gt; exit with reason timeout_value in context child_terminated
+
+...(总共有25条)
+</code></pre><p>再看一下进程数：</p>
+<p><img src="http://i.imgur.com/TSYo5CH.png" alt=""></p>
+<p>我擦，为毛原来的 scrn_agent 进程也没有了。</p>
+<p>可以发现，erlcron 在尝试了25次设置 这个定时任务之后，也就是 scrn_agent 崩溃了25次之后，原来设置的三个正常的定时任务的scrn_agent 进程也没有掉了。<br>也就是说，不但我新设置的定时任务没有成功，而且我原来正常的定时任务也没有掉了。</p>
+<p>再看一下崩溃日志里面的崩掉的进程号，每一个都是不一样的。可以推算其实原来的报错<code>ecrn_reg:get(AlarmRef)</code>获取到了多个Pid，其实就是这里插入失败的定时任务产生的25个Pid。也就是说，虽然<code>ecrn_agent</code>进程崩溃了，但是<code>ecrn_reg</code>还是保存了这些Pid。所以在取消这些定时任务的时候，<code>ecrn_reg:get(AlarmRef)</code>返回的内容在<code>internal_cancel(AlarmRef)</code>没有被匹配到。</p>
+<h3 id="为什么是4294968，其实是2-32"><a href="#为什么是4294968，其实是2-32" class="headerlink" title="为什么是4294968，其实是2^32"></a>为什么是4294968，其实是2^32</h3><p>为什么设置了<code>4294968</code>秒后的定时任务就崩溃了。这个数估计很多人很熟悉，<code>2^32=4294967296</code>，而<code>4294968000</code>也就是刚好大于<code>2^32</code>。即，如果设置的定时任务超过了<code>2^32</code>毫秒，在<code>erlcron</code>里面就不支持了。</p>
+<p>查看<code>gen_server:loop</code>的源码，找到引起崩溃的代码：</p>
+<p><img src="http://i.imgur.com/w9NJViE.png" alt=""></p>
+<pre><code>loop(Parent, Name, State, Mod, hibernate, Debug) -&gt;
+    proc_lib:hibernate(?MODULE,wake_hib,[Parent, Name, State, Mod, Debug]);
+loop(Parent, Name, State, Mod, Time, Debug) -&gt;
+    Msg = receive
+          Input -&gt;
+            Input
+      after Time -&gt;
+          timeout
+      end,
+    decode_msg(Msg, Parent, Name, State, Mod, Time, Debug, false).
+</code></pre><p>可以发现引起崩溃的，358行是一段<code>receive</code>代码。也就是说<code>receive</code>是不支持超过<code>2^32</code>大小的。</p>
+<p>自测了一下，的确如果<code>receive</code>的<code>after</code>后面如果是大于等于<code>2^32</code>的数值就会出现<code>bad receive timeout value</code>的报错。查看官方解释，已经明确说明不能大于<code>32位</code>大小。</p>
+<blockquote>
+<p>ExprT is to evaluate to an integer. The highest allowed value is 16#FFFFFFFF, that is, the value must fit in 32 bits. receive..after works exactly as receive, except that if no matching message has arrived within ExprT milliseconds, then BodyT is evaluated instead. The return value of BodyT then becomes the return value of the receive..after expression.</p>
+</blockquote>
+<p><em>引用自：<a href="http://erlang.org/doc/reference_manual/expressions.html" target="_blank" rel="external">http://erlang.org/doc/reference_manual/expressions.html</a></em></p>
+<p>再回到<code>erlcron</code>， 在 <code>ecrn_agent:start_link</code>的时候，<code>ecrn_agent:init</code>执行完<code>ecrn_reg:register(JobRef, self())</code>返回<code>{ok, NewState, Millis}</code>到<code>gen_server</code>之后，Millis如果超过<code>2^32</code>在<code>gen_server:loop</code>就会引起<code>gen_server</code>的<code>timeout_value</code>异常退出。</p>
+<pre><code>%% @private
+init([JobRef, Job]) -&gt;
+    State = #state{job=Job,
+                   alarm_ref=JobRef},
+    {DateTime, Actual} = ecrn_control:datetime(),
+    NewState = set_internal_time(State, DateTime, Actual),
+    case until_next_milliseconds(NewState, Job) of
+        {ok, Millis} when is_integer(Millis) -&gt;
+            ecrn_reg:register(JobRef, self()),
+            {ok, NewState, Millis};
+        {error, _}  -&gt;
+            {stop, normal}
+    end.
+</code></pre><h3 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h3><p>这坑踩的，有点郁闷。其实这跟<code>erlcron</code>也没关系，也不是<code>gen_server</code>的问题。而是<code>erlang</code>自身<code>receive</code>不支持2^32引起的。继续往下查其实可以发现，再往下是其它语言写的了。</p>
+<pre><code>-module(prim_eval).
+
+%% This module is simply a stub which abstract code gets included in the result
+%% of compilation of prim_eval.S, to keep Dialyzer happy.
+
+-export([&apos;receive&apos;/2]).
+
+-spec &apos;receive&apos;(fun((term()) -&gt; nomatch | T), timeout()) -&gt; T.
+&apos;receive&apos;(_, _) -&gt;
+    erlang:nif_error(stub).
+</code></pre><p><em>与君共勉</em></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://rondsny.github.io/2016/03/24/701-erlang-erlcron-crash/" data-id="civvr3f4a000cf4gegvvk2btl" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/erlang/">erlang</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-501-raspberrypi-init" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/11/14/501-raspberrypi-init/" class="article-date">
+  <time datetime="2015-11-14T09:15:57.000Z" itemprop="datePublished">2015-11-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/11/14/501-raspberrypi-init/">[linux]树莓派入手体验和系统安装</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><img src="http://i.imgur.com/iAoxxbE.png" alt="树莓派"></p>
+<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>一直想捣鼓点什么东西。当看到树莓派的时候，就是它了。</p>
+<p>树莓派可以安装<code>Linux</code>系统，而我在工作当中，可以说<code>Linux</code>是一半工作环境。树莓派真是个好东西，这个东西应该在我学习<code>linxu/Unix</code>的时候就该接触了。想想大学的时候，在<code>windows</code>下安装虚拟机，安装<code>Linux</code>是件多么痛苦的事情。而且那时的电脑配置也不算高，才2G内存，还要开虚拟机。玩个蛋蛋。</p>
+<p>对<code>Linux</code>也算比较熟吧，入手一个树莓派应该可以玩很多好玩的事情。</p>
+<h3 id="购买硬件"><a href="#购买硬件" class="headerlink" title="购买硬件"></a>购买硬件</h3><p>直接在某宝搜索入手。必须内容：</p>
+<ul>
+<li>树莓派一个（<code>Raspberry Pi 2</code>）</li>
+<li>小usb口电源（5V2A的充电器随便找一个）</li>
+<li>4G或者更大存储空间的SD卡一张（树莓派本身不带存储空间）</li>
+</ul>
+<p>以下非必需： </p>
+<ul>
+<li>散热器三片（风扇什么的觉得也太夸张了）</li>
+<li>无线网卡（本身有网卡入口，所以不是必须的）</li>
+<li>SD卡读卡器（安装系统的时候会用到）</li>
+</ul>
+<p><img src="http://i.imgur.com/0LQEdsC.jpg" alt="树莓派连接外置硬件"></p>
+<h3 id="安装系统"><a href="#安装系统" class="headerlink" title="安装系统"></a>安装系统</h3><p>树莓派得到了各种<code>Linux</code>发行版本的支持，甚至微软在自己的<code>windows 10</code>上也发行了一个支持树莓派的版本。最常见的，还是在树莓派上面安装<code>RASPBIAN</code>和<code>Ubuntu</code>。<code>RASPBIAN</code>是树莓派官方出品基于<code>Debian</code>的<code>Linux</code>系统。也有喜欢在树莓派上面玩<code>windows 10</code>的。相关的系统官方都有提供下载。（<a href="https://www.raspberrypi.org/downloads/" title="https://www.raspberrypi.org/downloads/" target="_blank" rel="external">https://www.raspberrypi.org/downloads/</a>）。</p>
+<p>我本人安装的是官方提供的<code>RASPBIAN</code>系统，基于<code>Debian</code>实现。可以说对<code>Debian</code>比较了解，所以<code>RASPBIAN</code>对我来说是一个比较好的选择。以安装<code>RASPBIAN</code>为例，有多种安装方式。</p>
+<p>树莓派官方推荐的是使用其官方工具<code>NOOBS</code>安装工具。</p>
+<ol>
+<li>下载<code>NOOBS</code>工具（<a href="https://www.raspberrypi.org/downloads/noobs/" title="https://www.raspberrypi.org/downloads/noobs/" target="_blank" rel="external">https://www.raspberrypi.org/downloads/noobs/</a>）；</li>
+<li>下载SD卡格式化工具（<a href="https://www.sdcard.org/downloads/formatter_4/eula_windows/" target="_blank" rel="external">https://www.sdcard.org/downloads/formatter_4/eula_windows/</a>）；<ol>
+<li>安装SD卡格式工具；</li>
+<li>在选项Option里面设置“FORMAT SIZE ADJUSTMENT”为开启ON状态；</li>
+<li>检查SD卡是否插入电脑；</li>
+<li>点击格式化工具的【格式化(Format)】按钮格式化SD卡。</li>
+</ol>
+</li>
+<li>解压NOOBS.zip文件；</li>
+<li>将解压的文件复制到SD卡上面；</li>
+<li>将SD卡插入到树莓派里面；</li>
+<li>接上鼠标、键盘、显示器（这一部非必需）；</li>
+<li>接上网线（无线网卡也可以）、电源，然后就自动开机启动了。</li>
+</ol>
+<p>开机启动后，树莓派会自行安装系统，看sd卡的写的速度时间会不一样，10~60分钟估计就好了。然后就会进入了树莓派的系统界面。至此，算是大功告成了。<br><img src="http://i.imgur.com/pHuni3O.jpg" alt="安装系统"></p>
+<h4 id="关于系统"><a href="#关于系统" class="headerlink" title="关于系统"></a>关于系统</h4><p>树莓派官方系统<code>RASPBIAN</code>是基于<code>Debian</code>修改而来的。所以熟悉<code>Debian</code>和<code>Ubuntu</code>的话，对<code>RASPBIAN</code>是完全没有任何入门门槛的。<code>RASPBIAN</code>使用的是树莓派自己的镜像。其服务器在国外，访问起来可能有速度慢的情况，建议修改成网易的<code>Debian</code>镜像(<a href="http://mirrors.163.com/.help/debian.html)。" target="_blank" rel="external">http://mirrors.163.com/.help/debian.html)。</a><br>编辑/etc/apt/sources.list文件, 在文件最前面添加以下条目(操作前请做好相应备份)</p>
+<pre><code>deb http://mirrors.163.com/debian/ wheezy main non-free contrib
+deb http://mirrors.163.com/debian/ wheezy-updates main non-free contrib
+deb http://mirrors.163.com/debian/ wheezy-backports main non-free contrib
+deb-src http://mirrors.163.com/debian/ wheezy main non-free contrib
+deb-src http://mirrors.163.com/debian/ wheezy-updates main non-free contrib
+deb-src http://mirrors.163.com/debian/ wheezy-backports main non-free contrib
+deb http://mirrors.163.com/debian-security/ wheezy/updates main non-free contrib
+deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free contrib
+</code></pre><p>执行<code>sudo apt-get update</code>更新软件包列表。详细可以查看网易<code>Debian</code>镜像的使用帮助（<a href="http://mirrors.163.com/.help/debian.html）。" target="_blank" rel="external">http://mirrors.163.com/.help/debian.html）。</a></p>
+<h3 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h3><p>树莓派最大的优势在于便宜，而且资料方面也算比较充足。个人觉得最大的价值还是拿来学习Linux的知识。独立的Linux机器，比起虚拟机，给人带来的学习积极性和成就感感觉是完全不一样的。当然，在可玩性方面，树莓派也可以做很多有趣的事情。倒腾飞行器、遥控玩具车、控制家庭电器、控制门禁、制作超级电脑等等。最主要的还是要有兴趣。而我，是想让树莓派来实现一些没有必要使用PC、需要长时间、或者定期任务的执行。</p>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><ul>
+<li><a href="http://mirrors.163.com/.help/debian.html" target="_blank" rel="external">http://mirrors.163.com/.help/debian.html</a></li>
+<li><a href="https://www.raspberrypi.org/help/quick-start-guide/" target="_blank" rel="external">https://www.raspberrypi.org/help/quick-start-guide/</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://rondsny.github.io/2015/11/14/501-raspberrypi-init/" data-id="civvr3f3y0004f4gea53c3v8q" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux-respberrypi/">linux, respberrypi</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-601-ftp-batch-help" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/11/14/601-ftp-batch-help/" class="article-date">
+  <time datetime="2015-11-14T09:15:57.000Z" itemprop="datePublished">2015-11-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/11/14/601-ftp-batch-help/">[windows]快速从ftp下载最新软件包的批处理脚本 </a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>由于敏捷开发，快速迭代，我们项目一天会有三个版本，也就意味着我一天要去获取三次软件包。我负责服务端开发，所以我经常需要去拿最新的客户端。我们的客户端放置在一个公共的ftp上面。每天频繁登陆ftp下载，或者使用ftp工具，每次都要点击同步，都不太方便。如果在linux下就好了，然而在windows也是可以运行脚本的，何不尝试下呢。</p>
+<h3 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h3><pre><code>@echo off
+rem for download file
+rem ftp config 
+rem ip login_name password remote_dir
+
+set &quot;ftp_ip=192.168.0.1&quot;
+set &quot;ftp_user=admin&quot;
+set &quot;ftp_pass=123456&quot;
+set &quot;ftp_path=/&quot;
+
+set &quot;f_tmp=tmp&quot;
+set &quot;f_info=tmp\tmp_info.dat&quot;
+set &quot;f_list=tmp\tmp_list.dat&quot;
+
+rd /s /q pack
+mkdir %f_tmp%
+
+echo open %ftp_ip% &gt; %f_info%
+echo user %ftp_user% &gt;&gt; %f_info%
+echo %ftp_pass%&gt;&gt; %f_info%
+echo prompt &gt;&gt; %f_info%
+echo binary &gt;&gt; %f_info%
+echo cd %ftp_path% &gt;&gt; %f_info%
+echo ls . %f_list% &gt;&gt; %f_info%
+echo lcd %f_tmp% &gt;&gt; %f_info%
+echo disconnect &gt;&gt; %f_info%
+echo bye &gt;&gt; %f_info%
+
+ftp -v -n -s:%f_info%
+
+
+for /f &quot;delims=&quot; %%i in (&apos;type &quot;%f_list%&quot;&apos;) do (
+    set &quot;target_7z=%%i&quot;
+)
+
+echo open %ftp_ip% &gt; %f_info%
+echo user %ftp_user% &gt;&gt; %f_info%
+echo %ftp_pass%&gt;&gt; %f_info%
+echo prompt &gt;&gt; %f_info%
+echo binary &gt;&gt; %f_info%
+echo cd %ftp_path% &gt;&gt; %f_info%
+echo lcd %f_tmp% &gt;&gt; %f_info%
+echo get %target_7z%&gt;&gt; %f_info%
+echo disconnect &gt;&gt; %f_info%
+echo bye &gt;&gt; %f_info%
+
+ftp -v -n -s:%f_info%
+
+call tools\7z\x64\7za.exe x %f_tmp%\%target_7z%
+
+rd /s /q %f_tmp%
+
+exit
+</code></pre><p><img src="http://7xaw5u.com1.z0.glb.clouddn.com/windowsQQ截图20151114170729.png" alt="运行脚本"></p>
+<h3 id="逐步解释"><a href="#逐步解释" class="headerlink" title="逐步解释"></a>逐步解释</h3><h4 id="获取文件列表"><a href="#获取文件列表" class="headerlink" title="获取文件列表"></a>获取文件列表</h4><pre><code>echo open %ftp_ip% &gt; %f_info%
+echo user %ftp_user% &gt;&gt; %f_info%
+echo %ftp_pass%&gt;&gt; %f_info%
+echo prompt &gt;&gt; %f_info%
+echo binary &gt;&gt; %f_info%
+echo cd %ftp_path% &gt;&gt; %f_info%
+echo ls . %f_list% &gt;&gt; %f_info%
+echo lcd %f_tmp% &gt;&gt; %f_info%
+echo disconnect &gt;&gt; %f_info%
+echo bye &gt;&gt; %f_info%
+
+ftp -v -n -s:%f_info%
+</code></pre><p>这部分代码主要有以下几个作用：</p>
+<ol>
+<li>将ftp的命令写入到文件；</li>
+<li>在ftp上获取对应目录的文件列表，并写到本地文件下。</li>
+</ol>
+<h4 id="获取最新的一个文件"><a href="#获取最新的一个文件" class="headerlink" title="获取最新的一个文件"></a>获取最新的一个文件</h4><pre><code>for /f &quot;delims=&quot; %%i in (&apos;type &quot;%f_list%&quot;&apos;) do (
+    set &quot;target_7z=%%i&quot;
+)
+</code></pre><p>然后循环遍历文件列表，最终获取到最后一个列表（也就是最新的文件名）。</p>
+<h4 id="下载最新文件"><a href="#下载最新文件" class="headerlink" title="下载最新文件"></a>下载最新文件</h4><pre><code>echo open %ftp_ip% &gt; %f_info%
+echo user %ftp_user% &gt;&gt; %f_info%
+echo %ftp_pass%&gt;&gt; %f_info%
+echo prompt &gt;&gt; %f_info%
+echo binary &gt;&gt; %f_info%
+echo cd %ftp_path% &gt;&gt; %f_info%
+echo lcd %f_tmp% &gt;&gt; %f_info%
+echo get %target_7z%&gt;&gt; %f_info%
+echo disconnect &gt;&gt; %f_info%
+echo bye &gt;&gt; %f_info%
+
+ftp -v -n -s:%f_info%
+</code></pre><p>有了文件名，我们就可以再执行一次ftp命令，下载我们最新的文件了。以上就实现了动态下载最新文件了。</p>
+<h4 id="解压"><a href="#解压" class="headerlink" title="解压"></a>解压</h4><p>这边我们使用的软件包是7z打包的。所以也要下载7z解压工具。<br>官方地址：<a href="http://www.7-zip.org/" target="_blank" rel="external">http://www.7-zip.org/</a><br>然后下载到命令行版，放置到任意可读取目录就可以了。</p>
+<pre><code>call tools\7z\x64\7za.exe x %f_tmp%\%target_7z%
+</code></pre><h3 id="后话"><a href="#后话" class="headerlink" title="后话"></a>后话</h3><p>平常习惯了在linux下倒腾。可以写些脚本做些繁琐的事情，但是在windows经常就傻眼了。可视化的东西是有很多好处，但是也有些弊端。批处理脚本虽然不好用，但也并不是不可用。很多时候也可以带来很大的方便。当然会python、ruby这些脚本语言其实也是完全可以满足的。毕竟现在这年头批处理这种东西用的越来越少了。<code>windows shell</code>也可以，但是感觉也不太好用。</p>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><ul>
+<li><a href="http://occool.com/2012/03/【转载】命令行压缩解压7z/" target="_blank" rel="external">http://occool.com/2012/03/【转载】命令行压缩解压7z/</a></li>
+<li><a href="http://www.robvanderwoude.com/ftp.php" target="_blank" rel="external">http://www.robvanderwoude.com/ftp.php</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://rondsny.github.io/2015/11/14/601-ftp-batch-help/" data-id="civvr3f450008f4ge1n98mqx7" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/windows/">windows</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-401-deploy-tmux" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/04/28/401-deploy-tmux/" class="article-date">
+  <time datetime="2015-04-28T10:27:54.000Z" itemprop="datePublished">2015-04-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/04/28/401-deploy-tmux/">CentOS下安装和使用tmux</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>前天随意点开博客园，看到了一篇关于tmux的文章 <a href="http://cenalulu.github.io/linux/tmux/" target="_blank" rel="external">Tmux - Linux从业者必备利器</a>，特意还点进去看了。毕竟Linux对于做游戏服务端开发的我来说，太熟悉不过了。不过我就粗略地看了一眼，就关掉了。直到第二天<code>码农周刊</code>就推荐了这篇文章，才引起我真正的关注。<code>tmux</code>真的那么好用吗？所以我自己也倒腾来一遍，的确在许多场景下还是非常有用的。如：</p>
+<ul>
+<li>做服务器的，肯定需要关注性能的，而tmux多个pane可以很方便同时关注多项性能指标；</li>
+<li>我们的游戏服刚好有多个服务存在，而联调多个服务的时候，可以同时看到多个控制台确实很方便。</li>
+</ul>
+<p>以上并不是其它方式不可以，譬如我用xshell的，同时看多个xshell可以达到相同的效果。但切换的时候还是有些不方便。 因为环境不同，原作者用Mac，而我用CentOS，有些地方存在不一样，故记载方便自己以后查阅。</p>
+<h3 id="CentOS下安装"><a href="#CentOS下安装" class="headerlink" title="CentOS下安装"></a>CentOS下安装</h3><p>首先我是用<code>yum install tmux</code>尝试安装的。估计没有源，没有找到tmux。所以习惯性直接找源代码安装。<br>但是其中有依赖，需要先安装<code>libevent</code>。</p>
+<pre><code>wget https://github.com/downloads/libevent/libevent/libevent-2.0.21-stable.tar.gz
+tar xzvf libevent-2.0.21-stable.tar.gz
+cd libevent-2.0.21-stable
+./configure &amp;&amp; make
+make install
+</code></pre><p>然后再下载源码安装tmux</p>
+<pre><code>git clone git://git.code.sf.net/p/tmux/tmux-code tmux
+cd tmux
+sh autogen.sh
+./configure &amp;&amp; make
+make install
+</code></pre><p>过程中遇到了两个报错，解决都比较简单，当然是查阅资料后。</p>
+<h4 id="问题1："><a href="#问题1：" class="headerlink" title="问题1："></a>问题1：</h4><p>期间我遇到了执行autogen.sh 报错，原因是我没有安装automake。这个直接<code>yum install automake</code>就简单解决了。</p>
+<h4 id="问题2："><a href="#问题2：" class="headerlink" title="问题2："></a>问题2：</h4><p>执行的时候遇到</p>
+<pre><code>libevent-2.0.so.5: cannot open shared object file: No such file or directory
+</code></pre><p>的报错，解决办法也比较简单，既然找不到，那就换个找得到的地方呗。</p>
+<pre><code>ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib/libevent-2.0.so.5     # 32位系统
+ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系统
+</code></pre><h3 id="使用和快捷键"><a href="#使用和快捷键" class="headerlink" title="使用和快捷键"></a>使用和快捷键</h3><p>直接在命令行输入tmux即可进入tmux的模式。</p>
+<p>tmux主要有windows窗体操作和Pane操作，个人觉得windows对于我来说，意义不大(并不是说windows模式没适用场景)，所以这里主要讲下Pane的相关操作。</p>
+<h4 id="快捷键"><a href="#快捷键" class="headerlink" title="快捷键"></a>快捷键</h4><p>tmux的快捷键都要先按<code>C-b(Ctrl-b)</code>。然后再按下面表格内容，才能达到相应的效果。</p>
+<h4 id="session和其他相关快捷键"><a href="#session和其他相关快捷键" class="headerlink" title="session和其他相关快捷键"></a>session和其他相关快捷键</h4><table>
+<thead>
+<tr>
+<th style="text-align:center">快捷键</th>
+<th style="text-align:left">功能      </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"> C-z</td>
+<td style="text-align:left">关闭tmux.</td>
+</tr>
+<tr>
+<td style="text-align:center"> :</td>
+<td style="text-align:left">进入tmux命令行模式.</td>
+</tr>
+<tr>
+<td style="text-align:center"> ?</td>
+<td style="text-align:left">列出所有快捷键.</td>
+</tr>
+<tr>
+<td style="text-align:center"> t</td>
+<td style="text-align:left"><strong>显示时间.</strong></td>
+</tr>
+<tr>
+<td style="text-align:center"> d</td>
+<td style="text-align:left">退出当前tmux客户端，tmux后台运行.</td>
+</tr>
+<tr>
+<td style="text-align:center"></td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:center"> $</td>
+<td style="text-align:left">重命名当前session.</td>
+</tr>
+<tr>
+<td style="text-align:center"> s</td>
+<td style="text-align:left"><strong>切换session 显示所有session并切换到某一个session.</strong></td>
+</tr>
+<tr>
+<td style="text-align:center"> (</td>
+<td style="text-align:left">切换session 切换到上一个session.</td>
+</tr>
+<tr>
+<td style="text-align:center"> )</td>
+<td style="text-align:left">切换session 切换到下一个session.</td>
+</tr>
+<tr>
+<td style="text-align:center"> L</td>
+<td style="text-align:left">切换session 到前一个活跃的session.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="window相关快捷键"><a href="#window相关快捷键" class="headerlink" title="window相关快捷键"></a>window相关快捷键</h4><table>
+<thead>
+<tr>
+<th style="text-align:center">快捷键</th>
+<th style="text-align:left">功能      </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"> c</td>
+<td style="text-align:left"><strong>新增一个window.</strong></td>
+</tr>
+<tr>
+<td style="text-align:center"> &amp;</td>
+<td style="text-align:left">退出当前window.</td>
+</tr>
+<tr>
+<td style="text-align:center"> ,</td>
+<td style="text-align:left">重命名当前window.</td>
+</tr>
+<tr>
+<td style="text-align:center"> l</td>
+<td style="text-align:left">跳转到上一个所在window.</td>
+</tr>
+<tr>
+<td style="text-align:center"></td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:center"> i</td>
+<td style="text-align:left">显示当前window的信息.</td>
+</tr>
+<tr>
+<td style="text-align:center"> w</td>
+<td style="text-align:left"><strong>切换window 显示所有window并切换window.</strong></td>
+</tr>
+<tr>
+<td style="text-align:center"> 0 to 9</td>
+<td style="text-align:left">切换window 到相应编号的window.</td>
+</tr>
+<tr>
+<td style="text-align:center"> p</td>
+<td style="text-align:left">切换window 上一个window.</td>
+</tr>
+<tr>
+<td style="text-align:center"> n</td>
+<td style="text-align:left">切换window 下一个window.</td>
+</tr>
+<tr>
+<td style="text-align:center"> ’</td>
+<td style="text-align:left">切换window 到输入编号的window.</td>
+</tr>
+<tr>
+<td style="text-align:center"> f</td>
+<td style="text-align:left">切换window 到搜索到的window.</td>
+</tr>
+<tr>
+<td style="text-align:center"> Space</td>
+<td style="text-align:left">改变当前window下的pane布局.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="pane相关快捷键"><a href="#pane相关快捷键" class="headerlink" title="pane相关快捷键"></a>pane相关快捷键</h4><table>
+<thead>
+<tr>
+<th style="text-align:center">快捷键</th>
+<th style="text-align:left">功能      </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"> !</td>
+<td style="text-align:left"><strong>从window移除当前pane.</strong></td>
+</tr>
+<tr>
+<td style="text-align:center"> “</td>
+<td style="text-align:left"><strong>将当前pane变成上下两个pane.</strong></td>
+</tr>
+<tr>
+<td style="text-align:center"> %</td>
+<td style="text-align:left"><strong>将当前pane变成左右两个pane.</strong></td>
+</tr>
+<tr>
+<td style="text-align:center"> x</td>
+<td style="text-align:left"><strong>关闭当前pane.</strong></td>
+</tr>
+<tr>
+<td style="text-align:center"> q</td>
+<td style="text-align:left">显示pane的索引.</td>
+</tr>
+<tr>
+<td style="text-align:center"> z</td>
+<td style="text-align:left"><strong>最大化或者恢复当前pane.</strong></td>
+</tr>
+<tr>
+<td style="text-align:center"> {</td>
+<td style="text-align:left">跟前一个pane交换位置.</td>
+</tr>
+<tr>
+<td style="text-align:center"> }</td>
+<td style="text-align:left">跟后一个pane交换位置.</td>
+</tr>
+<tr>
+<td style="text-align:center"> o</td>
+<td style="text-align:left">切换Pane 到下一个pane.</td>
+</tr>
+<tr>
+<td style="text-align:center"> ;</td>
+<td style="text-align:left"><strong>切换Pane 进入到前一个操作过的pane.</strong></td>
+</tr>
+<tr>
+<td style="text-align:center"> Up, Down Left, Right</td>
+<td style="text-align:left">切换Pane 使用方向键切换到相应方向的pane.</td>
+</tr>
+</tbody>
+</table>
+<p>可能有些快捷键有些出入，可以的话提醒下。另外有些快捷键没有搞懂，而且快捷键比较多，个人觉得记得主要的几个切换快捷键就足够用来。比较tmux只是一个协助工具，没有必要在其上面那么用心。加粗的是个人觉得比较实用的。</p>
+<p>tmux不中断session的模式确实很666666，每次连回去就可以快速接上上次结束的环境。而且多个pane也非常适合要开启并监控多个服务的情况。</p>
+<p><img src="http://i.imgur.com/guRsWo3.png" alt="多个pane例子"></p>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><ol>
+<li><a href="http://cenalulu.github.io/linux/tmux/" title="Tmux - Linux从业者必备利器" target="_blank" rel="external">http://cenalulu.github.io/linux/tmux/</a></li>
+<li><a href="http://elroyjetson.org/dev-notes/centos/installing-tmux-on-centos-6-2" title="Installing tmux on CentOS 6.2" target="_blank" rel="external">http://elroyjetson.org/dev-notes/centos/installing-tmux-on-centos-6-2</a></li>
+<li><a href="http://www.nigeldunn.com/2011/12/11/libevent-2-0-so-5-cannot-open-shared-object-file-no-such-file-or-directory/" title="libevent-2.0.so.5: cannot open shared object file: No such file or directory" target="_blank" rel="external">http://www.nigeldunn.com/2011/12/11/libevent-2-0-so-5-cannot-open-shared-object-file-no-such-file-or-directory/</a></li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://rondsny.github.io/2015/04/28/401-deploy-tmux/" data-id="civvr3f3x0003f4ge8x47g89b" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/centos/">centos</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux-tools/">linux tools</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-301-how-to-set-svn-ignore" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/03/17/301-how-to-set-svn-ignore/" class="article-date">
+  <time datetime="2015-03-17T10:35:20.000Z" itemprop="datePublished">2015-03-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/03/17/301-how-to-set-svn-ignore/">如何在linux设置svn忽略列表</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="管理属性变量的命令"><a href="#管理属性变量的命令" class="headerlink" title="管理属性变量的命令"></a>管理属性变量的命令</h3><p>svn客户端有个属性<code>ignore</code> 用于保存忽略的文件或者目录。除此之外，svn其实有好多属性变量用来自定义，如在windows下svn客户端里面属性截图：<br><img src="/images/301-01.png" alt="windows svn" title="windows svn"></p>
+<p>但是在linux 下，不可像windows那样有可视化界面进行管理。<br>执行svn help 命令可以知道有五个命令用于管理svn 属性变量。</p>
+<pre><code>propdel (pdel, pd)                # 删除属性
+propedit (pedit, pe)              # 编辑属性
+propget (pget, pg)                # 获取属性的值
+proplist (plist, pl)              # 列出所有的属性
+propset (pset, ps)                # 设置属性的值
+</code></pre><p>那么有这几个命令，想要编辑<code>svn:ignore</code> 变量还不轻而易举。</p>
+<h3 id="方法1："><a href="#方法1：" class="headerlink" title="方法1："></a>方法1：</h3><p>首先要给SVN指定默认的编辑器，如下。当然改成其它编辑器也可以。</p>
+<ul>
+<li><code>export SVN_EDITOR=/usr/bin/vim</code> 已经设置的话，可以忽略这一步</li>
+<li><code>svn propedit svn:ignore [目录]</code></li>
+</ul>
+<p>然后可以在vim编辑器中写上需要过滤的目录或者文件。换行隔开，据说空格也可以，但是我没有试过。</p>
+<h3 id="方法2："><a href="#方法2：" class="headerlink" title="方法2："></a>方法2：</h3><p>除了propedit可以设置，当然propset 也可以设置。<br><img src="/images/301-02.png" alt="svn propset" title="svn propset"><br>图片表示将pet目录下的xg_pet.erl文件加入到忽略列表。</p>
+<h3 id="属性变量文件"><a href="#属性变量文件" class="headerlink" title="属性变量文件"></a>属性变量文件</h3><p>在当前目录，有一个<code>.svn</code> 目录。当有属性变量的时候，<code>.svn</code>目录会生成一个<code>dir-props</code>文件用来保存属性变量，如下：<br><img src="/images/301-03.png" alt="svn properties file" title=".svn/dir-props"></p>
+<h3 id="查看状态"><a href="#查看状态" class="headerlink" title="查看状态"></a>查看状态</h3><p>另外说一个linux下很常用的命令。相当于windows下commit的时候出现的文件列表。而linux下需要用<code>svn status</code>来查看。<br><code>svn status/svn st/svn stat</code></p>
+<p>延伸一下，下面两个命令：</p>
+<ul>
+<li><code>svn st | grep ^? | sed &#39;s/?    //&#39; | xargs svn add</code>  增加尚未增加到svn的文件</li>
+<li><code>svn st | grep ^! | sed &#39;s/!    //&#39; | xargs svn rm</code>    删除svn里面已经不存在的文件（本地尚存）</li>
+</ul>
+<p>当然避免误操作，我经常先执行<code>svn st | grep ^? | sed &#39;s/?    //&#39;</code> 先确认下文件列表。<br><img src="/images/301-04.png" alt="svn skill" title="svn skill"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://rondsny.github.io/2015/03/17/301-how-to-set-svn-ignore/" data-id="civvr3f410005f4gecf2hwgmc" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/">linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/svn/">svn</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-202-add-rss-sitemap-in-hexo" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/03/12/202-add-rss-sitemap-in-hexo/" class="article-date">
+  <time datetime="2015-03-12T07:28:01.000Z" itemprop="datePublished">2015-03-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/03/12/202-add-rss-sitemap-in-hexo/">在hexo内添加RSS和sitemap</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="一、添加RSS"><a href="#一、添加RSS" class="headerlink" title="一、添加RSS"></a>一、添加RSS</h3><p>博客来说，RSS的重要性可想而知。</p>
+<h4 id="1-安装hexo-rss插件"><a href="#1-安装hexo-rss插件" class="headerlink" title="1. 安装hexo rss插件"></a>1. 安装hexo rss插件</h4><p>hexo提供了生成RSS xml的插件<code>hexo-generator-feed</code>，执行<code>npm install hexo-generator-feed</code>即可。</p>
+<h4 id="2-配置"><a href="#2-配置" class="headerlink" title="2. 配置"></a>2. 配置</h4><p>编辑<code>blog/_config.yml</code>文件。在里面添加查看配置，如下</p>
+<pre><code>plugins: 
+  hexo-generator-feed
+</code></pre><p>还要修改主题的配置文件<code>blog/theme/_config.yml</code>。在rss里面配置<code>rss: /atom.xml</code>。在菜单里面添加RSS菜单。</p>
+<pre><code>menu: 
+  Home: / 
+  Archives: /archives 
+  Rss: /atom.xml
+</code></pre><h3 id="二、添加sitemap"><a href="#二、添加sitemap" class="headerlink" title="二、添加sitemap"></a>二、添加sitemap</h3><p>当关注seo的时候，sitemap也同样重要。</p>
+<h4 id="1-安装hexo-sitemap插件"><a href="#1-安装hexo-sitemap插件" class="headerlink" title="1. 安装hexo sitemap插件"></a>1. 安装hexo sitemap插件</h4><p>同样，执行命令<code>npm install hexo-generator-sitemap</code>即可完成插件的安装。</p>
+<h4 id="2-配置-1"><a href="#2-配置-1" class="headerlink" title="2. 配置"></a>2. 配置</h4><p>一样修改<code>blog/_config.yml</code>文件，添加上插件名称</p>
+<pre><code>plugins: 
+  hexo-generator-feed
+  hexo-generator-sitemap 
+</code></pre><h3 id="三、其它"><a href="#三、其它" class="headerlink" title="三、其它"></a>三、其它</h3><p>其实两个插件是在<code>hexo g</code>的时候生成atom.xml 文件和sitemap.xml 文件。由于sitemap.xml 是对搜索引擎服务的，所以不需要显示在博客里面。而Rss是要给读者收藏的，需要在菜单里面添加显示。当然你不喜欢在菜单里面显示可以直接修改模板显示在你喜欢的地方。如编辑<code>blog/theme/[light]/layout/_partial/header.ejs</code>文件：</p>
+<pre><code>&lt;ul&gt;
+&lt;% for (var i in theme.menu){ %&gt;
+  &lt;li&gt;&lt;a href=&quot;&lt;%- theme.menu[i] %&gt;&quot;&gt;&lt;%= i %&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;% } %&gt;
+&lt;li&gt;&lt;a href=&quot;/atom.xml&quot;&gt;RSS&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</code></pre><p>可以不配置menu达到相同的效果。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://rondsny.github.io/2015/03/12/202-add-rss-sitemap-in-hexo/" data-id="civvr3f3t0001f4geet29b8xz" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-201-deploy-hexo-github" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/03/06/201-deploy-hexo-github/" class="article-date">
+  <time datetime="2015-03-06T07:16:57.000Z" itemprop="datePublished">2015-03-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/03/06/201-deploy-hexo-github/">搭载hexo+github博客系统</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="一、安装-Node-js"><a href="#一、安装-Node-js" class="headerlink" title="一、安装 Node.js"></a>一、安装 Node.js</h3><p>在官网 <a href="http://nodejs.org/" target="_blank" rel="external">http://nodejs.org/</a> 下载winwos版本，点击安装完成即可。</p>
+<h3 id="二、git环境安装"><a href="#二、git环境安装" class="headerlink" title="二、git环境安装"></a>二、git环境安装</h3><p>对于git的安装，网上已经大量资料，就不赘述了。</p>
+<h3 id="三、安装-hexo"><a href="#三、安装-hexo" class="headerlink" title="三、安装 hexo"></a>三、安装 hexo</h3><p>启动cmd，输入命令<code>npm install hexo-cli -g</code> 即可完成hexo的安装。</p>
+<h3 id="四、初始化博客"><a href="#四、初始化博客" class="headerlink" title="四、初始化博客"></a>四、初始化博客</h3><p>随便找一个目录。在cmd里面执行命令<code>hexo init blog</code> (blog为文件夹名称，与github的项目名称一致)。<br><code>cd blog</code>进入目录。执行<code>hexo g</code>和<code>hexo s</code>就可以生成静态html文件和启动一个http服务器。<br>按照提示，访问 <a href="http://127.0.0.1:4000/" target="_blank" rel="external">http://127.0.0.1:4000/</a> 就可以看到一个博客网站了。</p>
+<pre><code>hexo init blog
+hexo generate     # hexo g
+hexo server       # hexo s
+</code></pre><h3 id="五、配置和发布到github"><a href="#五、配置和发布到github" class="headerlink" title="五、配置和发布到github"></a>五、配置和发布到github</h3><p>编辑 <code>_config.yml</code> 文件。在<code>deploy</code>字段配置以下内容</p>
+<pre><code>deploy:
+  type: git
+  repo: git@github.com:rondsny/blog.git
+</code></pre><p><code>git@github.com:rondsny/blog.git</code> 是在github上面托管博客的项目地址。譬如我的github 是<a href="http://github.com/rondsny/" target="_blank" rel="external">http://github.com/rondsny/</a> 然后我建立用于托管的项目是<code>blog</code>。</p>
+<p>执行命令 <code>hexo deploy</code> 或 <code>hexo d</code> 就可以将博客发布到github上面。</p>
+<p>访问 <a href="http://rondsny.github.io/blog/" target="_blank" rel="external">http://rondsny.github.io/blog/</a> 就可以看到效果了。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://rondsny.github.io/2015/03/06/201-deploy-hexo-github/" data-id="civvr3f3p0000f4geikoq2fu6" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-My-New-Post" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/03/05/My-New-Post/" class="article-date">
+  <time datetime="2015-03-05T03:49:47.000Z" itemprop="datePublished">2015-03-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/03/05/My-New-Post/">My New Post</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>学习使用github+hexo 搭载个人博客。需要的是折腾，其实没有多难。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://rondsny.github.io/2015/03/05/My-New-Post/" data-id="civvr3f460009f4geld60ufi0" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/03/04/hello-world/" class="article-date">
+  <time datetime="2015-03-03T16:00:00.000Z" itemprop="datePublished">2015-03-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/03/04/hello-world/">Hello World</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Welcome to <a href="http://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="http://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="http://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo new <span class="string">"My New Post"</span></div></pre></td></tr></table></figure>
+<p>More info: <a href="http://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo server</div></pre></td></tr></table></figure>
+<p>More info: <a href="http://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo generate</div></pre></td></tr></table></figure>
+<p>More info: <a href="http://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo deploy</div></pre></td></tr></table></figure>
+<p>More info: <a href="http://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://rondsny.github.io/2015/03/04/hello-world/" data-id="civvr3f4b000df4ge2537wrgd" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/centos/">centos</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/erlang/">erlang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux-tools/">linux tools</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux-respberrypi/">linux, respberrypi</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svn/">svn</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/centos/" style="font-size: 10px;">centos</a> <a href="/tags/erlang/" style="font-size: 10px;">erlang</a> <a href="/tags/hexo/" style="font-size: 20px;">hexo</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/linux-tools/" style="font-size: 10px;">linux tools</a> <a href="/tags/linux-respberrypi/" style="font-size: 10px;">linux, respberrypi</a> <a href="/tags/svn/" style="font-size: 10px;">svn</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/03/">三月 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/03/24/701-erlang-erlcron-crash/">[erlang]一次erlcron崩溃引起的事故分析</a>
+          </li>
+        
+          <li>
+            <a href="/2015/11/14/501-raspberrypi-init/">[linux]树莓派入手体验和系统安装</a>
+          </li>
+        
+          <li>
+            <a href="/2015/11/14/601-ftp-batch-help/">[windows]快速从ftp下载最新软件包的批处理脚本 </a>
+          </li>
+        
+          <li>
+            <a href="/2015/04/28/401-deploy-tmux/">CentOS下安装和使用tmux</a>
+          </li>
+        
+          <li>
+            <a href="/2015/03/17/301-how-to-set-svn-ignore/">如何在linux设置svn忽略列表</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 Ron_N<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
