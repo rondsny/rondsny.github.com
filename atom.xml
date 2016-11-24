@@ -1,17 +1,28 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="author" content="Ron_N"><meta name="description" content="Ron_N's Blog"><title>Ron Ngai</title><link rel="icon" href="/favicon.ico"><link rel="canonical" href="http://rondsny.github.io/"><link rel="alternate" href="/atom.xml" title="Ron Ngai"><link rel="stylesheet" href="/css/style.css"><script type="text/javascript">var _hmt = _hmt || [];
-(function() {
-  var hm = document.createElement("script");
-  hm.src = "//hm.baidu.com/hm.js?Your baidu Analytics ID";
-  var s = document.getElementsByTagName("script")[0]; 
-  s.parentNode.insertBefore(hm, s);
-})();
-</script><script type="text/javascript">(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-ga('create', 'Your Google Analytics ID', 'auto');
-ga('send', 'pageview');</script></head><body><div id="main"><header><a href="/." class="logo">Ron Ngai</a><ul class="nav"><li class="nav-link"><a href="/" class="active">Home</a></li><li class="nav-link"><a href="/archives/" target="_self">Archives</a></li></ul></header><section id="container"><ul class="home"><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2016/03/24/701-erlang-erlcron-crash/" class="post-link">[erlang]一次erlcron崩溃引起的事故分析</a></h2><span class="post-time">2016年3月24日</span><div class="post-content"><h3 id="事故背景"><a href="#事故背景" class="headerlink" title="事故背景"></a>事故背景</h3><p>由于误操作在<code>erlcron</code>设置了一个超过3个月后的定时任务。然后第二天之后发现每天的daily reset没有被执行，一些定时任务也没有被执行。瞬间感觉整个人都不好了，怎么无端端就不执行了呢。</p>
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Ron Ngai</title>
+  <subtitle>养猫的程序猿</subtitle>
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://rondsny.github.io/"/>
+  <updated>2016-03-24T05:42:26.709Z</updated>
+  <id>http://rondsny.github.io/</id>
+  
+  <author>
+    <name>Ron_N</name>
+    
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>[erlang]一次erlcron崩溃引起的事故分析</title>
+    <link href="http://rondsny.github.io/2016/03/24/701-erlang-erlcron-crash/"/>
+    <id>http://rondsny.github.io/2016/03/24/701-erlang-erlcron-crash/</id>
+    <published>2016-03-24T05:34:57.000Z</published>
+    <updated>2016-03-24T05:42:26.709Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="事故背景"><a href="#事故背景" class="headerlink" title="事故背景"></a>事故背景</h3><p>由于误操作在<code>erlcron</code>设置了一个超过3个月后的定时任务。然后第二天之后发现每天的daily reset没有被执行，一些定时任务也没有被执行。瞬间感觉整个人都不好了，怎么无端端就不执行了呢。</p>
 <p>通过排查日志，发现了以下报错：</p>
 <pre><code>2016-03-22 16:54:32.014 [error] gen_server ecrn_control terminated with reason: no case clause matching {ok,[&lt;0.14123.1577&gt;,&lt;0.13079.1576&gt;,&lt;0.25254.1569&gt;,&lt;0.13402.1577&gt;,...]} in ecrn_control:internal_cancel/1 line 111
 2016-03-22 16:54:32.015 [error] CRASH REPORT Process ecrn_control with 0 neighbours exited with reason: no case clause matching {ok,[&lt;0.14123.1577&gt;,&lt;0.13079.1576&gt;,&lt;0.25254.1569&gt;,&lt;0.13402.1577&gt;,...]} in ecrn_control:internal_cancel/1 line 111 in gen_server:terminate/6 line 744
@@ -92,7 +103,27 @@ init([JobRef, Job]) -&gt;
 &apos;receive&apos;(_, _) -&gt;
     erlang:nif_error(stub).
 </code></pre><p><em>与君共勉</em></p>
-</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/11/14/501-raspberrypi-init/" class="post-link">[linux]树莓派入手体验和系统安装</a></h2><span class="post-time">2015年11月14日</span><div class="post-content"><p><img src="http://i.imgur.com/iAoxxbE.png" alt="树莓派"></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;事故背景&quot;&gt;&lt;a href=&quot;#事故背景&quot; class=&quot;headerlink&quot; title=&quot;事故背景&quot;&gt;&lt;/a&gt;事故背景&lt;/h3&gt;&lt;p&gt;由于误操作在&lt;code&gt;erlcron&lt;/code&gt;设置了一个超过3个月后的定时任务。然后第二天之后发现每天的daily r
+    
+    </summary>
+    
+    
+      <category term="erlang" scheme="http://rondsny.github.io/tags/erlang/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>[linux]树莓派入手体验和系统安装</title>
+    <link href="http://rondsny.github.io/2015/11/14/501-raspberrypi-init/"/>
+    <id>http://rondsny.github.io/2015/11/14/501-raspberrypi-init/</id>
+    <published>2015-11-14T09:15:57.000Z</published>
+    <updated>2016-11-24T06:41:29.505Z</updated>
+    
+    <content type="html"><![CDATA[<p><img src="http://i.imgur.com/iAoxxbE.png" alt="树莓派"></p>
 <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>一直想捣鼓点什么东西。当看到树莓派的时候，就是它了。</p>
 <p>树莓派可以安装<code>Linux</code>系统，而我在工作当中，可以说<code>Linux</code>是一半工作环境。树莓派真是个好东西，这个东西应该在我学习<code>linxu/Unix</code>的时候就该接触了。想想大学的时候，在<code>windows</code>下安装虚拟机，安装<code>Linux</code>是件多么痛苦的事情。而且那时的电脑配置也不算高，才2G内存，还要开虚拟机。玩个蛋蛋。</p>
 <p>对<code>Linux</code>也算比较熟吧，入手一个树莓派应该可以玩很多好玩的事情。</p>
@@ -143,7 +174,30 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
 <li><a href="http://mirrors.163.com/.help/debian.html" target="_blank" rel="external">http://mirrors.163.com/.help/debian.html</a></li>
 <li><a href="https://www.raspberrypi.org/help/quick-start-guide/" target="_blank" rel="external">https://www.raspberrypi.org/help/quick-start-guide/</a></li>
 </ul>
-</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/11/14/601-ftp-batch-help/" class="post-link">[windows]快速从ftp下载最新软件包的批处理脚本 </a></h2><span class="post-time">2015年11月14日</span><div class="post-content"><h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>由于敏捷开发，快速迭代，我们项目一天会有三个版本，也就意味着我一天要去获取三次软件包。我负责服务端开发，所以我经常需要去拿最新的客户端。我们的客户端放置在一个公共的ftp上面。每天频繁登陆ftp下载，或者使用ftp工具，每次都要点击同步，都不太方便。如果在linux下就好了，然而在windows也是可以运行脚本的，何不尝试下呢。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;img src=&quot;http://i.imgur.com/iAoxxbE.png&quot; alt=&quot;树莓派&quot;&gt;&lt;/p&gt;
+&lt;h3 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h3&gt;&lt;p&gt;一直想捣鼓点什么东西
+    
+    </summary>
+    
+    
+      <category term="linux" scheme="http://rondsny.github.io/tags/linux/"/>
+    
+      <category term="respberrypi" scheme="http://rondsny.github.io/tags/respberrypi/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>[windows]快速从ftp下载最新软件包的批处理脚本 </title>
+    <link href="http://rondsny.github.io/2015/11/14/601-ftp-batch-help/"/>
+    <id>http://rondsny.github.io/2015/11/14/601-ftp-batch-help/</id>
+    <published>2015-11-14T09:15:57.000Z</published>
+    <updated>2015-11-14T09:15:30.791Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>由于敏捷开发，快速迭代，我们项目一天会有三个版本，也就意味着我一天要去获取三次软件包。我负责服务端开发，所以我经常需要去拿最新的客户端。我们的客户端放置在一个公共的ftp上面。每天频繁登陆ftp下载，或者使用ftp工具，每次都要点击同步，都不太方便。如果在linux下就好了，然而在windows也是可以运行脚本的，何不尝试下呢。</p>
 <h3 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h3><pre><code>@echo off
 rem for download file
 rem ftp config 
@@ -239,7 +293,27 @@ ftp -v -n -s:%f_info%
 <li><a href="http://occool.com/2012/03/【转载】命令行压缩解压7z/" target="_blank" rel="external">http://occool.com/2012/03/【转载】命令行压缩解压7z/</a></li>
 <li><a href="http://www.robvanderwoude.com/ftp.php" target="_blank" rel="external">http://www.robvanderwoude.com/ftp.php</a></li>
 </ul>
-</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/04/28/401-deploy-tmux/" class="post-link">[linux]CentOS下安装和使用tmux</a></h2><span class="post-time">2015年4月28日</span><div class="post-content"><p>前天随意点开博客园，看到了一篇关于tmux的文章 <a href="http://cenalulu.github.io/linux/tmux/" target="_blank" rel="external">Tmux - Linux从业者必备利器</a>，特意还点进去看了。毕竟Linux对于做游戏服务端开发的我来说，太熟悉不过了。不过我就粗略地看了一眼，就关掉了。直到第二天<code>码农周刊</code>就推荐了这篇文章，才引起我真正的关注。<code>tmux</code>真的那么好用吗？所以我自己也倒腾来一遍，的确在许多场景下还是非常有用的。如：</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h3&gt;&lt;p&gt;由于敏捷开发，快速迭代，我们项目一天会有三个版本，也就意味着我一天要去获取三次软件包。我负责服务端开发，所以我经常需要去拿最新的客户端。我们
+    
+    </summary>
+    
+    
+      <category term="windows" scheme="http://rondsny.github.io/tags/windows/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>[linux]CentOS下安装和使用tmux</title>
+    <link href="http://rondsny.github.io/2015/04/28/401-deploy-tmux/"/>
+    <id>http://rondsny.github.io/2015/04/28/401-deploy-tmux/</id>
+    <published>2015-04-28T10:27:54.000Z</published>
+    <updated>2016-11-24T06:48:36.264Z</updated>
+    
+    <content type="html"><![CDATA[<p>前天随意点开博客园，看到了一篇关于tmux的文章 <a href="http://cenalulu.github.io/linux/tmux/" target="_blank" rel="external">Tmux - Linux从业者必备利器</a>，特意还点进去看了。毕竟Linux对于做游戏服务端开发的我来说，太熟悉不过了。不过我就粗略地看了一眼，就关掉了。直到第二天<code>码农周刊</code>就推荐了这篇文章，才引起我真正的关注。<code>tmux</code>真的那么好用吗？所以我自己也倒腾来一遍，的确在许多场景下还是非常有用的。如：</p>
 <ul>
 <li>做服务器的，肯定需要关注性能的，而tmux多个pane可以很方便同时关注多项性能指标；</li>
 <li>我们的游戏服刚好有多个服务存在，而联调多个服务的时候，可以同时看到多个控制台确实很方便。</li>
@@ -445,7 +519,31 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
 <li><a href="http://elroyjetson.org/dev-notes/centos/installing-tmux-on-centos-6-2" title="Installing tmux on CentOS 6.2" target="_blank" rel="external">http://elroyjetson.org/dev-notes/centos/installing-tmux-on-centos-6-2</a></li>
 <li><a href="http://www.nigeldunn.com/2011/12/11/libevent-2-0-so-5-cannot-open-shared-object-file-no-such-file-or-directory/" title="libevent-2.0.so.5: cannot open shared object file: No such file or directory" target="_blank" rel="external">http://www.nigeldunn.com/2011/12/11/libevent-2-0-so-5-cannot-open-shared-object-file-no-such-file-or-directory/</a></li>
 </ol>
-</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/03/17/301-how-to-set-svn-ignore/" class="post-link">[svn]如何在linux设置svn忽略列表</a></h2><span class="post-time">2015年3月17日</span><div class="post-content"><h3 id="管理属性变量的命令"><a href="#管理属性变量的命令" class="headerlink" title="管理属性变量的命令"></a>管理属性变量的命令</h3><p>svn客户端有个属性<code>ignore</code> 用于保存忽略的文件或者目录。除此之外，svn其实有好多属性变量用来自定义，如在windows下svn客户端里面属性截图：<br><img src="/images/301-01.png" alt="windows svn" title="windows svn"></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;前天随意点开博客园，看到了一篇关于tmux的文章 &lt;a href=&quot;http://cenalulu.github.io/linux/tmux/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Tmux - Linux从业者必备利器&lt;/a&gt;，特意还点进去看了。
+    
+    </summary>
+    
+    
+      <category term="linux" scheme="http://rondsny.github.io/tags/linux/"/>
+    
+      <category term="centos" scheme="http://rondsny.github.io/tags/centos/"/>
+    
+      <category term="tmux" scheme="http://rondsny.github.io/tags/tmux/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>[svn]如何在linux设置svn忽略列表</title>
+    <link href="http://rondsny.github.io/2015/03/17/301-how-to-set-svn-ignore/"/>
+    <id>http://rondsny.github.io/2015/03/17/301-how-to-set-svn-ignore/</id>
+    <published>2015-03-17T10:35:20.000Z</published>
+    <updated>2016-11-24T06:48:29.008Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="管理属性变量的命令"><a href="#管理属性变量的命令" class="headerlink" title="管理属性变量的命令"></a>管理属性变量的命令</h3><p>svn客户端有个属性<code>ignore</code> 用于保存忽略的文件或者目录。除此之外，svn其实有好多属性变量用来自定义，如在windows下svn客户端里面属性截图：<br><img src="/images/301-01.png" alt="windows svn" title="windows svn"></p>
 <p>但是在linux 下，不可像windows那样有可视化界面进行管理。<br>执行svn help 命令可以知道有五个命令用于管理svn 属性变量。</p>
 <pre><code>propdel (pdel, pd)                # 删除属性
 propedit (pedit, pe)              # 编辑属性
@@ -468,7 +566,29 @@ propset (pset, ps)                # 设置属性的值
 <li><code>svn st | grep ^! | sed &#39;s/!    //&#39; | xargs svn rm</code>    删除svn里面已经不存在的文件（本地尚存）</li>
 </ul>
 <p>当然避免误操作，我经常先执行<code>svn st | grep ^? | sed &#39;s/?    //&#39;</code> 先确认下文件列表。<br><img src="/images/301-04.png" alt="svn skill" title="svn skill"></p>
-</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/03/12/202-add-rss-sitemap-in-hexo/" class="post-link">[hexo]在hexo内添加RSS和sitemap</a></h2><span class="post-time">2015年3月12日</span><div class="post-content"><h3 id="一、添加RSS"><a href="#一、添加RSS" class="headerlink" title="一、添加RSS"></a>一、添加RSS</h3><p>博客来说，RSS的重要性可想而知。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;管理属性变量的命令&quot;&gt;&lt;a href=&quot;#管理属性变量的命令&quot; class=&quot;headerlink&quot; title=&quot;管理属性变量的命令&quot;&gt;&lt;/a&gt;管理属性变量的命令&lt;/h3&gt;&lt;p&gt;svn客户端有个属性&lt;code&gt;ignore&lt;/code&gt; 用于保存忽略的文件或者目
+    
+    </summary>
+    
+    
+      <category term="svn" scheme="http://rondsny.github.io/tags/svn/"/>
+    
+      <category term="linux" scheme="http://rondsny.github.io/tags/linux/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>[hexo]在hexo内添加RSS和sitemap</title>
+    <link href="http://rondsny.github.io/2015/03/12/202-add-rss-sitemap-in-hexo/"/>
+    <id>http://rondsny.github.io/2015/03/12/202-add-rss-sitemap-in-hexo/</id>
+    <published>2015-03-12T07:28:01.000Z</published>
+    <updated>2016-11-24T06:48:18.943Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="一、添加RSS"><a href="#一、添加RSS" class="headerlink" title="一、添加RSS"></a>一、添加RSS</h3><p>博客来说，RSS的重要性可想而知。</p>
 <h4 id="1-安装hexo-rss插件"><a href="#1-安装hexo-rss插件" class="headerlink" title="1. 安装hexo rss插件"></a>1. 安装hexo rss插件</h4><p>hexo提供了生成RSS xml的插件<code>hexo-generator-feed</code>，执行<code>npm install hexo-generator-feed</code>即可。</p>
 <h4 id="2-配置"><a href="#2-配置" class="headerlink" title="2. 配置"></a>2. 配置</h4><p>编辑<code>blog/_config.yml</code>文件。在里面添加查看配置，如下</p>
 <pre><code>plugins: 
@@ -492,7 +612,28 @@ propset (pset, ps)                # 设置属性的值
 &lt;li&gt;&lt;a href=&quot;/atom.xml&quot;&gt;RSS&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 </code></pre><p>可以不配置menu达到相同的效果。</p>
-</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/03/06/201-deploy-hexo-github/" class="post-link">[hexo]搭载hexo+github博客系统</a></h2><span class="post-time">2015年3月6日</span><div class="post-content"><h3 id="一、安装-Node-js"><a href="#一、安装-Node-js" class="headerlink" title="一、安装 Node.js"></a>一、安装 Node.js</h3><p>在官网 <a href="http://nodejs.org/" target="_blank" rel="external">http://nodejs.org/</a> 下载winwos版本，点击安装完成即可。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;一、添加RSS&quot;&gt;&lt;a href=&quot;#一、添加RSS&quot; class=&quot;headerlink&quot; title=&quot;一、添加RSS&quot;&gt;&lt;/a&gt;一、添加RSS&lt;/h3&gt;&lt;p&gt;博客来说，RSS的重要性可想而知。&lt;/p&gt;
+&lt;h4 id=&quot;1-安装hexo-rss插件&quot;&gt;&lt;a h
+    
+    </summary>
+    
+    
+      <category term="hexo" scheme="http://rondsny.github.io/tags/hexo/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>[hexo]搭载hexo+github博客系统</title>
+    <link href="http://rondsny.github.io/2015/03/06/201-deploy-hexo-github/"/>
+    <id>http://rondsny.github.io/2015/03/06/201-deploy-hexo-github/</id>
+    <published>2015-03-06T07:16:57.000Z</published>
+    <updated>2016-11-24T06:50:02.316Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="一、安装-Node-js"><a href="#一、安装-Node-js" class="headerlink" title="一、安装 Node.js"></a>一、安装 Node.js</h3><p>在官网 <a href="http://nodejs.org/" target="_blank" rel="external">http://nodejs.org/</a> 下载winwos版本，点击安装完成即可。</p>
 <h3 id="二、git环境安装"><a href="#二、git环境安装" class="headerlink" title="二、git环境安装"></a>二、git环境安装</h3><p>对于git的安装，网上已经大量资料，就不赘述了。</p>
 <h3 id="三、安装-hexo"><a href="#三、安装-hexo" class="headerlink" title="三、安装 hexo"></a>三、安装 hexo</h3><p>启动cmd，输入命令<code>npm install hexo-cli -g</code> 即可完成hexo的安装。</p>
 <h3 id="四、初始化博客"><a href="#四、初始化博客" class="headerlink" title="四、初始化博客"></a>四、初始化博客</h3><p>随便找一个目录。在cmd里面执行命令<code>hexo init blog</code> (blog为文件夹名称，与github的项目名称一致)。<br><code>cd blog</code>进入目录。执行<code>hexo g</code>和<code>hexo s</code>就可以生成静态html文件和启动一个http服务器。<br>按照提示，访问 <a href="http://127.0.0.1:4000/" target="_blank" rel="external">http://127.0.0.1:4000/</a> 就可以看到一个博客网站了。</p>
@@ -506,4 +647,17 @@ hexo server       # hexo s
 </code></pre><p><code>git@github.com:rondsny/blog.git</code> 是在github上面托管博客的项目地址。譬如我的github 是<a href="http://github.com/rondsny/" target="_blank" rel="external">http://github.com/rondsny/</a> 然后我建立用于托管的项目是<code>rondsny.github.com</code>。</p>
 <p>执行命令 <code>hexo deploy</code> 或 <code>hexo d</code> 就可以将博客发布到github上面。</p>
 <p>访问 <a href="http://rondsny.github.io/">http://rondsny.github.io/</a> 就可以看到效果了。</p>
-</div></article></li></ul><div class="paginator"></div></section><footer><div class="social"><a href="mailto:your@email.com" title="email" class="iconfont icon-email"></a><a href="/atom.xml" title="rss" class="iconfont icon-rss"></a></div><div class="copyright"><p class="power">Powered by <a href="https://hexo.io/">Hexo</a> and Theme by <a href="https://github.com/ahonn/hexo-theme-even"> Even</a></p><p class="since">&copy;2016<span class="heart"><i class="iconfont icon-heart"></i></span><span class="author">Ron_N</span></p></div><div id="back2top"><i class="iconfont icon-up"></i></div></footer></div><script src="/js/zepto.min.js"></script><script src="/js/theme.js"></script></body></html>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;一、安装-Node-js&quot;&gt;&lt;a href=&quot;#一、安装-Node-js&quot; class=&quot;headerlink&quot; title=&quot;一、安装 Node.js&quot;&gt;&lt;/a&gt;一、安装 Node.js&lt;/h3&gt;&lt;p&gt;在官网 &lt;a href=&quot;http://nodejs.org
+    
+    </summary>
+    
+    
+      <category term="hexo" scheme="http://rondsny.github.io/tags/hexo/"/>
+    
+  </entry>
+  
+</feed>
