@@ -9,7 +9,7 @@
   <id>http://rondsny.github.io/</id>
   
   <author>
-    <name>Ron_N</name>
+    <name>Ron_Ngai</name>
     
   </author>
   
@@ -759,11 +759,11 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
     </summary>
     
     
-      <category term="linux" scheme="http://rondsny.github.io/tags/linux/"/>
-    
       <category term="samba" scheme="http://rondsny.github.io/tags/samba/"/>
     
       <category term="selinux" scheme="http://rondsny.github.io/tags/selinux/"/>
+    
+      <category term="linux" scheme="http://rondsny.github.io/tags/linux/"/>
     
   </entry>
   
@@ -806,9 +806,9 @@ propset (pset, ps)                # 设置属性的值
     </summary>
     
     
-      <category term="svn" scheme="http://rondsny.github.io/tags/svn/"/>
-    
       <category term="linux" scheme="http://rondsny.github.io/tags/linux/"/>
+    
+      <category term="svn" scheme="http://rondsny.github.io/tags/svn/"/>
     
   </entry>
   
