@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://rondsny.github.io/"/>
-  <updated>2016-11-29T10:51:54.057Z</updated>
+  <updated>2016-11-29T10:53:23.631Z</updated>
   <id>http://rondsny.github.io/</id>
   
   <author>
@@ -16,11 +16,11 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
-    <title></title>
+    <title>[game]十字链表的AOI算法实现</title>
     <link href="http://rondsny.github.io/2016/11/29/802-Game_AOI_Cross_Linked_List/"/>
     <id>http://rondsny.github.io/2016/11/29/802-Game_AOI_Cross_Linked_List/</id>
     <published>2016-11-29T07:30:00.000Z</published>
-    <updated>2016-11-29T10:51:54.057Z</updated>
+    <updated>2016-11-29T10:53:23.631Z</updated>
     
     <content type="html"><![CDATA[<p>AOI主要有九宫格、灯塔和十字链表的算法实现。本文阐述十字链表的实现和尝试。</p>
 <h3 id="1-基本原理"><a href="#1-基本原理" class="headerlink" title="1. 基本原理"></a>1. 基本原理</h3><p>根据二维地图，将其分成x轴和y轴两个链表。如果是三维地图，则还需要维护多一个z轴的链表。将对象的坐标值按照大小相应的排列在相应的坐标轴上面。</p>
