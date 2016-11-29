@@ -11,7 +11,31 @@ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
 ga('create', 'Your Google Analytics ID', 'auto');
-ga('send', 'pageview');</script></head><body><div id="main"><header><a href="/." class="logo">Ron Ngai</a><ul class="nav"><li class="nav-link"><a href="/" class="active">Home</a></li><li class="nav-link"><a href="/archives/" target="_self">Archives</a></li></ul></header><section id="container"><ul class="home"><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/03/06/201-Deploy_Hexo_github/" class="post-link">[hexo]搭载hexo+github博客系统</a></h2><span class="post-time">2015年3月6日</span><div class="post-content"><h3 id="一、安装-Node-js"><a href="#一、安装-Node-js" class="headerlink" title="一、安装 Node.js"></a>一、安装 Node.js</h3><p>在官网 <a href="http://nodejs.org/" target="_blank" rel="external">http://nodejs.org/</a> 下载winwos版本，点击安装完成即可。</p>
+ga('send', 'pageview');</script></head><body><div id="main"><header><a href="/." class="logo">Ron Ngai</a><ul class="nav"><li class="nav-link"><a href="/" class="active">Главная</a></li><li class="nav-link"><a href="/archives/" target="_self">Архив</a></li></ul></header><section id="container"><ul class="home"><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/03/12/202-Add_rss_in_Hexo/" class="post-link">[hexo]在hexo内添加RSS和sitemap</a></h2><span class="post-time">2015年3月12日</span><div class="post-content"><h3 id="一、添加RSS"><a href="#一、添加RSS" class="headerlink" title="一、添加RSS"></a>一、添加RSS</h3><p>博客来说，RSS的重要性可想而知。</p>
+<h4 id="1-安装hexo-rss插件"><a href="#1-安装hexo-rss插件" class="headerlink" title="1. 安装hexo rss插件"></a>1. 安装hexo rss插件</h4><p>hexo提供了生成RSS xml的插件<code>hexo-generator-feed</code>，执行<code>npm install hexo-generator-feed</code>即可。</p>
+<h4 id="2-配置"><a href="#2-配置" class="headerlink" title="2. 配置"></a>2. 配置</h4><p>编辑<code>blog/_config.yml</code>文件。在里面添加查看配置，如下</p>
+<pre><code>plugins: 
+  hexo-generator-feed
+</code></pre><p>还要修改主题的配置文件<code>blog/theme/_config.yml</code>。在rss里面配置<code>rss: /atom.xml</code>。在菜单里面添加RSS菜单。</p>
+<pre><code>menu: 
+  Home: / 
+  Archives: /archives 
+  Rss: /atom.xml
+</code></pre><h3 id="二、添加sitemap"><a href="#二、添加sitemap" class="headerlink" title="二、添加sitemap"></a>二、添加sitemap</h3><p>当关注seo的时候，sitemap也同样重要。</p>
+<h4 id="1-安装hexo-sitemap插件"><a href="#1-安装hexo-sitemap插件" class="headerlink" title="1. 安装hexo sitemap插件"></a>1. 安装hexo sitemap插件</h4><p>同样，执行命令<code>npm install hexo-generator-sitemap</code>即可完成插件的安装。</p>
+<h4 id="2-配置-1"><a href="#2-配置-1" class="headerlink" title="2. 配置"></a>2. 配置</h4><p>一样修改<code>blog/_config.yml</code>文件，添加上插件名称</p>
+<pre><code>plugins: 
+  hexo-generator-feed
+  hexo-generator-sitemap 
+</code></pre><h3 id="三、其它"><a href="#三、其它" class="headerlink" title="三、其它"></a>三、其它</h3><p>其实两个插件是在<code>hexo g</code>的时候生成atom.xml 文件和sitemap.xml 文件。由于sitemap.xml 是对搜索引擎服务的，所以不需要显示在博客里面。而Rss是要给读者收藏的，需要在菜单里面添加显示。当然你不喜欢在菜单里面显示可以直接修改模板显示在你喜欢的地方。如编辑<code>blog/theme/[light]/layout/_partial/header.ejs</code>文件：</p>
+<pre><code>&lt;ul&gt;
+&lt;% for (var i in theme.menu){ %&gt;
+  &lt;li&gt;&lt;a href=&quot;&lt;%- theme.menu[i] %&gt;&quot;&gt;&lt;%= i %&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;% } %&gt;
+&lt;li&gt;&lt;a href=&quot;/atom.xml&quot;&gt;RSS&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</code></pre><p>可以不配置menu达到相同的效果。</p>
+</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/03/06/201-Deploy_Hexo_github/" class="post-link">[hexo]搭载hexo+github博客系统</a></h2><span class="post-time">2015年3月6日</span><div class="post-content"><h3 id="一、安装-Node-js"><a href="#一、安装-Node-js" class="headerlink" title="一、安装 Node.js"></a>一、安装 Node.js</h3><p>在官网 <a href="http://nodejs.org/" target="_blank" rel="external">http://nodejs.org/</a> 下载winwos版本，点击安装完成即可。</p>
 <h3 id="二、git环境安装"><a href="#二、git环境安装" class="headerlink" title="二、git环境安装"></a>二、git环境安装</h3><p>对于git的安装，网上已经大量资料，就不赘述了。</p>
 <h3 id="三、安装-hexo"><a href="#三、安装-hexo" class="headerlink" title="三、安装 hexo"></a>三、安装 hexo</h3><p>启动cmd，输入命令<code>npm install hexo-cli -g</code> 即可完成hexo的安装。</p>
 <h3 id="四、初始化博客"><a href="#四、初始化博客" class="headerlink" title="四、初始化博客"></a>四、初始化博客</h3><p>随便找一个目录。在cmd里面执行命令<code>hexo init blog</code> (blog为文件夹名称，与github的项目名称一致)。<br><code>cd blog</code>进入目录。执行<code>hexo g</code>和<code>hexo s</code>就可以生成静态html文件和启动一个http服务器。<br>按照提示，访问 <a href="http://127.0.0.1:4000/" target="_blank" rel="external">http://127.0.0.1:4000/</a> 就可以看到一个博客网站了。</p>
@@ -25,4 +49,4 @@ hexo server       # hexo s
 </code></pre><p><code>git@github.com:rondsny/blog.git</code> 是在github上面托管博客的项目地址。譬如我的github 是<a href="http://github.com/rondsny/" target="_blank" rel="external">http://github.com/rondsny/</a> 然后我建立用于托管的项目是<code>rondsny.github.com</code>。</p>
 <p>执行命令 <code>hexo deploy</code> 或 <code>hexo d</code> 就可以将博客发布到github上面。</p>
 <p>访问 <a href="http://rondsny.github.io/">http://rondsny.github.io/</a> 就可以看到效果了。</p>
-</div></article></li></ul><div class="paginator"><a href="/" class="prev"><i class="iconfont icon-left"></i><span> Prev</span></a></div></section><footer><div class="social"><a href="mailto:your@email.com" title="email" class="iconfont icon-email"></a><a href="/atom.xml" title="rss" class="iconfont icon-rss"></a></div><div class="copyright"><p class="power">Powered by <a href="https://hexo.io/">Hexo</a> and Theme by <a href="https://github.com/ahonn/hexo-theme-even"> Even</a></p><p class="since">&copy;2016<span class="heart"><i class="iconfont icon-heart"></i></span><span class="author">Ron_Ngai</span></p></div><div id="back2top"><i class="iconfont icon-up"></i></div></footer></div><script src="/js/zepto.min.js"></script><script src="/js/theme.js"></script></body></html>
+</div></article></li></ul><div class="paginator"><a href="/" class="prev"><i class="iconfont icon-left"></i><span> Пред.</span></a></div></section><footer><div class="social"><a href="mailto:your@email.com" title="email" class="iconfont icon-email"></a><a href="/atom.xml" title="rss" class="iconfont icon-rss"></a></div><div class="copyright"><p class="power">Powered by <a href="https://hexo.io/">Hexo</a> and Theme by <a href="https://github.com/ahonn/hexo-theme-even"> Even</a></p><p class="since">&copy;2016<span class="heart"><i class="iconfont icon-heart"></i></span><span class="author">Ron_Ngai</span></p></div><div id="back2top"><i class="iconfont icon-up"></i></div></footer></div><script src="/js/zepto.min.js"></script><script src="/js/theme.js"></script></body></html>
