@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://rondsny.github.io/"/>
-  <updated>2016-11-29T10:44:22.293Z</updated>
+  <updated>2016-11-29T10:49:43.571Z</updated>
   <id>http://rondsny.github.io/</id>
   
   <author>
@@ -20,9 +20,9 @@
     <link href="http://rondsny.github.io/2016/11/29/802-Game_AOI_Cross_Linked_List/"/>
     <id>http://rondsny.github.io/2016/11/29/802-Game_AOI_Cross_Linked_List/</id>
     <published>2016-11-29T07:30:00.000Z</published>
-    <updated>2016-11-29T10:44:22.293Z</updated>
+    <updated>2016-11-29T10:49:43.571Z</updated>
     
-    <content type="html"><![CDATA[<h2 id="十字链表的AOI实现尝试"><a href="#十字链表的AOI实现尝试" class="headerlink" title="十字链表的AOI实现尝试"></a>十字链表的AOI实现尝试</h2><p>AOI主要有九宫格、灯塔和十字链表的算法实现。本文阐述十字链表的实现和尝试。</p>
+    <content type="html"><![CDATA[<h2 id="十字链表的AOI实现"><a href="#十字链表的AOI实现" class="headerlink" title="十字链表的AOI实现"></a>十字链表的AOI实现</h2><p>AOI主要有九宫格、灯塔和十字链表的算法实现。本文阐述十字链表的实现和尝试。</p>
 <h3 id="1-基本原理"><a href="#1-基本原理" class="headerlink" title="1. 基本原理"></a>1. 基本原理</h3><p>根据二维地图，将其分成x轴和y轴两个链表。如果是三维地图，则还需要维护多一个z轴的链表。将对象的坐标值按照大小相应的排列在相应的坐标轴上面。</p>
 <h3 id="2-基本接口"><a href="#2-基本接口" class="headerlink" title="2. 基本接口"></a>2. 基本接口</h3><p>对对象的操作主要有以下三个接口：</p>
 <ul>
@@ -57,7 +57,7 @@
     
     <summary type="html">
     
-      &lt;h2 id=&quot;十字链表的AOI实现尝试&quot;&gt;&lt;a href=&quot;#十字链表的AOI实现尝试&quot; class=&quot;headerlink&quot; title=&quot;十字链表的AOI实现尝试&quot;&gt;&lt;/a&gt;十字链表的AOI实现尝试&lt;/h2&gt;&lt;p&gt;AOI主要有九宫格、灯塔和十字链表的算法实现。本文阐述十字链
+      &lt;h2 id=&quot;十字链表的AOI实现&quot;&gt;&lt;a href=&quot;#十字链表的AOI实现&quot; class=&quot;headerlink&quot; title=&quot;十字链表的AOI实现&quot;&gt;&lt;/a&gt;十字链表的AOI实现&lt;/h2&gt;&lt;p&gt;AOI主要有九宫格、灯塔和十字链表的算法实现。本文阐述十字链表的实现和尝试。
     
     </summary>
     
