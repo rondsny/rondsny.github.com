@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://rondsny.github.io/2016/12/29/702-Erlang_Supervisor/</loc>
+    
+    <lastmod>2016-12-29T12:44:44.791Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://rondsny.github.io/2016/11/01/901-Docker_Cmd/</loc>
     
     <lastmod>2016-12-02T03:57:51.017Z</lastmod>
