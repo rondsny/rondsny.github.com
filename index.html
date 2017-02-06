@@ -415,7 +415,60 @@ init([JobRef, Job]) -&gt;
 &apos;receive&apos;(_, _) -&gt;
     erlang:nif_error(stub).
 </code></pre><p><em>与君共勉</em></p>
-</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/11/14/601-Ftp_bat_help/" class="post-link">[windows]快速从ftp下载最新软件包的批处理脚本 </a></h2><span class="post-time">2015年11月14日</span><div class="post-content"><h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>由于敏捷开发，快速迭代，我们项目一天会有三个版本，也就意味着我一天要去获取三次软件包。我负责服务端开发，所以我经常需要去拿最新的客户端。我们的客户端放置在一个公共的ftp上面。每天频繁登陆ftp下载，或者使用ftp工具，每次都要点击同步，都不太方便。如果在linux下就好了，然而在windows也是可以运行脚本的，何不尝试下呢。</p>
+</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2016/02/06/301-bullet3_init_world/" class="post-link">[Bullet3]创建世界(场景)及常见函数</a></h2><span class="post-time">2016年2月6日</span><div class="post-content"><h2 id="创建世界-场景-及常见函数"><a href="#创建世界-场景-及常见函数" class="headerlink" title="创建世界(场景)及常见函数"></a>创建世界(场景)及常见函数</h2><h3 id="0-世界的继承类"><a href="#0-世界的继承类" class="headerlink" title="0. 世界的继承类"></a>0. 世界的继承类</h3><ul>
+<li><code>btCollisionWorld</code><ul>
+<li>基类</li>
+</ul>
+</li>
+<li><code>btDynamicsWorld</code><ul>
+<li>继承于<code>btCollisionWorld</code></li>
+<li>基础的动力学实现</li>
+</ul>
+</li>
+<li><code>btDiscreteDynamicsWorld</code><ul>
+<li>继承于<code>btDynamicsWorld</code></li>
+<li>刚体的运动模拟</li>
+</ul>
+</li>
+</ul>
+<h3 id="1-创建世界-场景"><a href="#1-创建世界-场景" class="headerlink" title="1. 创建世界(场景)"></a>1. 创建世界(场景)</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 初始化场景</span></div><div class="line"></div><div class="line"><span class="comment">// 用于配置碰撞检测堆栈大小，默认碰撞算法，接触副本池的大小</span></div><div class="line">btDefaultCollisionConfiguration* collisionConfiguration = <span class="keyword">new</span> btDefaultCollisionConfiguration();</div><div class="line"></div><div class="line"><span class="comment">// 用于计算重叠对象（碰撞检测，接触点计算）（接触点会被封装成 btPersistentManifold 对象）</span></div><div class="line">btCollisionDispatcher* dispatcher = <span class="keyword">new</span> btCollisionDispatcher(collisionConfiguration);</div><div class="line"></div><div class="line"><span class="comment">// 提供成对的aabb重叠监测（重叠对象的管理，存储，增加删除等）</span></div><div class="line">btBroadphaseInterface* overlappingPairCache = <span class="keyword">new</span> btDbvtBroadphase();</div><div class="line"></div><div class="line">btSequentialImpulseConstraintSolver* solver = <span class="keyword">new</span> btSequentialImpulseConstraintSolver;</div><div class="line">btDynamicsWorld* world = <span class="keyword">new</span> btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);</div></pre></td></tr></table></figure>
+<h3 id="2-场景函数"><a href="#2-场景函数" class="headerlink" title="2. 场景函数"></a>2. 场景函数</h3><ul>
+<li><code>void btDynamicsWorld::addRigidBody(btRigidBody* body)</code><ul>
+<li>添加一个刚体</li>
+</ul>
+</li>
+<li><code>void btCollisionWorld::removeCollisionObject(btCollisionObject* collisionObject)</code><ul>
+<li>删除对象</li>
+</ul>
+</li>
+<li><code>int btCollisionWorld::getNumCollisionObjects()</code><ul>
+<li>获取数量</li>
+</ul>
+</li>
+<li><code>btAlignedObjectArray&lt;btCollisionObject*&gt; btCollisionWorld::getCollisionObjectArray()</code><ul>
+<li>获取场景所有对象</li>
+</ul>
+</li>
+<li><code>void    btDynamicsWorld::setGravity(const btVector3&amp; gravity)</code><ul>
+<li>设置重力</li>
+<li>默认值：btVector3(0,0,0)</li>
+</ul>
+</li>
+<li><code>void    btDynamicsWorld::performDiscreteCollisionDetection()</code><ul>
+<li>碰撞检测</li>
+</ul>
+</li>
+<li><code>int btDynamicsWorld::stepSimulation(btScalar timeStep, int maxSubSteps = 1, btScalar fixedTimeStep = btScalar(1.)/btScalar(60.))</code><ul>
+<li>模拟运动</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-举例"><a href="#3-举例" class="headerlink" title="3. 举例"></a>3. 举例</h3><ol>
+<li>场景场景；</li>
+<li>添加一个刚体；</li>
+<li>释放内存退出。</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"btBulletDynamicsCommon.h"</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">int</span> i;</div><div class="line">    <span class="comment">///-----initialization_start-----</span></div><div class="line"></div><div class="line">    <span class="comment">///collision configuration contains default setup for memory, collision setup. Advanced users can create their own configuration.</span></div><div class="line">    btDefaultCollisionConfiguration* collisionConfiguration = <span class="keyword">new</span> btDefaultCollisionConfiguration();</div><div class="line"></div><div class="line">    <span class="comment">///use the default collision dispatcher. For parallel processing you can use a diffent dispatcher (see Extras/BulletMultiThreaded)</span></div><div class="line">    btCollisionDispatcher* dispatcher = <span class="keyword">new</span>	btCollisionDispatcher(collisionConfiguration);</div><div class="line"></div><div class="line">    <span class="comment">///btDbvtBroadphase is a good general purpose broadphase. You can also try out btAxis3Sweep.</span></div><div class="line">    btBroadphaseInterface* overlappingPairCache = <span class="keyword">new</span> btDbvtBroadphase();</div><div class="line"></div><div class="line">    <span class="comment">///the default constraint solver. For parallel processing you can use a different solver (see Extras/BulletMultiThreaded)</span></div><div class="line">    btSequentialImpulseConstraintSolver* solver = <span class="keyword">new</span> btSequentialImpulseConstraintSolver;</div><div class="line"></div><div class="line">    btDiscreteDynamicsWorld* dynamicsWorld = <span class="keyword">new</span> btDiscreteDynamicsWorld(dispatcher,overlappingPairCache,solver,collisionConfiguration);</div><div class="line"></div><div class="line">    dynamicsWorld-&gt;setGravity(btVector3(<span class="number">0</span>,<span class="number">-10</span>,<span class="number">0</span>));</div><div class="line"></div><div class="line">    <span class="comment">///-----initialization_end-----</span></div><div class="line"></div><div class="line">    <span class="comment">//keep track of the shapes, we release memory at exit.</span></div><div class="line">    <span class="comment">//make sure to re-use collision shapes among rigid bodies whenever possible!</span></div><div class="line">    btAlignedObjectArray&lt;btCollisionShape*&gt; collisionShapes;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="comment">///create a few basic rigid bodies</span></div><div class="line">    btCollisionShape* groundShape = <span class="keyword">new</span> btBoxShape(btVector3(btScalar(<span class="number">50.</span>),btScalar(<span class="number">50.</span>),btScalar(<span class="number">50.</span>)));</div><div class="line"></div><div class="line">    btTransform groundTransform;</div><div class="line">    groundTransform.setIdentity();</div><div class="line">    groundTransform.setOrigin(btVector3(<span class="number">0</span>,<span class="number">-56</span>,<span class="number">0</span>));</div><div class="line"></div><div class="line">    <span class="function">btScalar <span class="title">mass</span><span class="params">(<span class="number">0.</span>)</span></span>;</div><div class="line"></div><div class="line">    <span class="comment">//rigidbody is dynamic if and only if mass is non zero, otherwise static</span></div><div class="line">    <span class="keyword">bool</span> isDynamic = (mass != <span class="number">0.f</span>);</div><div class="line"></div><div class="line">    <span class="function">btVector3 <span class="title">localInertia</span><span class="params">(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>)</span></span>;</div><div class="line">    <span class="keyword">if</span> (isDynamic)</div><div class="line">        groundShape-&gt;calculateLocalInertia(mass,localInertia);</div><div class="line"></div><div class="line">    <span class="comment">//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects</span></div><div class="line">    btDefaultMotionState* myMotionState = <span class="keyword">new</span> btDefaultMotionState(groundTransform);</div><div class="line">    btRigidBody::<span class="function">btRigidBodyConstructionInfo <span class="title">rbInfo</span><span class="params">(mass,myMotionState,groundShape,localInertia)</span></span>;</div><div class="line">    btRigidBody* body = <span class="keyword">new</span> btRigidBody(rbInfo);</div><div class="line"></div><div class="line">    <span class="comment">//add the body to the dynamics world</span></div><div class="line">    dynamicsWorld-&gt;addRigidBody(body);</div><div class="line"></div><div class="line">    <span class="comment">//cleanup in the reverse order of creation/initialization</span></div><div class="line">    <span class="keyword">delete</span> body;</div><div class="line">    <span class="keyword">delete</span> myMotionState;</div><div class="line">    <span class="keyword">delete</span> groundShape;</div><div class="line"></div><div class="line">    <span class="keyword">delete</span> dynamicsWorld;</div><div class="line">    <span class="keyword">delete</span> solver;</div><div class="line">    <span class="keyword">delete</span> overlappingPairCache;</div><div class="line">    <span class="keyword">delete</span> dispatcher;</div><div class="line">    <span class="keyword">delete</span> collisionConfiguration;</div><div class="line">&#125;</div></pre></td></tr></table></figure></div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/11/14/601-Ftp_bat_help/" class="post-link">[windows]快速从ftp下载最新软件包的批处理脚本 </a></h2><span class="post-time">2015年11月14日</span><div class="post-content"><h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>由于敏捷开发，快速迭代，我们项目一天会有三个版本，也就意味着我一天要去获取三次软件包。我负责服务端开发，所以我经常需要去拿最新的客户端。我们的客户端放置在一个公共的ftp上面。每天频繁登陆ftp下载，或者使用ftp工具，每次都要点击同步，都不太方便。如果在linux下就好了，然而在windows也是可以运行脚本的，何不尝试下呢。</p>
 <h3 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h3><pre><code>@echo off
 rem for download file
 rem ftp config 
@@ -574,210 +627,4 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
 <h4 id="开发成本"><a href="#开发成本" class="headerlink" title="开发成本"></a>开发成本</h4><p>由于逻辑分服，的确是增加了一些内容，譬如玩家所在的服务器ID。但是这个处理起来并没有多大的难度，而且对key值也并没有多大的影响。</p>
 <p>逻辑分服的架构对于大世界和滚服都是支持的，只是对于大世界的话，就浪费了一个存储空间和一点点内存。但是这样的框架可以自如应对大世界到滚服之间的变化。如果一开始就按照大世界来设计，万一某一天滚服了，就要麻烦地多。</p>
 <p>所以逻辑分服并不会提升多大的开发成本。</p>
-</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/04/28/401-Deploy_Tmux/" class="post-link">[linux]CentOS下安装和使用tmux</a></h2><span class="post-time">2015年4月28日</span><div class="post-content"><p>前天随意点开博客园，看到了一篇关于tmux的文章 <a href="http://cenalulu.github.io/linux/tmux/" target="_blank" rel="external">Tmux - Linux从业者必备利器</a>，特意还点进去看了。毕竟Linux对于做游戏服务端开发的我来说，太熟悉不过了。不过我就粗略地看了一眼，就关掉了。直到第二天<code>码农周刊</code>就推荐了这篇文章，才引起我真正的关注。<code>tmux</code>真的那么好用吗？所以我自己也倒腾来一遍，的确在许多场景下还是非常有用的。如：</p>
-<ul>
-<li>做服务器的，肯定需要关注性能的，而tmux多个pane可以很方便同时关注多项性能指标；</li>
-<li>我们的游戏服刚好有多个服务存在，而联调多个服务的时候，可以同时看到多个控制台确实很方便。</li>
-</ul>
-<p>以上并不是其它方式不可以，譬如我用xshell的，同时看多个xshell可以达到相同的效果。但切换的时候还是有些不方便。 因为环境不同，原作者用Mac，而我用CentOS，有些地方存在不一样，故记载方便自己以后查阅。</p>
-<h3 id="CentOS下安装"><a href="#CentOS下安装" class="headerlink" title="CentOS下安装"></a>CentOS下安装</h3><p>首先我是用<code>yum install tmux</code>尝试安装的。估计没有源，没有找到tmux。所以习惯性直接找源代码安装。<br>但是其中有依赖，需要先安装<code>libevent</code>。</p>
-<pre><code>wget https://github.com/downloads/libevent/libevent/libevent-2.0.21-stable.tar.gz
-tar xzvf libevent-2.0.21-stable.tar.gz
-cd libevent-2.0.21-stable
-./configure &amp;&amp; make
-make install
-</code></pre><p>然后再下载源码安装tmux</p>
-<pre><code>git clone git://git.code.sf.net/p/tmux/tmux-code tmux
-cd tmux
-sh autogen.sh
-./configure &amp;&amp; make
-make install
-</code></pre><p>过程中遇到了两个报错，解决都比较简单，当然是查阅资料后。</p>
-<h4 id="问题1："><a href="#问题1：" class="headerlink" title="问题1："></a>问题1：</h4><p>期间我遇到了执行autogen.sh 报错，原因是我没有安装automake。这个直接<code>yum install automake</code>就简单解决了。</p>
-<h4 id="问题2："><a href="#问题2：" class="headerlink" title="问题2："></a>问题2：</h4><p>执行的时候遇到</p>
-<pre><code>libevent-2.0.so.5: cannot open shared object file: No such file or directory
-</code></pre><p>的报错，解决办法也比较简单，既然找不到，那就换个找得到的地方呗。</p>
-<pre><code>ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib/libevent-2.0.so.5     # 32位系统
-ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系统
-</code></pre><h3 id="使用和快捷键"><a href="#使用和快捷键" class="headerlink" title="使用和快捷键"></a>使用和快捷键</h3><p>直接在命令行输入tmux即可进入tmux的模式。</p>
-<p>tmux主要有windows窗体操作和Pane操作，个人觉得windows对于我来说，意义不大(并不是说windows模式没适用场景)，所以这里主要讲下Pane的相关操作。</p>
-<h4 id="快捷键"><a href="#快捷键" class="headerlink" title="快捷键"></a>快捷键</h4><p>tmux的快捷键都要先按<code>C-b(Ctrl-b)</code>。然后再按下面表格内容，才能达到相应的效果。</p>
-<h4 id="session和其他相关快捷键"><a href="#session和其他相关快捷键" class="headerlink" title="session和其他相关快捷键"></a>session和其他相关快捷键</h4><table>
-<thead>
-<tr>
-<th style="text-align:center">快捷键</th>
-<th style="text-align:left">功能      </th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center"> C-z</td>
-<td style="text-align:left">关闭tmux.</td>
-</tr>
-<tr>
-<td style="text-align:center"> :</td>
-<td style="text-align:left">进入tmux命令行模式.</td>
-</tr>
-<tr>
-<td style="text-align:center"> ?</td>
-<td style="text-align:left">列出所有快捷键.</td>
-</tr>
-<tr>
-<td style="text-align:center"> t</td>
-<td style="text-align:left"><strong>显示时间.</strong></td>
-</tr>
-<tr>
-<td style="text-align:center"> d</td>
-<td style="text-align:left">退出当前tmux客户端，tmux后台运行.</td>
-</tr>
-<tr>
-<td style="text-align:center"></td>
-<td style="text-align:left"></td>
-</tr>
-<tr>
-<td style="text-align:center"> $</td>
-<td style="text-align:left">重命名当前session.</td>
-</tr>
-<tr>
-<td style="text-align:center"> s</td>
-<td style="text-align:left"><strong>切换session 显示所有session并切换到某一个session.</strong></td>
-</tr>
-<tr>
-<td style="text-align:center"> (</td>
-<td style="text-align:left">切换session 切换到上一个session.</td>
-</tr>
-<tr>
-<td style="text-align:center"> )</td>
-<td style="text-align:left">切换session 切换到下一个session.</td>
-</tr>
-<tr>
-<td style="text-align:center"> L</td>
-<td style="text-align:left">切换session 到前一个活跃的session.</td>
-</tr>
-</tbody>
-</table>
-<h4 id="window相关快捷键"><a href="#window相关快捷键" class="headerlink" title="window相关快捷键"></a>window相关快捷键</h4><table>
-<thead>
-<tr>
-<th style="text-align:center">快捷键</th>
-<th style="text-align:left">功能      </th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center"> c</td>
-<td style="text-align:left"><strong>新增一个window.</strong></td>
-</tr>
-<tr>
-<td style="text-align:center"> &amp;</td>
-<td style="text-align:left">退出当前window.</td>
-</tr>
-<tr>
-<td style="text-align:center"> ,</td>
-<td style="text-align:left">重命名当前window.</td>
-</tr>
-<tr>
-<td style="text-align:center"> l</td>
-<td style="text-align:left">跳转到上一个所在window.</td>
-</tr>
-<tr>
-<td style="text-align:center"></td>
-<td style="text-align:left"></td>
-</tr>
-<tr>
-<td style="text-align:center"> i</td>
-<td style="text-align:left">显示当前window的信息.</td>
-</tr>
-<tr>
-<td style="text-align:center"> w</td>
-<td style="text-align:left"><strong>切换window 显示所有window并切换window.</strong></td>
-</tr>
-<tr>
-<td style="text-align:center"> 0 to 9</td>
-<td style="text-align:left">切换window 到相应编号的window.</td>
-</tr>
-<tr>
-<td style="text-align:center"> p</td>
-<td style="text-align:left">切换window 上一个window.</td>
-</tr>
-<tr>
-<td style="text-align:center"> n</td>
-<td style="text-align:left">切换window 下一个window.</td>
-</tr>
-<tr>
-<td style="text-align:center"> ’</td>
-<td style="text-align:left">切换window 到输入编号的window.</td>
-</tr>
-<tr>
-<td style="text-align:center"> f</td>
-<td style="text-align:left">切换window 到搜索到的window.</td>
-</tr>
-<tr>
-<td style="text-align:center"> Space</td>
-<td style="text-align:left">改变当前window下的pane布局.</td>
-</tr>
-</tbody>
-</table>
-<h4 id="pane相关快捷键"><a href="#pane相关快捷键" class="headerlink" title="pane相关快捷键"></a>pane相关快捷键</h4><table>
-<thead>
-<tr>
-<th style="text-align:center">快捷键</th>
-<th style="text-align:left">功能      </th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center"> !</td>
-<td style="text-align:left"><strong>从window移除当前pane.</strong></td>
-</tr>
-<tr>
-<td style="text-align:center"> “</td>
-<td style="text-align:left"><strong>将当前pane变成上下两个pane.</strong></td>
-</tr>
-<tr>
-<td style="text-align:center"> %</td>
-<td style="text-align:left"><strong>将当前pane变成左右两个pane.</strong></td>
-</tr>
-<tr>
-<td style="text-align:center"> x</td>
-<td style="text-align:left"><strong>关闭当前pane.</strong></td>
-</tr>
-<tr>
-<td style="text-align:center"> q</td>
-<td style="text-align:left">显示pane的索引.</td>
-</tr>
-<tr>
-<td style="text-align:center"> z</td>
-<td style="text-align:left"><strong>最大化或者恢复当前pane.</strong></td>
-</tr>
-<tr>
-<td style="text-align:center"> {</td>
-<td style="text-align:left">跟前一个pane交换位置.</td>
-</tr>
-<tr>
-<td style="text-align:center"> }</td>
-<td style="text-align:left">跟后一个pane交换位置.</td>
-</tr>
-<tr>
-<td style="text-align:center"> o</td>
-<td style="text-align:left">切换Pane 到下一个pane.</td>
-</tr>
-<tr>
-<td style="text-align:center"> ;</td>
-<td style="text-align:left"><strong>切换Pane 进入到前一个操作过的pane.</strong></td>
-</tr>
-<tr>
-<td style="text-align:center"> Up, Down Left, Right</td>
-<td style="text-align:left">切换Pane 使用方向键切换到相应方向的pane.</td>
-</tr>
-</tbody>
-</table>
-<p>可能有些快捷键有些出入，可以的话提醒下。另外有些快捷键没有搞懂，而且快捷键比较多，个人觉得记得主要的几个切换快捷键就足够用来。比较tmux只是一个协助工具，没有必要在其上面那么用心。加粗的是个人觉得比较实用的。</p>
-<p>tmux不中断session的模式确实很666666，每次连回去就可以快速接上上次结束的环境。而且多个pane也非常适合要开启并监控多个服务的情况。</p>
-<p><img src="http://i.imgur.com/guRsWo3.png" alt="多个pane例子"></p>
-<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><ol>
-<li><a href="http://cenalulu.github.io/linux/tmux/" title="Tmux - Linux从业者必备利器" target="_blank" rel="external">http://cenalulu.github.io/linux/tmux/</a></li>
-<li><a href="http://elroyjetson.org/dev-notes/centos/installing-tmux-on-centos-6-2" title="Installing tmux on CentOS 6.2" target="_blank" rel="external">http://elroyjetson.org/dev-notes/centos/installing-tmux-on-centos-6-2</a></li>
-<li><a href="http://www.nigeldunn.com/2011/12/11/libevent-2-0-so-5-cannot-open-shared-object-file-no-such-file-or-directory/" title="libevent-2.0.so.5: cannot open shared object file: No such file or directory" target="_blank" rel="external">http://www.nigeldunn.com/2011/12/11/libevent-2-0-so-5-cannot-open-shared-object-file-no-such-file-or-directory/</a></li>
-</ol>
-</div></article></li></ul><div class="paginator"><a href="/page/2/" class="next"><span>Next</span><i class="iconfont icon-right"></i></a></div></section><footer><div class="social"><a href="mailto:your@email.com" title="email" class="iconfont icon-email"></a><a href="/atom.xml" title="rss" class="iconfont icon-rss"></a></div><div class="copyright"><p class="power">Powered by <a href="https://hexo.io/">Hexo</a> and Theme by <a href="https://github.com/ahonn/hexo-theme-even"> Even</a></p><p class="since">&copy;2016<span class="heart"><i class="iconfont icon-heart"></i></span><span class="author">Ron_Ngai</span></p></div><div id="back2top"><i class="iconfont icon-up"></i></div></footer></div><script src="/js/zepto.min.js"></script><script src="/js/theme.js"></script></body></html>
+</div></article></li></ul><div class="paginator"><a href="/page/2/" class="next"><span>Next</span><i class="iconfont icon-right"></i></a></div></section><footer><div class="social"><a href="mailto:your@email.com" title="email" class="iconfont icon-email"></a><a href="/atom.xml" title="rss" class="iconfont icon-rss"></a></div><div class="copyright"><p class="power">Powered by <a href="https://hexo.io/">Hexo</a> and Theme by <a href="https://github.com/ahonn/hexo-theme-even"> Even</a></p><p class="since">&copy;2017<span class="heart"><i class="iconfont icon-heart"></i></span><span class="author">Ron_Ngai</span></p></div><div id="back2top"><i class="iconfont icon-up"></i></div></footer></div><script src="/js/zepto.min.js"></script><script src="/js/theme.js"></script></body></html>
