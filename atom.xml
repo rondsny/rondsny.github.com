@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://rondsny.github.io/"/>
-  <updated>2017-02-06T12:12:58.507Z</updated>
+  <updated>2017-02-06T12:15:52.250Z</updated>
   <id>http://rondsny.github.io/</id>
   
   <author>
@@ -20,9 +20,10 @@
     <link href="http://rondsny.github.io/2017/02/06/301-bullet3_init_world/"/>
     <id>http://rondsny.github.io/2017/02/06/301-bullet3_init_world/</id>
     <published>2017-02-06T12:16:57.000Z</published>
-    <updated>2017-02-06T12:12:58.507Z</updated>
+    <updated>2017-02-06T12:15:52.250Z</updated>
     
-    <content type="html"><![CDATA[<h2 id="创建世界-场景-及常见函数"><a href="#创建世界-场景-及常见函数" class="headerlink" title="创建世界(场景)及常见函数"></a>创建世界(场景)及常见函数</h2><h3 id="0-世界的继承类"><a href="#0-世界的继承类" class="headerlink" title="0. 世界的继承类"></a>0. 世界的继承类</h3><ul>
+    <content type="html"><![CDATA[<h2 id="创建世界-场景-及常见函数"><a href="#创建世界-场景-及常见函数" class="headerlink" title="创建世界(场景)及常见函数"></a>创建世界(场景)及常见函数</h2><p>官方文档：<a href="http://bulletphysics.org" target="_blank" rel="external">http://bulletphysics.org</a><br>开源代码：<a href="https://github.com/bulletphysics/bullet3/releases" target="_blank" rel="external">https://github.com/bulletphysics/bullet3/releases</a><br>API文档：<a href="http://bulletphysics.org/Bullet/BulletFull/annotated.html" target="_blank" rel="external">http://bulletphysics.org/Bullet/BulletFull/annotated.html</a></p>
+<h3 id="0-世界的继承类"><a href="#0-世界的继承类" class="headerlink" title="0. 世界的继承类"></a>0. 世界的继承类</h3><ul>
 <li><code>btCollisionWorld</code><ul>
 <li>基类</li>
 </ul>
@@ -79,7 +80,7 @@
     
     <summary type="html">
     
-      &lt;h2 id=&quot;创建世界-场景-及常见函数&quot;&gt;&lt;a href=&quot;#创建世界-场景-及常见函数&quot; class=&quot;headerlink&quot; title=&quot;创建世界(场景)及常见函数&quot;&gt;&lt;/a&gt;创建世界(场景)及常见函数&lt;/h2&gt;&lt;h3 id=&quot;0-世界的继承类&quot;&gt;&lt;a href=&quot;#0
+      &lt;h2 id=&quot;创建世界-场景-及常见函数&quot;&gt;&lt;a href=&quot;#创建世界-场景-及常见函数&quot; class=&quot;headerlink&quot; title=&quot;创建世界(场景)及常见函数&quot;&gt;&lt;/a&gt;创建世界(场景)及常见函数&lt;/h2&gt;&lt;p&gt;官方文档：&lt;a href=&quot;http://bulle
     
     </summary>
     
@@ -1110,11 +1111,11 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
     </summary>
     
     
+      <category term="linux" scheme="http://rondsny.github.io/tags/linux/"/>
+    
       <category term="samba" scheme="http://rondsny.github.io/tags/samba/"/>
     
       <category term="selinux" scheme="http://rondsny.github.io/tags/selinux/"/>
-    
-      <category term="linux" scheme="http://rondsny.github.io/tags/linux/"/>
     
   </entry>
   
