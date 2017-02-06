@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://rondsny.github.io/"/>
-  <updated>2016-12-29T12:51:29.089Z</updated>
+  <updated>2017-02-06T12:12:58.507Z</updated>
   <id>http://rondsny.github.io/</id>
   
   <author>
@@ -14,6 +14,79 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>[Bullet3]创建世界(场景)及常见函数</title>
+    <link href="http://rondsny.github.io/2017/02/06/301-bullet3_init_world/"/>
+    <id>http://rondsny.github.io/2017/02/06/301-bullet3_init_world/</id>
+    <published>2017-02-06T12:16:57.000Z</published>
+    <updated>2017-02-06T12:12:58.507Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="创建世界-场景-及常见函数"><a href="#创建世界-场景-及常见函数" class="headerlink" title="创建世界(场景)及常见函数"></a>创建世界(场景)及常见函数</h2><h3 id="0-世界的继承类"><a href="#0-世界的继承类" class="headerlink" title="0. 世界的继承类"></a>0. 世界的继承类</h3><ul>
+<li><code>btCollisionWorld</code><ul>
+<li>基类</li>
+</ul>
+</li>
+<li><code>btDynamicsWorld</code><ul>
+<li>继承于<code>btCollisionWorld</code></li>
+<li>基础的动力学实现</li>
+</ul>
+</li>
+<li><code>btDiscreteDynamicsWorld</code><ul>
+<li>继承于<code>btDynamicsWorld</code></li>
+<li>刚体的运动模拟</li>
+</ul>
+</li>
+</ul>
+<h3 id="1-创建世界-场景"><a href="#1-创建世界-场景" class="headerlink" title="1. 创建世界(场景)"></a>1. 创建世界(场景)</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 初始化场景</span></div><div class="line"></div><div class="line"><span class="comment">// 用于配置碰撞检测堆栈大小，默认碰撞算法，接触副本池的大小</span></div><div class="line">btDefaultCollisionConfiguration* collisionConfiguration = <span class="keyword">new</span> btDefaultCollisionConfiguration();</div><div class="line"></div><div class="line"><span class="comment">// 用于计算重叠对象（碰撞检测，接触点计算）（接触点会被封装成 btPersistentManifold 对象）</span></div><div class="line">btCollisionDispatcher* dispatcher = <span class="keyword">new</span> btCollisionDispatcher(collisionConfiguration);</div><div class="line"></div><div class="line"><span class="comment">// 提供成对的aabb重叠监测（重叠对象的管理，存储，增加删除等）</span></div><div class="line">btBroadphaseInterface* overlappingPairCache = <span class="keyword">new</span> btDbvtBroadphase();</div><div class="line"></div><div class="line">btSequentialImpulseConstraintSolver* solver = <span class="keyword">new</span> btSequentialImpulseConstraintSolver;</div><div class="line">btDynamicsWorld* world = <span class="keyword">new</span> btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);</div></pre></td></tr></table></figure>
+<h3 id="2-场景函数"><a href="#2-场景函数" class="headerlink" title="2. 场景函数"></a>2. 场景函数</h3><ul>
+<li><code>void btDynamicsWorld::addRigidBody(btRigidBody* body)</code><ul>
+<li>添加一个刚体</li>
+</ul>
+</li>
+<li><code>void btCollisionWorld::removeCollisionObject(btCollisionObject* collisionObject)</code><ul>
+<li>删除对象</li>
+</ul>
+</li>
+<li><code>int btCollisionWorld::getNumCollisionObjects()</code><ul>
+<li>获取数量</li>
+</ul>
+</li>
+<li><code>btAlignedObjectArray&lt;btCollisionObject*&gt; btCollisionWorld::getCollisionObjectArray()</code><ul>
+<li>获取场景所有对象</li>
+</ul>
+</li>
+<li><code>void    btDynamicsWorld::setGravity(const btVector3&amp; gravity)</code><ul>
+<li>设置重力</li>
+<li>默认值：btVector3(0,0,0)</li>
+</ul>
+</li>
+<li><code>void    btDynamicsWorld::performDiscreteCollisionDetection()</code><ul>
+<li>碰撞检测</li>
+</ul>
+</li>
+<li><code>int btDynamicsWorld::stepSimulation(btScalar timeStep, int maxSubSteps = 1, btScalar fixedTimeStep = btScalar(1.)/btScalar(60.))</code><ul>
+<li>模拟运动</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-举例"><a href="#3-举例" class="headerlink" title="3. 举例"></a>3. 举例</h3><ol>
+<li>场景场景；</li>
+<li>添加一个刚体；</li>
+<li>释放内存退出。</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"btBulletDynamicsCommon.h"</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">int</span> i;</div><div class="line">    <span class="comment">///-----initialization_start-----</span></div><div class="line"></div><div class="line">    <span class="comment">///collision configuration contains default setup for memory, collision setup. Advanced users can create their own configuration.</span></div><div class="line">    btDefaultCollisionConfiguration* collisionConfiguration = <span class="keyword">new</span> btDefaultCollisionConfiguration();</div><div class="line"></div><div class="line">    <span class="comment">///use the default collision dispatcher. For parallel processing you can use a diffent dispatcher (see Extras/BulletMultiThreaded)</span></div><div class="line">    btCollisionDispatcher* dispatcher = <span class="keyword">new</span>	btCollisionDispatcher(collisionConfiguration);</div><div class="line"></div><div class="line">    <span class="comment">///btDbvtBroadphase is a good general purpose broadphase. You can also try out btAxis3Sweep.</span></div><div class="line">    btBroadphaseInterface* overlappingPairCache = <span class="keyword">new</span> btDbvtBroadphase();</div><div class="line"></div><div class="line">    <span class="comment">///the default constraint solver. For parallel processing you can use a different solver (see Extras/BulletMultiThreaded)</span></div><div class="line">    btSequentialImpulseConstraintSolver* solver = <span class="keyword">new</span> btSequentialImpulseConstraintSolver;</div><div class="line"></div><div class="line">    btDiscreteDynamicsWorld* dynamicsWorld = <span class="keyword">new</span> btDiscreteDynamicsWorld(dispatcher,overlappingPairCache,solver,collisionConfiguration);</div><div class="line"></div><div class="line">    dynamicsWorld-&gt;setGravity(btVector3(<span class="number">0</span>,<span class="number">-10</span>,<span class="number">0</span>));</div><div class="line"></div><div class="line">    <span class="comment">///-----initialization_end-----</span></div><div class="line"></div><div class="line">    <span class="comment">//keep track of the shapes, we release memory at exit.</span></div><div class="line">    <span class="comment">//make sure to re-use collision shapes among rigid bodies whenever possible!</span></div><div class="line">    btAlignedObjectArray&lt;btCollisionShape*&gt; collisionShapes;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="comment">///create a few basic rigid bodies</span></div><div class="line">    btCollisionShape* groundShape = <span class="keyword">new</span> btBoxShape(btVector3(btScalar(<span class="number">50.</span>),btScalar(<span class="number">50.</span>),btScalar(<span class="number">50.</span>)));</div><div class="line"></div><div class="line">    btTransform groundTransform;</div><div class="line">    groundTransform.setIdentity();</div><div class="line">    groundTransform.setOrigin(btVector3(<span class="number">0</span>,<span class="number">-56</span>,<span class="number">0</span>));</div><div class="line"></div><div class="line">    <span class="function">btScalar <span class="title">mass</span><span class="params">(<span class="number">0.</span>)</span></span>;</div><div class="line"></div><div class="line">    <span class="comment">//rigidbody is dynamic if and only if mass is non zero, otherwise static</span></div><div class="line">    <span class="keyword">bool</span> isDynamic = (mass != <span class="number">0.f</span>);</div><div class="line"></div><div class="line">    <span class="function">btVector3 <span class="title">localInertia</span><span class="params">(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>)</span></span>;</div><div class="line">    <span class="keyword">if</span> (isDynamic)</div><div class="line">        groundShape-&gt;calculateLocalInertia(mass,localInertia);</div><div class="line"></div><div class="line">    <span class="comment">//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects</span></div><div class="line">    btDefaultMotionState* myMotionState = <span class="keyword">new</span> btDefaultMotionState(groundTransform);</div><div class="line">    btRigidBody::<span class="function">btRigidBodyConstructionInfo <span class="title">rbInfo</span><span class="params">(mass,myMotionState,groundShape,localInertia)</span></span>;</div><div class="line">    btRigidBody* body = <span class="keyword">new</span> btRigidBody(rbInfo);</div><div class="line"></div><div class="line">    <span class="comment">//add the body to the dynamics world</span></div><div class="line">    dynamicsWorld-&gt;addRigidBody(body);</div><div class="line"></div><div class="line">    <span class="comment">//cleanup in the reverse order of creation/initialization</span></div><div class="line">    <span class="keyword">delete</span> body;</div><div class="line">    <span class="keyword">delete</span> myMotionState;</div><div class="line">    <span class="keyword">delete</span> groundShape;</div><div class="line"></div><div class="line">    <span class="keyword">delete</span> dynamicsWorld;</div><div class="line">    <span class="keyword">delete</span> solver;</div><div class="line">    <span class="keyword">delete</span> overlappingPairCache;</div><div class="line">    <span class="keyword">delete</span> dispatcher;</div><div class="line">    <span class="keyword">delete</span> collisionConfiguration;</div><div class="line">&#125;</div></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;创建世界-场景-及常见函数&quot;&gt;&lt;a href=&quot;#创建世界-场景-及常见函数&quot; class=&quot;headerlink&quot; title=&quot;创建世界(场景)及常见函数&quot;&gt;&lt;/a&gt;创建世界(场景)及常见函数&lt;/h2&gt;&lt;h3 id=&quot;0-世界的继承类&quot;&gt;&lt;a href=&quot;#0
+    
+    </summary>
+    
+    
+      <category term="Bullet3" scheme="http://rondsny.github.io/tags/Bullet3/"/>
+    
+  </entry>
   
   <entry>
     <title>[erlang]supervisor(监控树)的使用和重启策略</title>
@@ -550,79 +623,6 @@ init([JobRef, Job]) -&gt;
   </entry>
   
   <entry>
-    <title>[Bullet3]创建世界(场景)及常见函数</title>
-    <link href="http://rondsny.github.io/2016/02/06/301-bullet3_init_world/"/>
-    <id>http://rondsny.github.io/2016/02/06/301-bullet3_init_world/</id>
-    <published>2016-02-06T12:16:57.000Z</published>
-    <updated>2017-02-06T12:10:26.345Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="创建世界-场景-及常见函数"><a href="#创建世界-场景-及常见函数" class="headerlink" title="创建世界(场景)及常见函数"></a>创建世界(场景)及常见函数</h2><h3 id="0-世界的继承类"><a href="#0-世界的继承类" class="headerlink" title="0. 世界的继承类"></a>0. 世界的继承类</h3><ul>
-<li><code>btCollisionWorld</code><ul>
-<li>基类</li>
-</ul>
-</li>
-<li><code>btDynamicsWorld</code><ul>
-<li>继承于<code>btCollisionWorld</code></li>
-<li>基础的动力学实现</li>
-</ul>
-</li>
-<li><code>btDiscreteDynamicsWorld</code><ul>
-<li>继承于<code>btDynamicsWorld</code></li>
-<li>刚体的运动模拟</li>
-</ul>
-</li>
-</ul>
-<h3 id="1-创建世界-场景"><a href="#1-创建世界-场景" class="headerlink" title="1. 创建世界(场景)"></a>1. 创建世界(场景)</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 初始化场景</span></div><div class="line"></div><div class="line"><span class="comment">// 用于配置碰撞检测堆栈大小，默认碰撞算法，接触副本池的大小</span></div><div class="line">btDefaultCollisionConfiguration* collisionConfiguration = <span class="keyword">new</span> btDefaultCollisionConfiguration();</div><div class="line"></div><div class="line"><span class="comment">// 用于计算重叠对象（碰撞检测，接触点计算）（接触点会被封装成 btPersistentManifold 对象）</span></div><div class="line">btCollisionDispatcher* dispatcher = <span class="keyword">new</span> btCollisionDispatcher(collisionConfiguration);</div><div class="line"></div><div class="line"><span class="comment">// 提供成对的aabb重叠监测（重叠对象的管理，存储，增加删除等）</span></div><div class="line">btBroadphaseInterface* overlappingPairCache = <span class="keyword">new</span> btDbvtBroadphase();</div><div class="line"></div><div class="line">btSequentialImpulseConstraintSolver* solver = <span class="keyword">new</span> btSequentialImpulseConstraintSolver;</div><div class="line">btDynamicsWorld* world = <span class="keyword">new</span> btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);</div></pre></td></tr></table></figure>
-<h3 id="2-场景函数"><a href="#2-场景函数" class="headerlink" title="2. 场景函数"></a>2. 场景函数</h3><ul>
-<li><code>void btDynamicsWorld::addRigidBody(btRigidBody* body)</code><ul>
-<li>添加一个刚体</li>
-</ul>
-</li>
-<li><code>void btCollisionWorld::removeCollisionObject(btCollisionObject* collisionObject)</code><ul>
-<li>删除对象</li>
-</ul>
-</li>
-<li><code>int btCollisionWorld::getNumCollisionObjects()</code><ul>
-<li>获取数量</li>
-</ul>
-</li>
-<li><code>btAlignedObjectArray&lt;btCollisionObject*&gt; btCollisionWorld::getCollisionObjectArray()</code><ul>
-<li>获取场景所有对象</li>
-</ul>
-</li>
-<li><code>void    btDynamicsWorld::setGravity(const btVector3&amp; gravity)</code><ul>
-<li>设置重力</li>
-<li>默认值：btVector3(0,0,0)</li>
-</ul>
-</li>
-<li><code>void    btDynamicsWorld::performDiscreteCollisionDetection()</code><ul>
-<li>碰撞检测</li>
-</ul>
-</li>
-<li><code>int btDynamicsWorld::stepSimulation(btScalar timeStep, int maxSubSteps = 1, btScalar fixedTimeStep = btScalar(1.)/btScalar(60.))</code><ul>
-<li>模拟运动</li>
-</ul>
-</li>
-</ul>
-<h3 id="3-举例"><a href="#3-举例" class="headerlink" title="3. 举例"></a>3. 举例</h3><ol>
-<li>场景场景；</li>
-<li>添加一个刚体；</li>
-<li>释放内存退出。</li>
-</ol>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"btBulletDynamicsCommon.h"</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">int</span> i;</div><div class="line">    <span class="comment">///-----initialization_start-----</span></div><div class="line"></div><div class="line">    <span class="comment">///collision configuration contains default setup for memory, collision setup. Advanced users can create their own configuration.</span></div><div class="line">    btDefaultCollisionConfiguration* collisionConfiguration = <span class="keyword">new</span> btDefaultCollisionConfiguration();</div><div class="line"></div><div class="line">    <span class="comment">///use the default collision dispatcher. For parallel processing you can use a diffent dispatcher (see Extras/BulletMultiThreaded)</span></div><div class="line">    btCollisionDispatcher* dispatcher = <span class="keyword">new</span>	btCollisionDispatcher(collisionConfiguration);</div><div class="line"></div><div class="line">    <span class="comment">///btDbvtBroadphase is a good general purpose broadphase. You can also try out btAxis3Sweep.</span></div><div class="line">    btBroadphaseInterface* overlappingPairCache = <span class="keyword">new</span> btDbvtBroadphase();</div><div class="line"></div><div class="line">    <span class="comment">///the default constraint solver. For parallel processing you can use a different solver (see Extras/BulletMultiThreaded)</span></div><div class="line">    btSequentialImpulseConstraintSolver* solver = <span class="keyword">new</span> btSequentialImpulseConstraintSolver;</div><div class="line"></div><div class="line">    btDiscreteDynamicsWorld* dynamicsWorld = <span class="keyword">new</span> btDiscreteDynamicsWorld(dispatcher,overlappingPairCache,solver,collisionConfiguration);</div><div class="line"></div><div class="line">    dynamicsWorld-&gt;setGravity(btVector3(<span class="number">0</span>,<span class="number">-10</span>,<span class="number">0</span>));</div><div class="line"></div><div class="line">    <span class="comment">///-----initialization_end-----</span></div><div class="line"></div><div class="line">    <span class="comment">//keep track of the shapes, we release memory at exit.</span></div><div class="line">    <span class="comment">//make sure to re-use collision shapes among rigid bodies whenever possible!</span></div><div class="line">    btAlignedObjectArray&lt;btCollisionShape*&gt; collisionShapes;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="comment">///create a few basic rigid bodies</span></div><div class="line">    btCollisionShape* groundShape = <span class="keyword">new</span> btBoxShape(btVector3(btScalar(<span class="number">50.</span>),btScalar(<span class="number">50.</span>),btScalar(<span class="number">50.</span>)));</div><div class="line"></div><div class="line">    btTransform groundTransform;</div><div class="line">    groundTransform.setIdentity();</div><div class="line">    groundTransform.setOrigin(btVector3(<span class="number">0</span>,<span class="number">-56</span>,<span class="number">0</span>));</div><div class="line"></div><div class="line">    <span class="function">btScalar <span class="title">mass</span><span class="params">(<span class="number">0.</span>)</span></span>;</div><div class="line"></div><div class="line">    <span class="comment">//rigidbody is dynamic if and only if mass is non zero, otherwise static</span></div><div class="line">    <span class="keyword">bool</span> isDynamic = (mass != <span class="number">0.f</span>);</div><div class="line"></div><div class="line">    <span class="function">btVector3 <span class="title">localInertia</span><span class="params">(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>)</span></span>;</div><div class="line">    <span class="keyword">if</span> (isDynamic)</div><div class="line">        groundShape-&gt;calculateLocalInertia(mass,localInertia);</div><div class="line"></div><div class="line">    <span class="comment">//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects</span></div><div class="line">    btDefaultMotionState* myMotionState = <span class="keyword">new</span> btDefaultMotionState(groundTransform);</div><div class="line">    btRigidBody::<span class="function">btRigidBodyConstructionInfo <span class="title">rbInfo</span><span class="params">(mass,myMotionState,groundShape,localInertia)</span></span>;</div><div class="line">    btRigidBody* body = <span class="keyword">new</span> btRigidBody(rbInfo);</div><div class="line"></div><div class="line">    <span class="comment">//add the body to the dynamics world</span></div><div class="line">    dynamicsWorld-&gt;addRigidBody(body);</div><div class="line"></div><div class="line">    <span class="comment">//cleanup in the reverse order of creation/initialization</span></div><div class="line">    <span class="keyword">delete</span> body;</div><div class="line">    <span class="keyword">delete</span> myMotionState;</div><div class="line">    <span class="keyword">delete</span> groundShape;</div><div class="line"></div><div class="line">    <span class="keyword">delete</span> dynamicsWorld;</div><div class="line">    <span class="keyword">delete</span> solver;</div><div class="line">    <span class="keyword">delete</span> overlappingPairCache;</div><div class="line">    <span class="keyword">delete</span> dispatcher;</div><div class="line">    <span class="keyword">delete</span> collisionConfiguration;</div><div class="line">&#125;</div></pre></td></tr></table></figure>]]></content>
-    
-    <summary type="html">
-    
-      &lt;h2 id=&quot;创建世界-场景-及常见函数&quot;&gt;&lt;a href=&quot;#创建世界-场景-及常见函数&quot; class=&quot;headerlink&quot; title=&quot;创建世界(场景)及常见函数&quot;&gt;&lt;/a&gt;创建世界(场景)及常见函数&lt;/h2&gt;&lt;h3 id=&quot;0-世界的继承类&quot;&gt;&lt;a href=&quot;#0
-    
-    </summary>
-    
-    
-      <category term="Bullet3" scheme="http://rondsny.github.io/tags/Bullet3/"/>
-    
-  </entry>
-  
-  <entry>
     <title>[windows]快速从ftp下载最新软件包的批处理脚本 </title>
     <link href="http://rondsny.github.io/2015/11/14/601-Ftp_bat_help/"/>
     <id>http://rondsny.github.io/2015/11/14/601-Ftp_bat_help/</id>
@@ -1110,11 +1110,11 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
     </summary>
     
     
-      <category term="linux" scheme="http://rondsny.github.io/tags/linux/"/>
-    
       <category term="samba" scheme="http://rondsny.github.io/tags/samba/"/>
     
       <category term="selinux" scheme="http://rondsny.github.io/tags/selinux/"/>
+    
+      <category term="linux" scheme="http://rondsny.github.io/tags/linux/"/>
     
   </entry>
   
