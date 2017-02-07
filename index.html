@@ -11,7 +11,109 @@ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
 ga('create', 'Your Google Analytics ID', 'auto');
-ga('send', 'pageview');</script></head><body><div id="main"><header><a href="/." class="logo">Ron Ngai</a><ul class="nav"><li class="nav-link"><a href="/" class="active">Home</a></li><li class="nav-link"><a href="/archives/" target="_self">Archives</a></li></ul></header><section id="container"><ul class="home"><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2017/02/06/301-bullet3_init_world/" class="post-link">[Bullet3]创建世界(场景)及常见函数</a></h2><span class="post-time">2017年2月6日</span><div class="post-content"><h2 id="创建世界-场景-及常见函数"><a href="#创建世界-场景-及常见函数" class="headerlink" title="创建世界(场景)及常见函数"></a>创建世界(场景)及常见函数</h2><p>官方文档：<a href="http://bulletphysics.org" target="_blank" rel="external">http://bulletphysics.org</a><br>开源代码：<a href="https://github.com/bulletphysics/bullet3/releases" target="_blank" rel="external">https://github.com/bulletphysics/bullet3/releases</a><br>API文档：<a href="http://bulletphysics.org/Bullet/BulletFull/annotated.html" target="_blank" rel="external">http://bulletphysics.org/Bullet/BulletFull/annotated.html</a></p>
+ga('send', 'pageview');</script></head><body><div id="main"><header><a href="/." class="logo">Ron Ngai</a><ul class="nav"><li class="nav-link"><a href="/" class="active">Home</a></li><li class="nav-link"><a href="/archives/" target="_self">Archives</a></li></ul></header><section id="container"><ul class="home"><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2017/02/07/302-bullet3_init_shape/" class="post-link">[Bullet3]常见物体和初始化</a></h2><span class="post-time">2017年2月7日</span><div class="post-content"><p>官方文档：<a href="http://bulletphysics.org" target="_blank" rel="external">http://bulletphysics.org</a><br>开源代码：<a href="https://github.com/bulletphysics/bullet3/releases" target="_blank" rel="external">https://github.com/bulletphysics/bullet3/releases</a><br>API文档：<a href="http://bulletphysics.org/Bullet/BulletFull/annotated.html" target="_blank" rel="external">http://bulletphysics.org/Bullet/BulletFull/annotated.html</a></p>
+<h3 id="1-初始化物体"><a href="#1-初始化物体" class="headerlink" title="1. 初始化物体"></a>1. 初始化物体</h3><ol>
+<li>物体的形状由<code>btCollisionShape</code>对象维护；</li>
+<li>物体的位置，旋转状态由<code>btTransform</code>对象维护；</li>
+<li>最终需要将物体封装成<code>btRigidBody</code>或<code>btSoftBody</code>或其它对象；</li>
+<li>然后将步骤3的对象加入到场景中。</li>
+</ol>
+<p>例如</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">btCollisionShape* shape = <span class="keyword">new</span> btBoxShape(btVector3(btScalar(<span class="number">1000.</span>),btScalar(<span class="number">10.</span>),btScalar(<span class="number">1000.</span>)));</div><div class="line">btTransform trans;                       <span class="comment">// 位置、旋转维护对象</span></div><div class="line">trans.setIdentity();</div><div class="line">trans.setOrigin(btVector3(<span class="number">0</span>, <span class="number">-10</span>, <span class="number">0</span>));   <span class="comment">// 设置位置</span></div><div class="line"></div><div class="line">btScalar mass=<span class="number">0.f</span>;</div><div class="line"><span class="function">btVector3 <span class="title">localInertia</span><span class="params">(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>)</span></span>;</div><div class="line"><span class="keyword">bool</span> isDynamic = (mass != <span class="number">0.f</span>);</div><div class="line"><span class="keyword">if</span> (isDynamic)</div><div class="line">    shape-&gt;calculateLocalInertia(mass, localInertia);  <span class="comment">// 设置惯性</span></div><div class="line"></div><div class="line">btDefaultMotionState* myMotionState = <span class="keyword">new</span> btDefaultMotionState(trans);</div><div class="line">btRigidBody::<span class="function">btRigidBodyConstructionInfo <span class="title">cInfo</span><span class="params">(mass, myMotionState, shape, localInertia)</span></span>;</div><div class="line">btRigidBody* body = <span class="keyword">new</span> btRigidBody(cInfo);            <span class="comment">// 封装成刚体</span></div><div class="line">g_world-&gt;addRigidBody(body);                           <span class="comment">// 将物体添加到场景</span></div></pre></td></tr></table></figure>
+<h3 id="2-常见物体对象"><a href="#2-常见物体对象" class="headerlink" title="2. 常见物体对象"></a>2. 常见物体对象</h3><ul>
+<li>btCollisionObject 基类</li>
+<li>btRigidBody 刚体</li>
+<li>btSoftBody 流体</li>
+</ul>
+<h4 id="2-1-物体对象常用函数"><a href="#2-1-物体对象常用函数" class="headerlink" title="2.1. 物体对象常用函数"></a>2.1. 物体对象常用函数</h4><ul>
+<li><code>btCollisionShape* btCollisionObject::getCollisionShape()</code><ul>
+<li>btCollisionObject对象中获取形状维护对象</li>
+</ul>
+</li>
+<li><code>void btCollisionObject::setFriction(btScalar frict)</code><ul>
+<li>设置摩擦力</li>
+<li>默认值：0</li>
+</ul>
+</li>
+<li><code>void btCollisionObject::setRestitution(btScalar rest)</code><ul>
+<li>设置碰撞反弹系数</li>
+<li>默认值：0</li>
+</ul>
+</li>
+<li><code>void btRigidBody::applyImpulse(const btVector3 &amp; impulse, const btVector3 &amp; rel_pos)</code><ul>
+<li>设置冲量/动量（通过这个设置初始速度）</li>
+</ul>
+</li>
+<li><code>void btRigidBody::applyCentralImpulse(const btVector3 &amp; impulse)</code><ul>
+<li>设置冲量/动量（通过这个设置初始速度）</li>
+<li>默认值：0</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-初始化常见物体形状"><a href="#3-初始化常见物体形状" class="headerlink" title="3. 初始化常见物体形状"></a>3. 初始化常见物体形状</h3><p><a href="http://bulletphysics.org/Bullet/BulletFull/classbtCollisionShape.html" target="_blank" rel="external">http://bulletphysics.org/Bullet/BulletFull/classbtCollisionShape.html</a><br>常见的物体有长方体、球体、胶囊体、三角网格集合。</p>
+<ul>
+<li>btCollisionShap<ul>
+<li>基类</li>
+</ul>
+</li>
+<li>btBoxShape<ul>
+<li>长方体</li>
+<li>BOX_SHAPE_PROXYTYPE</li>
+</ul>
+</li>
+<li>btSphereShape<ul>
+<li>球体</li>
+<li>SPHERE_SHAPE_PROXYTYPE</li>
+</ul>
+</li>
+<li>btCapsuleShape<ul>
+<li>胶囊体</li>
+<li>CAPSULE_SHAPE_PROXYTYPE</li>
+</ul>
+</li>
+<li>btBvhTriangleMeshShap<ul>
+<li>三角网格</li>
+<li>TRIANGLE_MESH_SHAPE_PROXYTYPE</li>
+</ul>
+</li>
+</ul>
+<h4 id="3-1-物体对象常用函数"><a href="#3-1-物体对象常用函数" class="headerlink" title="3.1. 物体对象常用函数"></a>3.1. 物体对象常用函数</h4><ul>
+<li><code>int btCollisionShape::getShapeType() const</code><ul>
+<li>获取物品类型，类型参考以下枚举</li>
+<li><code>#include &quot;BulletCollision/BroadphaseCollision/btBroadphaseProxy.h&quot; //for the shape types</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="3-2-三角网格"><a href="#3-2-三角网格" class="headerlink" title="3.2. 三角网格"></a>3.2. 三角网格</h4><ul>
+<li>构造函数<code>btBvhTriangleMeshShape::btBvhTriangleMeshShape(btStridingMeshInterface* meshInterface,bool useQuantizedAabbCompression)</code></li>
+<li>构造函数<code>btBvhTriangleMeshShape::btBvhTriangleMeshShape(btStridingMeshInterface* meshInterface,bool useQuantizedAabbCompression, bool buildBvh = true)</code></li>
+<li><code>btTriangleIndexVertexArray</code>类集成于 <code>btStridingMeshInterface</code>接口。</li>
+<li><code>btIndexedMesh</code> 三角网格顶点列表和索引列表维护类</li>
+</ul>
+<h4 id="3-2-1-三角网格数据假设格式如下"><a href="#3-2-1-三角网格数据假设格式如下" class="headerlink" title="3.2.1. 三角网格数据假设格式如下"></a>3.2.1. 三角网格数据假设格式如下</h4><ul>
+<li>顶点表 Vertex Buff</li>
+<li>三角形表 Index Buff</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">define</span> Landscape03.txCount 1980      <span class="comment">// 顶点数量</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> Landscape03.dxCount 11310     <span class="comment">// 三角形数量</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"LinearMath/btScalar.h"</span></span></div><div class="line"></div><div class="line">btScalar Landscape03.tx[] = &#123;         <span class="comment">// 顶点坐标列表(三维)</span></div><div class="line"><span class="number">-3.0</span><span class="number">.0f</span>,<span class="number">3.99193</span>.,<span class="number">113.3</span><span class="number">.1f</span>,</div><div class="line"><span class="number">-3.0</span><span class="number">.0f</span>,<span class="number">3.18397f</span>,<span class="number">117.188f</span>,</div><div class="line"><span class="number">-3.6</span><span class="number">.094f</span>,<span class="number">1.63</span><span class="number">.63</span>.,<span class="number">113.3</span><span class="number">.1f</span>,</div><div class="line">...&#125;;</div><div class="line"></div><div class="line"><span class="keyword">unsigned</span> <span class="keyword">short</span> Landscape03.dx[] = &#123;   <span class="comment">// 三角形列表</span></div><div class="line"><span class="number">0</span>,<span class="number">1</span>,<span class="number">3.</span></div><div class="line"><span class="number">3</span>,<span class="number">3.1</span>,</div><div class="line"><span class="number">3.3</span>,<span class="number">4</span>,</div><div class="line"><span class="number">5</span>,<span class="number">4</span>,<span class="number">3</span>,</div><div class="line"><span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>,</div><div class="line">...&#125;;</div></pre></td></tr></table></figure>
+<h4 id="3-2-3-btStridingMeshInterface接口"><a href="#3-2-3-btStridingMeshInterface接口" class="headerlink" title="3.2.3. btStridingMeshInterface接口"></a>3.2.3. <code>btStridingMeshInterface</code>接口</h4><p>通用高性能三角网格访问接口。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">btStridingMeshInterface* meshInterface = <span class="keyword">new</span> btTriangleIndexVertexArray();</div><div class="line">btIndexedMesh part;</div><div class="line"></div><div class="line">part.m_vertexBase = (<span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>*)LandscapeVtx[i];</div><div class="line">part.m_vertexStride = <span class="keyword">sizeof</span>(btScalar) * <span class="number">3</span>;</div><div class="line">part.m_numVertices = LandscapeVtxCount[i];</div><div class="line">part.m_triangleIndexBase = (<span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>*)LandscapeIdx[i];</div><div class="line">part.m_triangleIndexStride = <span class="keyword">sizeof</span>( <span class="keyword">short</span>) * <span class="number">3</span>;</div><div class="line">part.m_numTriangles = LandscapeIdxCount[i]/<span class="number">3</span>;</div><div class="line">part.m_indexType = PHY_SHORT;</div><div class="line"></div><div class="line">meshInterface-&gt;addIndexedMesh(part,PHY_SHORT);</div><div class="line"></div><div class="line"><span class="keyword">bool</span> useQuantizedAabbCompression = <span class="literal">true</span>;</div><div class="line">btBvhTriangleMeshShape* trimeshShape = <span class="keyword">new</span> btBvhTriangleMeshShape(meshInterface,useQuantizedAabbCompression);</div></pre></td></tr></table></figure>
+<h4 id="3-3-长方体"><a href="#3-3-长方体" class="headerlink" title="3.3. 长方体"></a>3.3. 长方体</h4><ul>
+<li>构造函数<code>btBoxShape::btBoxShape(const btVector3 &amp; boxHalfExtents)</code></li>
+<li>长宽高，封装成<code>btVector3</code>对象</li>
+</ul>
+<h4 id="3-4-球"><a href="#3-4-球" class="headerlink" title="3.4. 球"></a>3.4. 球</h4><ul>
+<li>构造函数<code>btSphereShape::btSphereShape(btScalar radius)</code></li>
+<li>radius xyz轴的半径，可以设置为椭圆球</li>
+</ul>
+<h4 id="3-5-胶囊体"><a href="#3-5-胶囊体" class="headerlink" title="3.5. 胶囊体"></a>3.5. 胶囊体</h4><ul>
+<li>构造函数<code>btCapsuleShape::btCapsuleShape()</code></li>
+<li>构造函数<code>btCapsuleShape::btCapsuleShape(btScalar radius, btScalar height)</code></li>
+<li>radius 胶囊体半径，可以设置为椭圆球</li>
+<li>height 胶囊体长度，height为圆心之间的距离</li>
+<li>胶囊体的aabb的边的长度为 {radius<em>2, radius</em>2, radius*2+height}</li>
+</ul>
+</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2017/02/06/301-bullet3_init_world/" class="post-link">[Bullet3]创建世界(场景)及常见函数</a></h2><span class="post-time">2017年2月6日</span><div class="post-content"><p>官方文档：<a href="http://bulletphysics.org" target="_blank" rel="external">http://bulletphysics.org</a><br>开源代码：<a href="https://github.com/bulletphysics/bullet3/releases" target="_blank" rel="external">https://github.com/bulletphysics/bullet3/releases</a><br>API文档：<a href="http://bulletphysics.org/Bullet/BulletFull/annotated.html" target="_blank" rel="external">http://bulletphysics.org/Bullet/BulletFull/annotated.html</a></p>
+<h2 id="创建世界-场景-及常见函数"><a href="#创建世界-场景-及常见函数" class="headerlink" title="创建世界(场景)及常见函数"></a>创建世界(场景)及常见函数</h2><p>官方文档：<a href="http://bulletphysics.org" target="_blank" rel="external">http://bulletphysics.org</a><br>开源代码：<a href="https://github.com/bulletphysics/bullet3/releases" target="_blank" rel="external">https://github.com/bulletphysics/bullet3/releases</a><br>API文档：<a href="http://bulletphysics.org/Bullet/BulletFull/annotated.html" target="_blank" rel="external">http://bulletphysics.org/Bullet/BulletFull/annotated.html</a></p>
 <h3 id="0-世界的继承类"><a href="#0-世界的继承类" class="headerlink" title="0. 世界的继承类"></a>0. 世界的继承类</h3><ul>
 <li><code>btCollisionWorld</code><ul>
 <li>基类</li>
@@ -616,16 +718,4 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
 <li><a href="http://mirrors.163.com/.help/debian.html" target="_blank" rel="external">http://mirrors.163.com/.help/debian.html</a></li>
 <li><a href="https://www.raspberrypi.org/help/quick-start-guide/" target="_blank" rel="external">https://www.raspberrypi.org/help/quick-start-guide/</a></li>
 </ul>
-</div></article></li><li class="post-item"><article class="post"><h2 class="post-title"><a href="/2015/05/25/801-Game_Server_Design/" class="post-link">[game]游戏服务端的逻辑分服与物理分服</a></h2><span class="post-time">2015年5月25日</span><div class="post-content"><h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>工作室也经历过好几个游戏了。服务端的架构跟实际业务需求出现过不少的冲突。导致后来花了挺多时间去擦屁股的。以最近的一个游戏举例，原本的世界观设想是一个大服的世界观。也就是只有一个服，撑下百万用户，数万同时在线的设计。而后随着业务变化和线上表现，原本大服的设计并不能满足，最终变成了滚服玩法。由于大服变滚服，在原来的服务器架构约束下，对于后续增加的跨服玩法和合服实现都带来了比较大的麻烦和不少的工作量。</p>
-<p><img src="http://i.imgur.com/SORhqLU.png" alt="物理分服和逻辑分服"></p>
-<h3 id="物理分服"><a href="#物理分服" class="headerlink" title="物理分服"></a>物理分服</h3><p>原来的架构是按照大服设计的，所以在数据库上面的设计一个服对应一个数据库。假设我们滚了500个服，就需要建500个数据库，部署500个游戏服。无论后续跨服、合服的业务扩展，还是运维的维护方面，都变得比较复杂和困难。特别是合服的需求上面，需要将两个数据库甚至多个数据库合并成一个数据库。在量上来的时候，这一切都变得无比繁琐和复杂。开发人员也需要花费较多的人力和时间去写相应的工具。而且操作相对复杂，也比较容易出bug。而且后续新增的业务如果出现了持久化数据就需要增加相应的合服处理。</p>
-<h3 id="逻辑分服"><a href="#逻辑分服" class="headerlink" title="逻辑分服"></a>逻辑分服</h3><p>如果说我们一开始就已经将数据库合并了呢，是不是后续根本就不需要去合并数据库了。所以如果在当初框架设计的时候就已经按照逻辑来分服的话，后续的事情处理起来就简单多了。问过同行业的一些游戏架构，他们也是这么处理的。</p>
-<h4 id="对于合服"><a href="#对于合服" class="headerlink" title="对于合服"></a>对于合服</h4><p>因为数据其实还是在同一个库里面，而且也是在同一个服务器里面。只要简单处理，或者甚至不需要任何处理，就可以将两个或多个服合并。只需要在后台设置一下入口配置、可见配置就可以解决合服的问题了。</p>
-<h4 id="对于跨服"><a href="#对于跨服" class="headerlink" title="对于跨服"></a>对于跨服</h4><p>跨服原本的问题就是需要从不同库读取数据和与不同服进行交互。如果本身就不存在多服的问题，也不存在跨服的问题。</p>
-<p>虽然逻辑分服可以比较完美解决合服的问题，但是对于跨服还是需要单独处理。毕竟如果一个逻辑分服的服务器真的扛不住的时候，就会出现真的物理分服。对于跨服的需求来说，可能都是需要跨的。</p>
-<h4 id="维护成本"><a href="#维护成本" class="headerlink" title="维护成本"></a>维护成本</h4><p>相对于物理分服，逻辑分服可以极大地降低运维成本。数据库数量级可以极大减少，服务器数量也可以减少。对于备份、更新等运维操作都相对变得简单。甚至可以不依赖于运维工具，就可以简单地维护机器了。一台机器部署一个服(多个逻辑服)对比一台机器部署多个游戏服(一个逻辑服)，需要初始化的内存一般来说会变小(不排除不一样的情况)，机器的资源占用一般来说会小很多。所以对物理机的利用效率可以提高很多。</p>
-<h4 id="用户数量级的问题"><a href="#用户数量级的问题" class="headerlink" title="用户数量级的问题"></a>用户数量级的问题</h4><p>逻辑分服必然会出现性能瓶颈，不可避免地出现了物理分服、分库的情况。而对于合服来说，合服本身就是发生在用户数量或者同时在线数量不足的情况下出现的。如果用户数量过大，基本上不太可能出现合服的需求。如果前期量级大，已经物理分服了。后期量级小了，其实重新叠回去也不是什么大的问题。只需要跟运营沟通好了，还是可以使用逻辑分服的事情去解决合服的事情。当然如果运营需要真的在不同物理服上面进行合服，我也没有想到比较好的办法，只能又苦逼地去处理的样子。</p>
-<h4 id="开发成本"><a href="#开发成本" class="headerlink" title="开发成本"></a>开发成本</h4><p>由于逻辑分服，的确是增加了一些内容，譬如玩家所在的服务器ID。但是这个处理起来并没有多大的难度，而且对key值也并没有多大的影响。</p>
-<p>逻辑分服的架构对于大世界和滚服都是支持的，只是对于大世界的话，就浪费了一个存储空间和一点点内存。但是这样的框架可以自如应对大世界到滚服之间的变化。如果一开始就按照大世界来设计，万一某一天滚服了，就要麻烦地多。</p>
-<p>所以逻辑分服并不会提升多大的开发成本。</p>
 </div></article></li></ul><div class="paginator"><a href="/page/2/" class="next"><span>Next</span><i class="iconfont icon-right"></i></a></div></section><footer><div class="social"><a href="mailto:your@email.com" title="email" class="iconfont icon-email"></a><a href="/atom.xml" title="rss" class="iconfont icon-rss"></a></div><div class="copyright"><p class="power">Powered by <a href="https://hexo.io/">Hexo</a> and Theme by <a href="https://github.com/ahonn/hexo-theme-even"> Even</a></p><p class="since">&copy;2017<span class="heart"><i class="iconfont icon-heart"></i></span><span class="author">Ron_Ngai</span></p></div><div id="back2top"><i class="iconfont icon-up"></i></div></footer></div><script src="/js/zepto.min.js"></script><script src="/js/theme.js"></script></body></html>
