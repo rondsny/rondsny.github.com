@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://rondsny.github.io/2017/02/16/304-bullet3_collision_detection/</loc>
+    
+    <lastmod>2017-02-16T13:56:26.053Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://rondsny.github.io/2017/02/07/302-bullet3_init_shape/</loc>
     
     <lastmod>2017-02-07T13:07:47.579Z</lastmod>
