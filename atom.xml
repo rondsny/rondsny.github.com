@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <title></title>
+  <title>魏延的个人博客</title>
   
   <link href="/atom.xml" rel="self"/>
   
@@ -1315,11 +1315,11 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
     </summary>
     
     
+      <category term="linux" scheme="http://rondsny.github.io/tags/linux/"/>
+    
       <category term="samba" scheme="http://rondsny.github.io/tags/samba/"/>
     
       <category term="selinux" scheme="http://rondsny.github.io/tags/selinux/"/>
-    
-      <category term="linux" scheme="http://rondsny.github.io/tags/linux/"/>
     
   </entry>
   

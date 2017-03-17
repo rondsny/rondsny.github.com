@@ -1,11 +1,16 @@
 <!doctype html>
-<html class="theme-next use-motion theme-next-mist">
-<head>
+
+
+
   
 
-<meta charset="UTF-8"/>
-<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
 
 
 <meta http-equiv="Cache-Control" content="no-transform" />
@@ -18,64 +23,119 @@
 
 
 
-  <link rel="stylesheet" type="text/css" href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5"/>
+
+
+
+
 
 
 
   
-    <link href='//fonts.lug.ustc.edu.cn/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
   
 
 
-<link rel="stylesheet" type="text/css" href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" />
-
-<link rel="stylesheet" type="text/css" href="/css/main.css?v=0.4.5.2"/>
 
 
 
 
-  <meta name="keywords" content="Hexo,next" />
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
 
 
 
-  <link rel="alternate" href="/atom.xml" title="" type="application/atom+xml" />
+
+
+  <link rel="alternate" href="/atom.xml" title="魏延的个人博客" type="application/atom+xml" />
 
 
 
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.4.5.2" />
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
 
 
+
+
+
+
+<meta name="description" content="养猫码农，游戏后端开发，目前就职于阿里游戏">
 <meta property="og:type" content="website">
-<meta property="og:title">
+<meta property="og:title" content="魏延的个人博客">
 <meta property="og:url" content="http://rondsny.github.io/page/2/index.html">
-<meta property="og:site_name">
+<meta property="og:site_name" content="魏延的个人博客">
+<meta property="og:description" content="养猫码农，游戏后端开发，目前就职于阿里游戏">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title">
+<meta name="twitter:title" content="魏延的个人博客">
+<meta name="twitter:description" content="养猫码农，游戏后端开发，目前就职于阿里游戏">
 
 
-<script type="text/javascript" id="hexo.configuration">
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
   var CONFIG = {
+    root: '/',
     scheme: 'Mist',
-    sidebar: 'post'
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
   };
 </script>
 
 
 
-  <title>  </title>
+  <link rel="canonical" href="http://rondsny.github.io/page/2/"/>
+
+
+
+
+
+  <title> 魏延的个人博客 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
 
-  <!--[if lte IE 8]>
-  <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'>
-    <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home?ocid=ie6_countdown_bannercode">
-      <img src="http://7u2nvr.com1.z0.glb.clouddn.com/picouterie.jpg" border="0" height="42" width="820"
-           alt="You are using an outdated browser. For a faster, safer browsing experience, upgrade for free today or use other browser ,like chrome firefox safari."
-           style='margin-left:auto;margin-right:auto;display: block;'/>
-    </a>
-  </div>
-<![endif]-->
   
 
 
@@ -83,46 +143,73 @@
 
 
 
-  <div class="container one-column 
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left 
    page-home 
-">
+ ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-meta ">
-  
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
 
-  <div class="custom-logo-site-title">
-    <a href="/"  class="brand" rel="start">
-      <span class="logo-line-before"><i></i></span>
-      <span class="site-title"></span>
-      <span class="logo-line-after"><i></i></span>
-    </a>
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">魏延的个人博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
   </div>
-  <p class="site-subtitle"></p>
-</div>
 
-<div class="site-nav-toggle">
-  <button>
-    <span class="btn-bar"></span>
-    <span class="btn-bar"></span>
-    <span class="btn-bar"></span>
-  </button>
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
 </div>
 
 <nav class="site-nav">
   
 
   
-    <ul id="menu" class="menu ">
+    <ul id="menu" class="menu">
       
         
         <li class="menu-item menu-item-home">
           <a href="/" rel="section">
             
-              <i class="menu-item-icon fa fa-home"></i> <br />
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
             首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
           </a>
         </li>
       
@@ -130,7 +217,7 @@
         <li class="menu-item menu-item-archives">
           <a href="/archives" rel="section">
             
-              <i class="menu-item-icon fa fa-archive"></i> <br />
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
             归档
           </a>
@@ -140,14 +227,23 @@
         <li class="menu-item menu-item-tags">
           <a href="/tags" rel="section">
             
-              <i class="menu-item-icon fa fa-tags"></i> <br />
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
             
             标签
           </a>
         </li>
       
-
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
       
+
       
     </ul>
   
@@ -155,20 +251,38 @@
   
 </nav>
 
+
+
  </div>
     </header>
 
     <main id="main" class="main">
       <div class="main-inner">
-        <div id="content" class="content"> 
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
   <section id="posts" class="posts-expand">
     
       
 
   
+
+  
+  
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://rondsny.github.io/2015/11/14/601-Ftp_bat_help/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="RonNgai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/pics/ron_001.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="魏延的个人博客">
+    </span>
 
     
       <header class="post-header">
@@ -179,6 +293,7 @@
             
             
               
+                
                 <a class="post-title-link" href="/2015/11/14/601-Ftp_bat_help/" itemprop="url">
                   [windows]快速从ftp下载最新软件包的批处理脚本 
                 </a>
@@ -189,10 +304,21 @@
 
         <div class="post-meta">
           <span class="post-time">
-            发表于
-            <time itemprop="dateCreated" datetime="2015-11-14T17:15:57+08:00" content="2015-11-14">
-              2015-11-14
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2015-11-14T17:15:57+08:00">
+                2015-11-14
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -202,22 +328,28 @@
           
 
           
+          
+
+          
+
+          
+
+          
 
         </div>
       </header>
     
 
 
-    <div class="post-body">
+    <div class="post-body" itemprop="articleBody">
 
       
       
 
       
         
-          <span itemprop="articleBody">
-            
-              <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>由于敏捷开发，快速迭代，我们项目一天会有三个版本，也就意味着我一天要去获取三次软件包。我负责服务端开发，所以我经常需要去拿最新的客户端。我们的客户端放置在一个公共的ftp上面。每天频繁登陆ftp下载，或者使用ftp工具，每次都要点击同步，都不太方便。如果在linux下就好了，然而在windows也是可以运行脚本的，何不尝试下呢。</p>
+          
+            <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>由于敏捷开发，快速迭代，我们项目一天会有三个版本，也就意味着我一天要去获取三次软件包。我负责服务端开发，所以我经常需要去拿最新的客户端。我们的客户端放置在一个公共的ftp上面。每天频繁登陆ftp下载，或者使用ftp工具，每次都要点击同步，都不太方便。如果在linux下就好了，然而在windows也是可以运行脚本的，何不尝试下呢。</p>
 <h3 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h3><pre><code>@echo off
 rem for download file
 rem ftp config 
@@ -314,13 +446,26 @@ ftp -v -n -s:%f_info%
 <li><a href="http://www.robvanderwoude.com/ftp.php" target="_blank" rel="external">http://www.robvanderwoude.com/ftp.php</a></li>
 </ul>
 
-            
-          </span>
+          
         
       
     </div>
 
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
     <footer class="post-footer">
+      
+
       
 
       
@@ -337,9 +482,23 @@ ftp -v -n -s:%f_info%
       
 
   
+
+  
+  
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://rondsny.github.io/2015/11/05/501-Raspberrypi_Init/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="RonNgai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/pics/ron_001.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="魏延的个人博客">
+    </span>
 
     
       <header class="post-header">
@@ -350,6 +509,7 @@ ftp -v -n -s:%f_info%
             
             
               
+                
                 <a class="post-title-link" href="/2015/11/05/501-Raspberrypi_Init/" itemprop="url">
                   [linux]树莓派入手体验和系统安装
                 </a>
@@ -360,10 +520,21 @@ ftp -v -n -s:%f_info%
 
         <div class="post-meta">
           <span class="post-time">
-            发表于
-            <time itemprop="dateCreated" datetime="2015-11-05T20:00:00+08:00" content="2015-11-05">
-              2015-11-05
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2015-11-05T20:00:00+08:00">
+                2015-11-05
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -373,22 +544,28 @@ ftp -v -n -s:%f_info%
           
 
           
+          
+
+          
+
+          
+
+          
 
         </div>
       </header>
     
 
 
-    <div class="post-body">
+    <div class="post-body" itemprop="articleBody">
 
       
       
 
       
         
-          <span itemprop="articleBody">
-            
-              <p><img src="http://i.imgur.com/iAoxxbE.png" alt="树莓派"></p>
+          
+            <p><img src="http://i.imgur.com/iAoxxbE.png" alt="树莓派"></p>
 <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>一直想捣鼓点什么东西。当看到树莓派的时候，就是它了。</p>
 <p>树莓派可以安装<code>Linux</code>系统，而我在工作当中，可以说<code>Linux</code>是一半工作环境。树莓派真是个好东西，这个东西应该在我学习<code>linxu/Unix</code>的时候就该接触了。想想大学的时候，在<code>windows</code>下安装虚拟机，安装<code>Linux</code>是件多么痛苦的事情。而且那时的电脑配置也不算高，才2G内存，还要开虚拟机。玩个蛋蛋。</p>
 <p>对<code>Linux</code>也算比较熟吧，入手一个树莓派应该可以玩很多好玩的事情。</p>
@@ -440,13 +617,26 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
 <li><a href="https://www.raspberrypi.org/help/quick-start-guide/" target="_blank" rel="external">https://www.raspberrypi.org/help/quick-start-guide/</a></li>
 </ul>
 
-            
-          </span>
+          
         
       
     </div>
 
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
     <footer class="post-footer">
+      
+
       
 
       
@@ -463,9 +653,23 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
       
 
   
+
+  
+  
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://rondsny.github.io/2015/05/25/801-Game_Server_Design/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="RonNgai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/pics/ron_001.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="魏延的个人博客">
+    </span>
 
     
       <header class="post-header">
@@ -476,6 +680,7 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
             
             
               
+                
                 <a class="post-title-link" href="/2015/05/25/801-Game_Server_Design/" itemprop="url">
                   [game]游戏服务端的逻辑分服与物理分服
                 </a>
@@ -486,10 +691,21 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
 
         <div class="post-meta">
           <span class="post-time">
-            发表于
-            <time itemprop="dateCreated" datetime="2015-05-25T12:00:00+08:00" content="2015-05-25">
-              2015-05-25
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2015-05-25T12:00:00+08:00">
+                2015-05-25
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -499,22 +715,28 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
           
 
           
+          
+
+          
+
+          
+
+          
 
         </div>
       </header>
     
 
 
-    <div class="post-body">
+    <div class="post-body" itemprop="articleBody">
 
       
       
 
       
         
-          <span itemprop="articleBody">
-            
-              <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>工作室也经历过好几个游戏了。服务端的架构跟实际业务需求出现过不少的冲突。导致后来花了挺多时间去擦屁股的。以最近的一个游戏举例，原本的世界观设想是一个大服的世界观。也就是只有一个服，撑下百万用户，数万同时在线的设计。而后随着业务变化和线上表现，原本大服的设计并不能满足，最终变成了滚服玩法。由于大服变滚服，在原来的服务器架构约束下，对于后续增加的跨服玩法和合服实现都带来了比较大的麻烦和不少的工作量。</p>
+          
+            <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>工作室也经历过好几个游戏了。服务端的架构跟实际业务需求出现过不少的冲突。导致后来花了挺多时间去擦屁股的。以最近的一个游戏举例，原本的世界观设想是一个大服的世界观。也就是只有一个服，撑下百万用户，数万同时在线的设计。而后随着业务变化和线上表现，原本大服的设计并不能满足，最终变成了滚服玩法。由于大服变滚服，在原来的服务器架构约束下，对于后续增加的跨服玩法和合服实现都带来了比较大的麻烦和不少的工作量。</p>
 <p><img src="http://i.imgur.com/SORhqLU.png" alt="物理分服和逻辑分服"></p>
 <h3 id="物理分服"><a href="#物理分服" class="headerlink" title="物理分服"></a>物理分服</h3><p>原来的架构是按照大服设计的，所以在数据库上面的设计一个服对应一个数据库。假设我们滚了500个服，就需要建500个数据库，部署500个游戏服。无论后续跨服、合服的业务扩展，还是运维的维护方面，都变得比较复杂和困难。特别是合服的需求上面，需要将两个数据库甚至多个数据库合并成一个数据库。在量上来的时候，这一切都变得无比繁琐和复杂。开发人员也需要花费较多的人力和时间去写相应的工具。而且操作相对复杂，也比较容易出bug。而且后续新增的业务如果出现了持久化数据就需要增加相应的合服处理。</p>
 <h3 id="逻辑分服"><a href="#逻辑分服" class="headerlink" title="逻辑分服"></a>逻辑分服</h3><p>如果说我们一开始就已经将数据库合并了呢，是不是后续根本就不需要去合并数据库了。所以如果在当初框架设计的时候就已经按照逻辑来分服的话，后续的事情处理起来就简单多了。问过同行业的一些游戏架构，他们也是这么处理的。</p>
@@ -527,13 +749,26 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
 <p>逻辑分服的架构对于大世界和滚服都是支持的，只是对于大世界的话，就浪费了一个存储空间和一点点内存。但是这样的框架可以自如应对大世界到滚服之间的变化。如果一开始就按照大世界来设计，万一某一天滚服了，就要麻烦地多。</p>
 <p>所以逻辑分服并不会提升多大的开发成本。</p>
 
-            
-          </span>
+          
         
       
     </div>
 
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
     <footer class="post-footer">
+      
+
       
 
       
@@ -550,9 +785,23 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
       
 
   
+
+  
+  
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://rondsny.github.io/2015/04/28/401-Deploy_Tmux/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="RonNgai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/pics/ron_001.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="魏延的个人博客">
+    </span>
 
     
       <header class="post-header">
@@ -563,6 +812,7 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
             
             
               
+                
                 <a class="post-title-link" href="/2015/04/28/401-Deploy_Tmux/" itemprop="url">
                   [linux]CentOS下安装和使用tmux
                 </a>
@@ -573,10 +823,21 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
 
         <div class="post-meta">
           <span class="post-time">
-            发表于
-            <time itemprop="dateCreated" datetime="2015-04-28T18:27:54+08:00" content="2015-04-28">
-              2015-04-28
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2015-04-28T18:27:54+08:00">
+                2015-04-28
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -586,22 +847,28 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
           
 
           
+          
+
+          
+
+          
+
+          
 
         </div>
       </header>
     
 
 
-    <div class="post-body">
+    <div class="post-body" itemprop="articleBody">
 
       
       
 
       
         
-          <span itemprop="articleBody">
-            
-              <p>前天随意点开博客园，看到了一篇关于tmux的文章 <a href="http://cenalulu.github.io/linux/tmux/" target="_blank" rel="external">Tmux - Linux从业者必备利器</a>，特意还点进去看了。毕竟Linux对于做游戏服务端开发的我来说，太熟悉不过了。不过我就粗略地看了一眼，就关掉了。直到第二天<code>码农周刊</code>就推荐了这篇文章，才引起我真正的关注。<code>tmux</code>真的那么好用吗？所以我自己也倒腾来一遍，的确在许多场景下还是非常有用的。如：</p>
+          
+            <p>前天随意点开博客园，看到了一篇关于tmux的文章 <a href="http://cenalulu.github.io/linux/tmux/" target="_blank" rel="external">Tmux - Linux从业者必备利器</a>，特意还点进去看了。毕竟Linux对于做游戏服务端开发的我来说，太熟悉不过了。不过我就粗略地看了一眼，就关掉了。直到第二天<code>码农周刊</code>就推荐了这篇文章，才引起我真正的关注。<code>tmux</code>真的那么好用吗？所以我自己也倒腾来一遍，的确在许多场景下还是非常有用的。如：</p>
 <ul>
 <li>做服务器的，肯定需要关注性能的，而tmux多个pane可以很方便同时关注多项性能指标；</li>
 <li>我们的游戏服刚好有多个服务存在，而联调多个服务的时候，可以同时看到多个控制台确实很方便。</li>
@@ -808,13 +1075,26 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
 <li><a href="http://www.nigeldunn.com/2011/12/11/libevent-2-0-so-5-cannot-open-shared-object-file-no-such-file-or-directory/" title="libevent-2.0.so.5: cannot open shared object file: No such file or directory" target="_blank" rel="external">http://www.nigeldunn.com/2011/12/11/libevent-2-0-so-5-cannot-open-shared-object-file-no-such-file-or-directory/</a></li>
 </ol>
 
-            
-          </span>
+          
         
       
     </div>
 
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
     <footer class="post-footer">
+      
+
       
 
       
@@ -831,9 +1111,23 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
       
 
   
+
+  
+  
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://rondsny.github.io/2015/04/07/402-Stop_Selinux/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="RonNgai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/pics/ron_001.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="魏延的个人博客">
+    </span>
 
     
       <header class="post-header">
@@ -844,6 +1138,7 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
             
             
               
+                
                 <a class="post-title-link" href="/2015/04/07/402-Stop_Selinux/" itemprop="url">
                   [linux]windows无法访问samba的安全性问题(关闭selinux)
                 </a>
@@ -854,10 +1149,21 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
 
         <div class="post-meta">
           <span class="post-time">
-            发表于
-            <time itemprop="dateCreated" datetime="2015-04-07T18:00:00+08:00" content="2015-04-07">
-              2015-04-07
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2015-04-07T18:00:00+08:00">
+                2015-04-07
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -867,22 +1173,28 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
           
 
           
+          
+
+          
+
+          
+
+          
 
         </div>
       </header>
     
 
 
-    <div class="post-body">
+    <div class="post-body" itemprop="articleBody">
 
       
       
 
       
         
-          <span itemprop="articleBody">
-            
-              <h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>在某一天重启了虚拟机的 <code>linux</code> 之后，我的 <code>windows</code> 在连接上 <code>samba</code> 之后，点击某些文件夹的时候，会出现没有权限打开的情况。这问题折腾了我一度重新配置了好几次 <code>samba</code> 的配置，然而无果。</p>
+          
+            <h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>在某一天重启了虚拟机的 <code>linux</code> 之后，我的 <code>windows</code> 在连接上 <code>samba</code> 之后，点击某些文件夹的时候，会出现没有权限打开的情况。这问题折腾了我一度重新配置了好几次 <code>samba</code> 的配置，然而无果。</p>
 <h4 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h4><p>经过搜索，发现有两个办法可以解决samba的某些文件夹无法访问的问题。</p>
 <ul>
 <li>方法一 修改文件和文件夹的安全策略；</li>
@@ -903,13 +1215,26 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
 <h4 id="其它方案"><a href="#其它方案" class="headerlink" title="其它方案"></a>其它方案</h4><p><a href="https://wiki.centos.org/zh/HowTos/SetUpSamba" title="https://wiki.centos.org/zh/HowTos/SetUpSamba" target="_blank" rel="external">https://wiki.centos.org/zh/HowTos/SetUpSamba</a> 有相当详细的解释和解决办法。有时间折腾的可以看看。</p>
 <p>以上。</p>
 
-            
-          </span>
+          
         
       
     </div>
 
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
     <footer class="post-footer">
+      
+
       
 
       
@@ -926,9 +1251,23 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
       
 
   
+
+  
+  
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://rondsny.github.io/2015/03/17/403-Set_svn_ignore/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="RonNgai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/pics/ron_001.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="魏延的个人博客">
+    </span>
 
     
       <header class="post-header">
@@ -939,6 +1278,7 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
             
             
               
+                
                 <a class="post-title-link" href="/2015/03/17/403-Set_svn_ignore/" itemprop="url">
                   [svn]如何在linux设置svn忽略列表
                 </a>
@@ -949,10 +1289,21 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
 
         <div class="post-meta">
           <span class="post-time">
-            发表于
-            <time itemprop="dateCreated" datetime="2015-03-17T18:35:20+08:00" content="2015-03-17">
-              2015-03-17
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2015-03-17T18:35:20+08:00">
+                2015-03-17
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -962,22 +1313,28 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
           
 
           
+          
+
+          
+
+          
+
+          
 
         </div>
       </header>
     
 
 
-    <div class="post-body">
+    <div class="post-body" itemprop="articleBody">
 
       
       
 
       
         
-          <span itemprop="articleBody">
-            
-              <h3 id="管理属性变量的命令"><a href="#管理属性变量的命令" class="headerlink" title="管理属性变量的命令"></a>管理属性变量的命令</h3><p>svn客户端有个属性<code>ignore</code> 用于保存忽略的文件或者目录。除此之外，svn其实有好多属性变量用来自定义，如在windows下svn客户端里面属性截图：<br><img src="/images/301-01.png" alt="windows svn" title="windows svn"></p>
+          
+            <h3 id="管理属性变量的命令"><a href="#管理属性变量的命令" class="headerlink" title="管理属性变量的命令"></a>管理属性变量的命令</h3><p>svn客户端有个属性<code>ignore</code> 用于保存忽略的文件或者目录。除此之外，svn其实有好多属性变量用来自定义，如在windows下svn客户端里面属性截图：<br><img src="/images/301-01.png" alt="windows svn" title="windows svn"></p>
 <p>但是在linux 下，不可像windows那样有可视化界面进行管理。<br>执行svn help 命令可以知道有五个命令用于管理svn 属性变量。</p>
 <pre><code>propdel (pdel, pd)                # 删除属性
 propedit (pedit, pe)              # 编辑属性
@@ -1001,13 +1358,26 @@ propset (pset, ps)                # 设置属性的值
 </ul>
 <p>当然避免误操作，我经常先执行<code>svn st | grep ^? | sed &#39;s/?    //&#39;</code> 先确认下文件列表。<br><img src="/images/301-04.png" alt="svn skill" title="svn skill"></p>
 
-            
-          </span>
+          
         
       
     </div>
 
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
     <footer class="post-footer">
+      
+
       
 
       
@@ -1024,9 +1394,23 @@ propset (pset, ps)                # 设置属性的值
       
 
   
+
+  
+  
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://rondsny.github.io/2015/03/12/202-Add_rss_in_Hexo/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="RonNgai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/pics/ron_001.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="魏延的个人博客">
+    </span>
 
     
       <header class="post-header">
@@ -1037,6 +1421,7 @@ propset (pset, ps)                # 设置属性的值
             
             
               
+                
                 <a class="post-title-link" href="/2015/03/12/202-Add_rss_in_Hexo/" itemprop="url">
                   [hexo]在hexo内添加RSS和sitemap
                 </a>
@@ -1047,10 +1432,21 @@ propset (pset, ps)                # 设置属性的值
 
         <div class="post-meta">
           <span class="post-time">
-            发表于
-            <time itemprop="dateCreated" datetime="2015-03-12T15:28:01+08:00" content="2015-03-12">
-              2015-03-12
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2015-03-12T15:28:01+08:00">
+                2015-03-12
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -1060,22 +1456,28 @@ propset (pset, ps)                # 设置属性的值
           
 
           
+          
+
+          
+
+          
+
+          
 
         </div>
       </header>
     
 
 
-    <div class="post-body">
+    <div class="post-body" itemprop="articleBody">
 
       
       
 
       
         
-          <span itemprop="articleBody">
-            
-              <h3 id="一、添加RSS"><a href="#一、添加RSS" class="headerlink" title="一、添加RSS"></a>一、添加RSS</h3><p>博客来说，RSS的重要性可想而知。</p>
+          
+            <h3 id="一、添加RSS"><a href="#一、添加RSS" class="headerlink" title="一、添加RSS"></a>一、添加RSS</h3><p>博客来说，RSS的重要性可想而知。</p>
 <h4 id="1-安装hexo-rss插件"><a href="#1-安装hexo-rss插件" class="headerlink" title="1. 安装hexo rss插件"></a>1. 安装hexo rss插件</h4><p>hexo提供了生成RSS xml的插件<code>hexo-generator-feed</code>，执行<code>npm install hexo-generator-feed</code>即可。</p>
 <h4 id="2-配置"><a href="#2-配置" class="headerlink" title="2. 配置"></a>2. 配置</h4><p>编辑<code>blog/_config.yml</code>文件。在里面添加查看配置，如下</p>
 <pre><code>plugins: 
@@ -1100,13 +1502,26 @@ propset (pset, ps)                # 设置属性的值
 &lt;/ul&gt;
 </code></pre><p>可以不配置menu达到相同的效果。</p>
 
-            
-          </span>
+          
         
       
     </div>
 
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
     <footer class="post-footer">
+      
+
       
 
       
@@ -1123,9 +1538,23 @@ propset (pset, ps)                # 设置属性的值
       
 
   
+
+  
+  
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://rondsny.github.io/2015/03/06/201-Deploy_Hexo_github/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="RonNgai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/pics/ron_001.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="魏延的个人博客">
+    </span>
 
     
       <header class="post-header">
@@ -1136,6 +1565,7 @@ propset (pset, ps)                # 设置属性的值
             
             
               
+                
                 <a class="post-title-link" href="/2015/03/06/201-Deploy_Hexo_github/" itemprop="url">
                   [hexo]搭载hexo+github博客系统
                 </a>
@@ -1146,10 +1576,21 @@ propset (pset, ps)                # 设置属性的值
 
         <div class="post-meta">
           <span class="post-time">
-            发表于
-            <time itemprop="dateCreated" datetime="2015-03-06T15:16:57+08:00" content="2015-03-06">
-              2015-03-06
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2015-03-06T15:16:57+08:00">
+                2015-03-06
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -1159,22 +1600,28 @@ propset (pset, ps)                # 设置属性的值
           
 
           
+          
+
+          
+
+          
+
+          
 
         </div>
       </header>
     
 
 
-    <div class="post-body">
+    <div class="post-body" itemprop="articleBody">
 
       
       
 
       
         
-          <span itemprop="articleBody">
-            
-              <h3 id="一、安装-Node-js"><a href="#一、安装-Node-js" class="headerlink" title="一、安装 Node.js"></a>一、安装 Node.js</h3><p>在官网 <a href="http://nodejs.org/" target="_blank" rel="external">http://nodejs.org/</a> 下载winwos版本，点击安装完成即可。</p>
+          
+            <h3 id="一、安装-Node-js"><a href="#一、安装-Node-js" class="headerlink" title="一、安装 Node.js"></a>一、安装 Node.js</h3><p>在官网 <a href="http://nodejs.org/" target="_blank" rel="external">http://nodejs.org/</a> 下载winwos版本，点击安装完成即可。</p>
 <h3 id="二、git环境安装"><a href="#二、git环境安装" class="headerlink" title="二、git环境安装"></a>二、git环境安装</h3><p>对于git的安装，网上已经大量资料，就不赘述了。</p>
 <h3 id="三、安装-hexo"><a href="#三、安装-hexo" class="headerlink" title="三、安装 hexo"></a>三、安装 hexo</h3><p>启动cmd，输入命令<code>npm install hexo-cli -g</code> 即可完成hexo的安装。</p>
 <h3 id="四、初始化博客"><a href="#四、初始化博客" class="headerlink" title="四、初始化博客"></a>四、初始化博客</h3><p>随便找一个目录。在cmd里面执行命令<code>hexo init blog</code> (blog为文件夹名称，与github的项目名称一致)。<br><code>cd blog</code>进入目录。执行<code>hexo g</code>和<code>hexo s</code>就可以生成静态html文件和启动一个http服务器。<br>按照提示，访问 <a href="http://127.0.0.1:4000/" target="_blank" rel="external">http://127.0.0.1:4000/</a> 就可以看到一个博客网站了。</p>
@@ -1189,13 +1636,26 @@ hexo server       # hexo s
 <p>执行命令 <code>hexo deploy</code> 或 <code>hexo d</code> 就可以将博客发布到github上面。</p>
 <p>访问 <a href="http://rondsny.github.io/">http://rondsny.github.io/</a> 就可以看到效果了。</p>
 
-            
-          </span>
+          
         
       
     </div>
 
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
     <footer class="post-footer">
+      
+
       
 
       
@@ -1217,15 +1677,16 @@ hexo server       # hexo s
   </nav>
 
 
- </div>
+          
+          </div>
+          
 
-        
 
-        
-      </div>
+          
 
-      
+        </div>
         
+          
   
   <div class="sidebar-toggle">
     <div class="sidebar-toggle-line-wrap">
@@ -1242,40 +1703,46 @@ hexo server       # hexo s
 
       
 
-      <section class="site-overview sidebar-panel  sidebar-panel-active ">
+      <section class="site-overview sidebar-panel sidebar-panel-active">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-          <img class="site-author-image" src="/images/default_avatar.jpg" alt="RonNgai" itemprop="image"/>
+          <img class="site-author-image" itemprop="image"
+               src="/pics/ron_001.png"
+               alt="RonNgai" />
           <p class="site-author-name" itemprop="name">RonNgai</p>
+           
+              <p class="site-description motion-element" itemprop="description">养猫码农，游戏后端开发，目前就职于阿里游戏</p>
+          
         </div>
-        <p class="site-description motion-element" itemprop="description"></p>
         <nav class="site-state motion-element">
-          <div class="site-state-item site-state-posts">
-            <a href="/archives">
-              <span class="site-state-item-count">18</span>
-              <span class="site-state-item-name">日志</span>
-            </a>
-          </div>
 
-          <div class="site-state-item site-state-categories">
-            
-              <span class="site-state-item-count">0</span>
-              <span class="site-state-item-name">分类</span>
-              
-          </div>
-
-          <div class="site-state-item site-state-tags">
-            <a href="/tags">
-              <span class="site-state-item-count">17</span>
-              <span class="site-state-item-name">标签</span>
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">18</span>
+                <span class="site-state-item-name">日志</span>
               </a>
-          </div>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              
+                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-name">标签</span>
+              
+            </div>
+          
 
         </nav>
 
         
           <div class="feed-link motion-element">
             <a href="/atom.xml" rel="alternate">
-              <i class="menu-item-icon icon-next-feed"></i>
+              <i class="fa fa-rss"></i>
               RSS
             </a>
           </div>
@@ -1288,11 +1755,15 @@ hexo server       # hexo s
         
         
 
-        <div class="links-of-author motion-element">
-          
-        </div>
+        
+        
+
+        
+
 
       </section>
+
+      
 
       
 
@@ -1300,22 +1771,25 @@ hexo server       # hexo s
   </aside>
 
 
-      
+        
+      </div>
     </main>
 
     <footer id="footer" class="footer">
-      <div class="footer-inner"> <div class="copyright" >
+      <div class="footer-inner">
+        <div class="copyright" >
   
   &copy; 
   <span itemprop="copyrightYear">2017</span>
   <span class="with-love">
-    <i class="icon-next-heart fa fa-heart"></i>
+    <i class="fa fa-heart"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">RonNgai</span>
 </div>
 
+
 <div class="powered-by">
-  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
 </div>
 
 <div class="theme-info">
@@ -1326,73 +1800,126 @@ hexo server       # hexo s
 </div>
 
 
- </div>
+        
+
+        
+      </div>
     </footer>
 
-    <div class="back-to-top"></div>
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+    
   </div>
 
-  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
-
-  
-  
-  
-    
-    
-
   
 
-
-  
-  
-  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
-  <script type="text/javascript" src="/js/fancy-box.js?v=0.4.5.2"></script>
-
-
-  <script type="text/javascript" src="/js/helpers.js?v=0.4.5.2"></script>
-  
-
-  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
-  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
-
-  <script type="text/javascript" src="/js/motion_global.js?v=0.4.5.2" id="motion.global"></script>
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
 
 
 
 
-  <script type="text/javascript" src="/js/nav-toggle.js?v=0.4.5.2"></script>
-  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+
+
+
 
   
 
-  <script type="text/javascript">
-    $(document).ready(function () {
-      if (CONFIG.sidebar === 'always') {
-        displaySidebar();
-      }
-      if (isMobile()) {
-        FastClick.attach(document.body);
-      }
 
-      motionIntegrator.bootstrap();
-    });
-  </script>
+
 
   
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
   
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
 
   
   
 
   
-  <script type="text/javascript" src="/js/lazyload.js"></script>
-  <script type="text/javascript">
-    $(function () {
-      $("#posts").find('img').lazyload({
-        placeholder: "/images/loading.gif",
-        effect: "fadeIn"
-      });
-    });
-  </script>
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
 </body>
 </html>
