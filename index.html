@@ -239,6 +239,280 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://rondsny.github.io/2017/05/04/351_u3d_api/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="RonNgai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/pics/ron_001.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="魏延的个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2017/05/04/351_u3d_api/" itemprop="url">
+                  [Unity]Unity常见API
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-04T14:06:44+08:00">
+                2017-05-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="Unity常见API"><a href="#Unity常见API" class="headerlink" title="Unity常见API"></a>Unity常见API</h2><p>本文主要为了方便查阅</p>
+<h3 id="1-MonoBehaviour-生命周期"><a href="#1-MonoBehaviour-生命周期" class="headerlink" title="1. MonoBehaviour 生命周期"></a>1. MonoBehaviour 生命周期</h3><ul>
+<li>Awake 对象创建的时候调用，类似构造函数</li>
+<li>Start 在<code>Awake</code>之后执行，区别在于，如果组件不可用（在<code>Inspector</code>没有勾选该组件），是不会执行<code>Start</code>的</li>
+<li>Update 主函数循环每帧调用</li>
+<li>FixedUpdate 每次固定帧调用，在物理计算的时候，应该使用该方法，而不是<code>Update</code></li>
+<li>OnDestroy 对象销毁时调用</li>
+</ul>
+<h3 id="2-MonoBehaviour-常见回调函数"><a href="#2-MonoBehaviour-常见回调函数" class="headerlink" title="2. MonoBehaviour 常见回调函数"></a>2. MonoBehaviour 常见回调函数</h3><ul>
+<li>OnMouseEnter 鼠标移入GUI控件或者碰撞体时调用</li>
+<li>OnMouseOver 鼠标停留在GUI控件或者碰撞体时调用</li>
+<li>OnMouseExit 鼠标移出GUI控件或者碰撞体时调用</li>
+<li>OnMouseDown 鼠标在GUI控件或者碰撞体上按下时调用</li>
+<li>OnMouseUp 鼠标在GUI控件或者碰撞体上释放时调用</li>
+<li>OnTriggerEnter 当其他碰撞体进入触发器时调用</li>
+<li>OnTriggerExit 当其他碰撞体离开触发器时调用</li>
+<li>OnCollisionEnter 当碰撞体或者刚体与其他碰撞体或刚体接触时调用<ul>
+<li>OnCollisionEnter2D 其它2D函数类似</li>
+</ul>
+</li>
+<li>OnCollisionExit 当碰撞体或者刚体与其他碰撞体或刚体停止接触时调用</li>
+<li>OnCollisionStay 当碰撞体或者刚体与其他碰撞体或刚体保持接触时调用</li>
+<li>OnContollerColliderHit 当控制器移动时与碰撞体发生碰撞时调用</li>
+<li>OnBecameVisible 对于任意一个相机可见时调用</li>
+<li>OnBecameInVisible 对于任意一个相机不可见时调用</li>
+<li>OnEnable 对象启用或者激活时调用</li>
+<li>OnDisable 对象禁用或者取消激活时调用</li>
+<li>OnDestroy 脚本销毁时调用</li>
+<li>OnGUI 渲染GUI和处理GUI消息时调用</li>
+</ul>
+<h3 id="3-访问游戏对象"><a href="#3-访问游戏对象" class="headerlink" title="3. 访问游戏对象"></a>3. 访问游戏对象</h3><ul>
+<li>GameObject.Find 多个时返回第一个</li>
+<li>GameObject.FindWithTag 多个时返回第一个</li>
+<li>GameObject.FindGameObjectsWithTag 返回数组</li>
+</ul>
+<p>以上函数比较耗时，尽量避免在update函数中使用。</p>
+<h3 id="4-访问组件"><a href="#4-访问组件" class="headerlink" title="4. 访问组件"></a>4. 访问组件</h3><h4 id="4-1-常见组件"><a href="#4-1-常见组件" class="headerlink" title="4.1. 常见组件"></a>4.1. 常见组件</h4><ul>
+<li>Transform 位置、旋转、缩放</li>
+<li>Rigidbody 刚体</li>
+<li>Renderer 渲染物体模型</li>
+<li>Light 灯光属性</li>
+<li>Camera 相机属性</li>
+<li>Collider 碰撞体</li>
+<li>Animation 动画</li>
+<li>Audio 声音</li>
+<li>Mesh<ul>
+<li>Mesh Filter 网格过滤器</li>
+<li>Text Mesh 文本</li>
+<li>Mesh Renderer 网格渲染器</li>
+<li>Skinned Mesh Renderer 蒙皮渲染器，用于骨骼动画</li>
+</ul>
+</li>
+<li>Particle Sysyem 粒子系统</li>
+<li>Physics 物理</li>
+<li>Image Effects</li>
+<li>Scripts 自定义组件</li>
+</ul>
+<h4 id="4-2-获取组件"><a href="#4-2-获取组件" class="headerlink" title="4.2. 获取组件"></a>4.2. 获取组件</h4><ul>
+<li>GetComponent&lt;&gt;() 获取组件</li>
+<li>GetComponents&lt;&gt;()</li>
+<li>GetComponentInChildren&lt;&gt;() 得到对象或者对象子物体上的组件</li>
+<li>GetComponentsInChildren&lt;&gt;()</li>
+</ul>
+<p>以上函数比较耗时，尽量避免在update函数中使用。</p>
+<h4 id="4-3-Transform-组件"><a href="#4-3-Transform-组件" class="headerlink" title="4.3. Transform 组件"></a>4.3. Transform 组件</h4><h5 id="4-3-1-成员变量"><a href="#4-3-1-成员变量" class="headerlink" title="4.3.1. 成员变量"></a>4.3.1. 成员变量</h5><ul>
+<li>position 世界坐标系</li>
+<li>localPosition 相对坐标系(父对象)</li>
+<li>eulerAngles 世界坐标系中以欧拉角表示的旋转</li>
+<li>localEulerAngles 相对旋转</li>
+<li>right 右方向</li>
+<li>up 上方向</li>
+<li>forward 前方向</li>
+<li>rotation 旋转四元数</li>
+<li>localRotation 相对旋转四元数</li>
+<li>localScale 相对缩放比例</li>
+<li>parent 父对象的Transform组件</li>
+<li>worldToLocalMatrix 世界坐标系到局部坐标系的变换矩阵(只读)</li>
+<li>localToWorldMatrix 局部坐标系到世界坐标系的变换矩阵(只读)</li>
+<li>root 根对象的Transform组件</li>
+<li>childCount 子孙对象的数量</li>
+<li>lossyScale 全局缩放比例(只读)</li>
+</ul>
+<h5 id="4-3-2-成员函数"><a href="#4-3-2-成员函数" class="headerlink" title="4.3.2. 成员函数"></a>4.3.2. 成员函数</h5><ul>
+<li>Translate 按指定方向和距离平移</li>
+<li>Rotate 按指定的欧拉角旋转</li>
+<li>RotateAround 按给定旋转轴和旋转角度进行旋转</li>
+<li>LookAt 旋转使得自身的前方向指向目标的位置</li>
+<li>TransformDirection 将一个方向从局部坐标系变换到世界坐标系</li>
+<li>InverseTansformDirection 将一个方向从世界坐标系变化到局部坐标系</li>
+<li>DetachChildren 与所有子物体接触父子关系</li>
+<li>Find 按名称查找子对象</li>
+<li>IsChildOf 判断是否是指定对象的子对象</li>
+</ul>
+<h3 id="5-Time-时间类"><a href="#5-Time-时间类" class="headerlink" title="5. Time 时间类"></a>5. Time 时间类</h3><h4 id="5-1-成员变量"><a href="#5-1-成员变量" class="headerlink" title="5.1. 成员变量"></a>5.1. 成员变量</h4><ul>
+<li>time 游戏从开始到现在经历的时间(秒)(只读)</li>
+<li>timeSinceLevelLoad 此帧开始时间(秒)(只读)，从关卡加载完成开始计算</li>
+<li>dateTime 上一帧耗费的时间(秒)(只读)</li>
+<li>fixedTime 最近FixedUpdate的时间。该时间从游戏开始计算</li>
+<li>fixedDateTime 物理引擎和FixedUpdate的更新时间间隔</li>
+<li>maximunDateTime 一帧的最大耗时时间</li>
+<li>smoothDeltaTime Time.deltaTime的平滑淡出</li>
+<li>timeScale 时间流逝速度的比例。可以制作慢动作特效</li>
+<li>frameCount 已渲染的帧的总数(只读)</li>
+<li>realtimeSinceStartup 游戏从开始到现在的真实时间(秒)，该事件不受timeScale影响</li>
+<li>captureFramerate 固定帧率设置</li>
+</ul>
+<h3 id="6-Random-随机数类"><a href="#6-Random-随机数类" class="headerlink" title="6. Random 随机数类"></a>6. Random 随机数类</h3><h4 id="6-1-成员变量"><a href="#6-1-成员变量" class="headerlink" title="6.1. 成员变量"></a>6.1. 成员变量</h4><ul>
+<li>seed 随机数生成器种子</li>
+<li>value 0~1随机数，包含0和1</li>
+<li>insideUnitSphere 半径为1的球体内的一个随机点</li>
+<li>insideUnitCircle 半径为1的圆内的一个随机点</li>
+<li>onUnitSphere 半径为1的球面上的一个随机点</li>
+<li>rotation 随机旋转</li>
+<li>rotationUnitform 均匀分布的随机旋转</li>
+</ul>
+<h4 id="6-2-成员函数"><a href="#6-2-成员函数" class="headerlink" title="6.2. 成员函数"></a>6.2. 成员函数</h4><ul>
+<li>Range 返回(min,max)直接的随机浮点数，包含min和max</li>
+</ul>
+<h3 id="7-Mathf-数学类"><a href="#7-Mathf-数学类" class="headerlink" title="7. Mathf 数学类"></a>7. Mathf 数学类</h3><h4 id="7-1-成员变量"><a href="#7-1-成员变量" class="headerlink" title="7.1. 成员变量"></a>7.1. 成员变量</h4><ul>
+<li>PI</li>
+<li>Infinity 正无穷大</li>
+<li>NegativeInfinity 负无穷大</li>
+<li>Deg2Rad 度到弧度的转换系数</li>
+<li>Rad2Deg 弧度到度的转换系数</li>
+<li>Epsilon 一个很小的浮点数</li>
+</ul>
+<h4 id="7-2-成员函数"><a href="#7-2-成员函数" class="headerlink" title="7.2. 成员函数"></a>7.2. 成员函数</h4><ul>
+<li>Sin 弧度</li>
+<li>Cos 弧度</li>
+<li>Tan 弧度</li>
+<li>Asin 角度</li>
+<li>ACos 角度</li>
+<li>Atan 角度</li>
+<li>Sqrt 计算平方根</li>
+<li>Abs 绝对值</li>
+<li>Min</li>
+<li>Max</li>
+<li>Pow Pow(f,p) f的p次方</li>
+<li>Exp Exp(p) e的p次方</li>
+<li>Log 计算对数</li>
+<li>Log10 计算基为10的对数</li>
+<li>Ceil 向上取整</li>
+<li>Floor 向下取整</li>
+<li>Round 四舍五入</li>
+<li>Clamp 将数值限制在min和max之间</li>
+<li>Clamp01 将数值限制在0和1之间</li>
+</ul>
+<h3 id="8-Coroutine-协同程序函数"><a href="#8-Coroutine-协同程序函数" class="headerlink" title="8. Coroutine 协同程序函数"></a>8. Coroutine 协同程序函数</h3><ul>
+<li>StartCoroutine 启动一个协同程序</li>
+<li>StopCoroutine 终止一个协同程序</li>
+<li>StopAllCoroutines 终止所有协同程序</li>
+<li>WaitForSeconds 等到若干秒</li>
+<li>WaitForFixedUpdates 等待直到下一次FiexedUpdate调用</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="http://rondsny.github.io/2017/02/16/304-bullet3_collision_detection/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1896,222 +2170,6 @@ init([JobRef, Job]) -&gt;
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://rondsny.github.io/2015/11/14/601-Ftp_bat_help/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="RonNgai">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/pics/ron_001.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的个人博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2015/11/14/601-Ftp_bat_help/" itemprop="url">
-                  [windows]快速从ftp下载最新软件包的批处理脚本 
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2015-11-14T17:15:57+08:00">
-                2015-11-14
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>由于敏捷开发，快速迭代，我们项目一天会有三个版本，也就意味着我一天要去获取三次软件包。我负责服务端开发，所以我经常需要去拿最新的客户端。我们的客户端放置在一个公共的ftp上面。每天频繁登陆ftp下载，或者使用ftp工具，每次都要点击同步，都不太方便。如果在linux下就好了，然而在windows也是可以运行脚本的，何不尝试下呢。</p>
-<h3 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h3><pre><code>@echo off
-rem for download file
-rem ftp config 
-rem ip login_name password remote_dir
-
-set &quot;ftp_ip=192.168.0.1&quot;
-set &quot;ftp_user=admin&quot;
-set &quot;ftp_pass=123456&quot;
-set &quot;ftp_path=/&quot;
-
-set &quot;f_tmp=tmp&quot;
-set &quot;f_info=tmp\tmp_info.dat&quot;
-set &quot;f_list=tmp\tmp_list.dat&quot;
-
-rd /s /q pack
-mkdir %f_tmp%
-
-echo open %ftp_ip% &gt; %f_info%
-echo user %ftp_user% &gt;&gt; %f_info%
-echo %ftp_pass%&gt;&gt; %f_info%
-echo prompt &gt;&gt; %f_info%
-echo binary &gt;&gt; %f_info%
-echo cd %ftp_path% &gt;&gt; %f_info%
-echo ls . %f_list% &gt;&gt; %f_info%
-echo lcd %f_tmp% &gt;&gt; %f_info%
-echo disconnect &gt;&gt; %f_info%
-echo bye &gt;&gt; %f_info%
-
-ftp -v -n -s:%f_info%
-
-
-for /f &quot;delims=&quot; %%i in (&apos;type &quot;%f_list%&quot;&apos;) do (
-    set &quot;target_7z=%%i&quot;
-)
-
-echo open %ftp_ip% &gt; %f_info%
-echo user %ftp_user% &gt;&gt; %f_info%
-echo %ftp_pass%&gt;&gt; %f_info%
-echo prompt &gt;&gt; %f_info%
-echo binary &gt;&gt; %f_info%
-echo cd %ftp_path% &gt;&gt; %f_info%
-echo lcd %f_tmp% &gt;&gt; %f_info%
-echo get %target_7z%&gt;&gt; %f_info%
-echo disconnect &gt;&gt; %f_info%
-echo bye &gt;&gt; %f_info%
-
-ftp -v -n -s:%f_info%
-
-call tools\7z\x64\7za.exe x %f_tmp%\%target_7z%
-
-rd /s /q %f_tmp%
-
-exit
-</code></pre><p><img src="http://7xaw5u.com1.z0.glb.clouddn.com/windowsQQ截图20151114170729.png" alt="运行脚本"></p>
-<h3 id="逐步解释"><a href="#逐步解释" class="headerlink" title="逐步解释"></a>逐步解释</h3><h4 id="获取文件列表"><a href="#获取文件列表" class="headerlink" title="获取文件列表"></a>获取文件列表</h4><pre><code>echo open %ftp_ip% &gt; %f_info%
-echo user %ftp_user% &gt;&gt; %f_info%
-echo %ftp_pass%&gt;&gt; %f_info%
-echo prompt &gt;&gt; %f_info%
-echo binary &gt;&gt; %f_info%
-echo cd %ftp_path% &gt;&gt; %f_info%
-echo ls . %f_list% &gt;&gt; %f_info%
-echo lcd %f_tmp% &gt;&gt; %f_info%
-echo disconnect &gt;&gt; %f_info%
-echo bye &gt;&gt; %f_info%
-
-ftp -v -n -s:%f_info%
-</code></pre><p>这部分代码主要有以下几个作用：</p>
-<ol>
-<li>将ftp的命令写入到文件；</li>
-<li>在ftp上获取对应目录的文件列表，并写到本地文件下。</li>
-</ol>
-<h4 id="获取最新的一个文件"><a href="#获取最新的一个文件" class="headerlink" title="获取最新的一个文件"></a>获取最新的一个文件</h4><pre><code>for /f &quot;delims=&quot; %%i in (&apos;type &quot;%f_list%&quot;&apos;) do (
-    set &quot;target_7z=%%i&quot;
-)
-</code></pre><p>然后循环遍历文件列表，最终获取到最后一个列表（也就是最新的文件名）。</p>
-<h4 id="下载最新文件"><a href="#下载最新文件" class="headerlink" title="下载最新文件"></a>下载最新文件</h4><pre><code>echo open %ftp_ip% &gt; %f_info%
-echo user %ftp_user% &gt;&gt; %f_info%
-echo %ftp_pass%&gt;&gt; %f_info%
-echo prompt &gt;&gt; %f_info%
-echo binary &gt;&gt; %f_info%
-echo cd %ftp_path% &gt;&gt; %f_info%
-echo lcd %f_tmp% &gt;&gt; %f_info%
-echo get %target_7z%&gt;&gt; %f_info%
-echo disconnect &gt;&gt; %f_info%
-echo bye &gt;&gt; %f_info%
-
-ftp -v -n -s:%f_info%
-</code></pre><p>有了文件名，我们就可以再执行一次ftp命令，下载我们最新的文件了。以上就实现了动态下载最新文件了。</p>
-<h4 id="解压"><a href="#解压" class="headerlink" title="解压"></a>解压</h4><p>这边我们使用的软件包是7z打包的。所以也要下载7z解压工具。<br>官方地址：<a href="http://www.7-zip.org/" target="_blank" rel="external">http://www.7-zip.org/</a><br>然后下载到命令行版，放置到任意可读取目录就可以了。</p>
-<pre><code>call tools\7z\x64\7za.exe x %f_tmp%\%target_7z%
-</code></pre><h3 id="后话"><a href="#后话" class="headerlink" title="后话"></a>后话</h3><p>平常习惯了在linux下倒腾。可以写些脚本做些繁琐的事情，但是在windows经常就傻眼了。可视化的东西是有很多好处，但是也有些弊端。批处理脚本虽然不好用，但也并不是不可用。很多时候也可以带来很大的方便。当然会python、ruby这些脚本语言其实也是完全可以满足的。毕竟现在这年头批处理这种东西用的越来越少了。<code>windows shell</code>也可以，但是感觉也不太好用。</p>
-<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><ul>
-<li><a href="http://occool.com/2012/03/【转载】命令行压缩解压7z/" target="_blank" rel="external">http://occool.com/2012/03/【转载】命令行压缩解压7z/</a></li>
-<li><a href="http://www.robvanderwoude.com/ftp.php" target="_blank" rel="external">http://www.robvanderwoude.com/ftp.php</a></li>
-</ul>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -2161,7 +2219,7 @@ ftp -v -n -s:%f_info%
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-count">18</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -2174,7 +2232,7 @@ ftp -v -n -s:%f_info%
             
             <div class="site-state-item site-state-tags">
               
-                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-count">18</span>
                 <span class="site-state-item-name">标签</span>
               
             </div>
