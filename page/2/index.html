@@ -239,6 +239,363 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://rondsny.github.io/2016/09/22/451-ci_md_2_html/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="RonNgai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/pics/ron_001.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="魏延的个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/09/22/451-ci_md_2_html/" itemprop="url">
+                  [python]自动化将markdown文件转成html文件
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-22T18:00:00+08:00">
+                2016-09-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h3><p>我们项目开发人员写的文档都是<code>markdown</code>文件。对于其它组的同学要进行阅读不是很方便。每次编辑完<code>markdown</code>文件，我都是用软件将<code>md</code>文件转成<code>html</code>文件。刚开始转的时候，还没啥，转得次数多了，就觉得不能继续这样下去了。作为一名开发人员，还是让机器去做这些琐碎的事情吧。故写了两个脚本将<code>md</code>文件转成<code>html</code>文件，并将其放置在web服务器下，方便其他人员阅读。</p>
+<p>主要有两个脚本和一个定时任务：</p>
+<ul>
+<li>一个python脚本，主要将<code>md</code>文件转成<code>html</code>文件；</li>
+<li>一个shell脚本，主要用于管理逻辑；</li>
+<li>一个linux定时任务，主要是定时执行shell脚本。</li>
+</ul>
+<h3 id="二、用python将markdown转成html"><a href="#二、用python将markdown转成html" class="headerlink" title="二、用python将markdown转成html"></a>二、用python将markdown转成html</h3><h4 id="2-1-python依赖库"><a href="#2-1-python依赖库" class="headerlink" title="2.1 python依赖库"></a>2.1 python依赖库</h4><p>使用python的markdown库来转换md文件到html依赖两个库：</p>
+<ul>
+<li>pip install markdown</li>
+<li>pip install importlib</li>
+</ul>
+<h4 id="2-2-核心代码"><a href="#2-2-核心代码" class="headerlink" title="2.2 核心代码"></a>2.2 核心代码</h4><p>核心代码其实只有一句，执行 <code>markdown.markdown(text)</code>就可以获得生成的html的原文。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">input_file = codecs.open(in_file, mode=<span class="string">"r"</span>, encoding=<span class="string">"utf-8"</span>)</div><div class="line">text = input_file.read()</div><div class="line">html = markdown.markdown(text)</div></pre></td></tr></table></figure>
+<h4 id="2-3-html编码和html样式"><a href="#2-3-html编码和html样式" class="headerlink" title="2.3 html编码和html样式"></a>2.3 html编码和html样式</h4><p>直接<code>markdown.markdown(text)</code>生成的html文本，非常粗略，只是单纯的html内容。而且在浏览器内查看的时候中文乱码(在chrome中)，没有好看的css样式，太丑了。</p>
+<p><img src="pics/100_luanma.png" alt="乱码无样式"></p>
+<p>解决办法也很简单，在保存文件的时候，将<code>&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt;</code>和css样式添加上。就这么简单解决了。</p>
+<p><img src="pics/101_piaoliang.png" alt="带css样式"></p>
+<h4 id="2-4-完整python内容"><a href="#2-4-完整python内容" class="headerlink" title="2.4 完整python内容"></a>2.4 完整python内容</h4><ul>
+<li>读取md文件；</li>
+<li>将md文件转成html文本；</li>
+<li>添加css样式和保存html文本。</li>
+</ul>
+<p>python代码内容：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment"># -*- coding: utf-8 -*-</span></div><div class="line"><span class="comment"># 使用方法 python markdown_convert.py filename</span></div><div class="line"></div><div class="line"><span class="keyword">import</span> sys</div><div class="line"><span class="keyword">import</span> markdown</div><div class="line"><span class="keyword">import</span> codecs</div><div class="line"></div><div class="line"></div><div class="line">css = <span class="string">'''</span></div><div class="line">&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8" /&gt;</div><div class="line">&lt;style type="text/css"&gt;</div><div class="line">&lt;!-- 此处省略掉markdown的css样式，因为太长了 --&gt;</div><div class="line">&lt;/style&gt;</div><div class="line">'''</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">(argv)</span>:</span></div><div class="line">    name = argv[<span class="number">0</span>]</div><div class="line">    in_file = <span class="string">'%s.md'</span> % (name)</div><div class="line">    out_file = <span class="string">'%s.html'</span> % (name)</div><div class="line"></div><div class="line">    input_file = codecs.open(in_file, mode=<span class="string">"r"</span>, encoding=<span class="string">"utf-8"</span>)</div><div class="line">    text = input_file.read()</div><div class="line">    html = markdown.markdown(text)</div><div class="line"></div><div class="line">    output_file = codecs.open(out_file, <span class="string">"w"</span>,encoding=<span class="string">"utf-8"</span>,errors=<span class="string">"xmlcharrefreplace"</span>)</div><div class="line">    output_file.write(css+html)</div><div class="line"></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</div><div class="line">   main(sys.argv[<span class="number">1</span>:])</div></pre></td></tr></table></figure>
+<h3 id="三、shell逻辑"><a href="#三、shell逻辑" class="headerlink" title="三、shell逻辑"></a>三、shell逻辑</h3><h4 id="3-1-逻辑说明"><a href="#3-1-逻辑说明" class="headerlink" title="3.1 逻辑说明"></a>3.1 逻辑说明</h4><p>建立一个shell文件，用于进行逻辑处理，主要操作如下：</p>
+<ul>
+<li>更新svn文件，将最新的md文件更新下来(此处假设md文件是<code>测试文档.md</code>)；</li>
+<li>执行<code>python markdown_convert.py $NAME</code>将md文件转成html文件(生成<code>测试文档.html</code>)；</li>
+<li>将转好的html迁移到web路径下(移动到<code>html/测试文档.html</code>)；</li>
+<li>启动一个web服务(此处用的是python的<code>SimpleHTTPServer</code>的web服务器).</li>
+</ul>
+<h4 id="3-2-完整shell逻辑"><a href="#3-2-完整shell逻辑" class="headerlink" title="3.2 完整shell逻辑"></a>3.2 完整shell逻辑</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#!/bin/bash</span></div><div class="line"></div><div class="line">NAME=<span class="string">'测试文档'</span></div><div class="line"></div><div class="line"><span class="comment">## 更新代码</span></div><div class="line">svn update</div><div class="line"></div><div class="line"><span class="comment">## 删除html文件</span></div><div class="line"><span class="keyword">if</span> [ <span class="_">-f</span> <span class="string">"<span class="variable">$NAME</span>.html"</span> ];<span class="keyword">then</span></div><div class="line">    rm <span class="string">"<span class="variable">$NAME</span>.html"</span></div><div class="line"><span class="keyword">fi</span></div><div class="line"></div><div class="line"><span class="comment">## 生成html</span></div><div class="line"><span class="keyword">if</span> [ <span class="_">-f</span> <span class="string">"<span class="variable">$NAME</span>.md"</span> ];<span class="keyword">then</span></div><div class="line">    python markdown_convert.py <span class="variable">$NAME</span></div><div class="line"><span class="keyword">fi</span></div><div class="line"></div><div class="line"><span class="comment">## 生成html目录</span></div><div class="line"><span class="keyword">if</span> [ ! <span class="_">-d</span> <span class="string">"html"</span> ];<span class="keyword">then</span></div><div class="line">    mkdir <span class="string">"html"</span></div><div class="line"><span class="keyword">fi</span></div><div class="line"></div><div class="line"><span class="comment">## 拷贝html文件</span></div><div class="line"><span class="keyword">if</span> [ <span class="_">-f</span> <span class="string">"<span class="variable">$NAME</span>.html"</span> ];<span class="keyword">then</span></div><div class="line">    mv <span class="_">-f</span> <span class="string">"<span class="variable">$NAME</span>.html"</span> <span class="string">"html/"</span></div><div class="line"><span class="keyword">fi</span></div><div class="line"></div><div class="line"><span class="comment">## 开启web服务器</span></div><div class="line">PID=`ps aux | grep <span class="string">'python -m SimpleHTTPServer 8080'</span> | grep -v <span class="string">'grep'</span> | awk <span class="string">'&#123;print $2&#125;'</span>`</div><div class="line"></div><div class="line"><span class="keyword">if</span> [ <span class="string">"<span class="variable">$PID</span>"</span> = <span class="string">""</span> ];<span class="keyword">then</span></div><div class="line">    <span class="built_in">cd</span> html</div><div class="line">    nohup python -m SimpleHTTPServer 8080 &amp;</div><div class="line">    <span class="built_in">echo</span> <span class="string">'start web server'</span></div><div class="line"><span class="keyword">else</span></div><div class="line">    <span class="built_in">echo</span> <span class="string">'already start'</span></div><div class="line"><span class="keyword">fi</span></div></pre></td></tr></table></figure>
+<h3 id="四、linux定时任务"><a href="#四、linux定时任务" class="headerlink" title="四、linux定时任务"></a>四、linux定时任务</h3><p>在shell命令下输入<code>crontab -e</code>进入<code>linux</code>定时任务编辑界面。在里面设置<code>markdown2web.sh</code>脚本的定时任务：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">## 更新文档</span></div><div class="line">*/10 * * * * <span class="built_in">cd</span> /home/xxx/doc; sh markdown2web.sh &gt; /dev/null 2&gt;&amp;1</div></pre></td></tr></table></figure>
+<p>设置每10分钟执行一次<code>markdown2web.sh</code>脚本，当然也可以根据需求修改频率。</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://rondsny.github.io/2016/03/24/701-Erlang_erlcron_crash/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="RonNgai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/pics/ron_001.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="魏延的个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/03/24/701-Erlang_erlcron_crash/" itemprop="url">
+                  [erlang]一次erlcron崩溃引起的事故分析
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-03-24T13:34:57+08:00">
+                2016-03-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="事故背景"><a href="#事故背景" class="headerlink" title="事故背景"></a>事故背景</h3><p>由于误操作在<code>erlcron</code>设置了一个超过3个月后的定时任务。然后第二天之后发现每天的daily reset没有被执行，一些定时任务也没有被执行。瞬间感觉整个人都不好了，怎么无端端就不执行了呢。</p>
+<p>通过排查日志，发现了以下报错：</p>
+<pre><code>2016-03-22 16:54:32.014 [error] gen_server ecrn_control terminated with reason: no case clause matching {ok,[&lt;0.14123.1577&gt;,&lt;0.13079.1576&gt;,&lt;0.25254.1569&gt;,&lt;0.13402.1577&gt;,...]} in ecrn_control:internal_cancel/1 line 111
+2016-03-22 16:54:32.015 [error] CRASH REPORT Process ecrn_control with 0 neighbours exited with reason: no case clause matching {ok,[&lt;0.14123.1577&gt;,&lt;0.13079.1576&gt;,&lt;0.25254.1569&gt;,&lt;0.13402.1577&gt;,...]} in ecrn_control:internal_cancel/1 line 111 in gen_server:terminate/6 line 744
+</code></pre><p>我擦，<code>ecrn_control</code>都崩了，怎么回事。</p>
+<p>找到具体出错的代码：</p>
+<pre><code>internal_cancel(AlarmRef) -&gt;
+    case ecrn_reg:get(AlarmRef) of
+        undefined -&gt;
+            undefined;
+        {ok, [Pid]} -&gt;
+            ecrn_agent:cancel(Pid)
+    end.
+</code></pre><p>发现调用<code>ecrn_reg:get(AlarmRef)</code>被返回了{ok, List}，而且这个List的数据远不止一个。明显在设置那个超过3个月的定时任务的时候，<code>ecrn_reg</code>被注册进了脏数据。</p>
+<h3 id="事故重现"><a href="#事故重现" class="headerlink" title="事故重现"></a>事故重现</h3><h4 id="先设置几个正常的定时任务"><a href="#先设置几个正常的定时任务" class="headerlink" title="先设置几个正常的定时任务"></a>先设置几个正常的定时任务</h4><pre><code>&gt; erlcron:cron({{once, 1000}, {io, fwrite, ["Hello, world!~n"]}}).
+&gt; erlcron:cron({{once, 1000}, {io, fwrite, ["Hello, world!~n"]}}).
+&gt; erlcron:cron({{once, 1000}, {io, fwrite, ["Hello, world!~n"]}}).
+</code></pre><p>查看<code>observer:start()</code> 可以看到进程树如下：</p>
+<p><img src="http://i.imgur.com/H4oSaR0.png" alt=""></p>
+<h4 id="再设置一个4294968秒之后的定时任务"><a href="#再设置一个4294968秒之后的定时任务" class="headerlink" title="再设置一个4294968秒之后的定时任务"></a>再设置一个4294968秒之后的定时任务</h4><pre><code>&gt; erlcron:cron({{once, 4294968}, {io, fwrite, ["Hello, world!~n"]}}).
+</code></pre><p>结果就gg了，好多崩溃信息是不是：</p>
+<pre><code>22:49:16.818 [error] CRASH REPORT Process &lt;0.5822.64&gt; with 0 neighbours crashed with reason: timeout_value in gen_server:loop/6 line 358
+22:49:16.818 [error] Supervisor ecrn_cron_sup had child ecrn_agent started with ecrn_agent:start_link(#Ref&lt;0.0.11.11209&gt;, {{once,4294968},{io,fwrite,["Hello, world!~n"]}}) at &lt;0.5822.64&gt; exit with reason timeout_value in context child_terminated
+22:49:16.819 [error] CRASH REPORT Process &lt;0.5701.64&gt; with 0 neighbours crashed with reason: timeout_value in gen_server:loop/6 line 358
+22:49:16.821 [error] Supervisor ecrn_cron_sup had child ecrn_agent started with ecrn_agent:start_link(#Ref&lt;0.0.11.11209&gt;, {{once,4294968},{io,fwrite,["Hello, world!~n"]}}) at &lt;0.5701.64&gt; exit with reason timeout_value in context child_terminated
+22:49:16.821 [error] CRASH REPORT Process &lt;0.6237.64&gt; with 0 neighbours crashed with reason: timeout_value in gen_server:loop/6 line 358
+22:49:16.821 [error] Supervisor ecrn_cron_sup had child ecrn_agent started with ecrn_agent:start_link(#Ref&lt;0.0.11.11209&gt;, {{once,4294968},{io,fwrite,["Hello, world!~n"]}}) at &lt;0.6237.64&gt; exit with reason timeout_value in context child_terminated
+22:49:16.821 [error] CRASH REPORT Process &lt;0.5862.64&gt; with 0 neighbours crashed with reason: timeout_value in gen_server:loop/6 line 358
+22:49:16.821 [error] Supervisor ecrn_cron_sup had child ecrn_agent started with ecrn_agent:start_link(#Ref&lt;0.0.11.11209&gt;, {{once,4294968},{io,fwrite,["Hello, world!~n"]}}) at &lt;0.5862.64&gt; exit with reason timeout_value in context child_terminated
+
+...(总共有25条)
+</code></pre><p>再看一下进程数：</p>
+<p><img src="http://i.imgur.com/TSYo5CH.png" alt=""></p>
+<p>我擦，为毛原来的 scrn_agent 进程也没有了。</p>
+<p>可以发现，erlcron 在尝试了25次设置 这个定时任务之后，也就是 scrn_agent 崩溃了25次之后，原来设置的三个正常的定时任务的scrn_agent 进程也没有掉了。<br>也就是说，不但我新设置的定时任务没有成功，而且我原来正常的定时任务也没有掉了。</p>
+<p>再看一下崩溃日志里面的崩掉的进程号，每一个都是不一样的。可以推算其实原来的报错<code>ecrn_reg:get(AlarmRef)</code>获取到了多个Pid，其实就是这里插入失败的定时任务产生的25个Pid。也就是说，虽然<code>ecrn_agent</code>进程崩溃了，但是<code>ecrn_reg</code>还是保存了这些Pid。所以在取消这些定时任务的时候，<code>ecrn_reg:get(AlarmRef)</code>返回的内容在<code>internal_cancel(AlarmRef)</code>没有被匹配到。</p>
+<h3 id="为什么是4294968，其实是2-32"><a href="#为什么是4294968，其实是2-32" class="headerlink" title="为什么是4294968，其实是2^32"></a>为什么是4294968，其实是2^32</h3><p>为什么设置了<code>4294968</code>秒后的定时任务就崩溃了。这个数估计很多人很熟悉，<code>2^32=4294967296</code>，而<code>4294968000</code>也就是刚好大于<code>2^32</code>。即，如果设置的定时任务超过了<code>2^32</code>毫秒，在<code>erlcron</code>里面就不支持了。</p>
+<p>查看<code>gen_server:loop</code>的源码，找到引起崩溃的代码：</p>
+<p><img src="http://i.imgur.com/w9NJViE.png" alt=""></p>
+<pre><code>loop(Parent, Name, State, Mod, hibernate, Debug) -&gt;
+    proc_lib:hibernate(?MODULE,wake_hib,[Parent, Name, State, Mod, Debug]);
+loop(Parent, Name, State, Mod, Time, Debug) -&gt;
+    Msg = receive
+          Input -&gt;
+            Input
+      after Time -&gt;
+          timeout
+      end,
+    decode_msg(Msg, Parent, Name, State, Mod, Time, Debug, false).
+</code></pre><p>可以发现引起崩溃的，358行是一段<code>receive</code>代码。也就是说<code>receive</code>是不支持超过<code>2^32</code>大小的。</p>
+<p>自测了一下，的确如果<code>receive</code>的<code>after</code>后面如果是大于等于<code>2^32</code>的数值就会出现<code>bad receive timeout value</code>的报错。查看官方解释，已经明确说明不能大于<code>32位</code>大小。</p>
+<blockquote>
+<p>ExprT is to evaluate to an integer. The highest allowed value is 16#FFFFFFFF, that is, the value must fit in 32 bits. receive..after works exactly as receive, except that if no matching message has arrived within ExprT milliseconds, then BodyT is evaluated instead. The return value of BodyT then becomes the return value of the receive..after expression.</p>
+</blockquote>
+<p><em>引用自：<a href="http://erlang.org/doc/reference_manual/expressions.html" target="_blank" rel="external">http://erlang.org/doc/reference_manual/expressions.html</a></em></p>
+<p>再回到<code>erlcron</code>， 在 <code>ecrn_agent:start_link</code>的时候，<code>ecrn_agent:init</code>执行完<code>ecrn_reg:register(JobRef, self())</code>返回<code>{ok, NewState, Millis}</code>到<code>gen_server</code>之后，Millis如果超过<code>2^32</code>在<code>gen_server:loop</code>就会引起<code>gen_server</code>的<code>timeout_value</code>异常退出。</p>
+<pre><code>%% @private
+init([JobRef, Job]) -&gt;
+    State = #state{job=Job,
+                   alarm_ref=JobRef},
+    {DateTime, Actual} = ecrn_control:datetime(),
+    NewState = set_internal_time(State, DateTime, Actual),
+    case until_next_milliseconds(NewState, Job) of
+        {ok, Millis} when is_integer(Millis) -&gt;
+            ecrn_reg:register(JobRef, self()),
+            {ok, NewState, Millis};
+        {error, _}  -&gt;
+            {stop, normal}
+    end.
+</code></pre><h3 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h3><p>这坑踩的，有点郁闷。其实这跟<code>erlcron</code>也没关系，也不是<code>gen_server</code>的问题。而是<code>erlang</code>自身<code>receive</code>不支持2^32引起的。继续往下查其实可以发现，再往下是其它语言写的了。</p>
+<pre><code>-module(prim_eval).
+
+%% This module is simply a stub which abstract code gets included in the result
+%% of compilation of prim_eval.S, to keep Dialyzer happy.
+
+-export([&apos;receive&apos;/2]).
+
+-spec &apos;receive&apos;(fun((term()) -&gt; nomatch | T), timeout()) -&gt; T.
+&apos;receive&apos;(_, _) -&gt;
+    erlang:nif_error(stub).
+</code></pre><p><em>与君共勉</em></p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="http://rondsny.github.io/2015/11/14/601-Ftp_bat_help/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1685,7 +2042,7 @@ hexo server       # hexo s
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">18</span>
+                <span class="site-state-item-count">20</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1698,7 +2055,7 @@ hexo server       # hexo s
             
             <div class="site-state-item site-state-tags">
               
-                <span class="site-state-item-count">18</span>
+                <span class="site-state-item-count">21</span>
                 <span class="site-state-item-name">标签</span>
               
             </div>
