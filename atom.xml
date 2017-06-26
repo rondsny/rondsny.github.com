@@ -907,7 +907,7 @@ cul http://x.x.x.x:2010/v2/linerl/tags/list
     <link href="http://rondsny.github.io/2016/09/22/451-ci_md_2_html/"/>
     <id>http://rondsny.github.io/2016/09/22/451-ci_md_2_html/</id>
     <published>2016-09-22T10:00:00.000Z</published>
-    <updated>2017-06-14T03:34:08.544Z</updated>
+    <updated>2017-06-14T04:55:12.883Z</updated>
     
     <content type="html"><![CDATA[<h3 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h3><p>我们项目开发人员写的文档都是<code>markdown</code>文件。对于其它组的同学要进行阅读不是很方便。每次编辑完<code>markdown</code>文件，我都是用软件将<code>md</code>文件转成<code>html</code>文件。刚开始转的时候，还没啥，转得次数多了，就觉得不能继续这样下去了。作为一名开发人员，还是让机器去做这些琐碎的事情吧。故写了两个脚本将<code>md</code>文件转成<code>html</code>文件，并将其放置在web服务器下，方便其他人员阅读。</p>
 <p>主要有两个脚本和一个定时任务：</p>
@@ -924,9 +924,9 @@ cul http://x.x.x.x:2010/v2/linerl/tags/list
 <h4 id="2-2-核心代码"><a href="#2-2-核心代码" class="headerlink" title="2.2 核心代码"></a>2.2 核心代码</h4><p>核心代码其实只有一句，执行 <code>markdown.markdown(text)</code>就可以获得生成的html的原文。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">input_file = codecs.open(in_file, mode=<span class="string">"r"</span>, encoding=<span class="string">"utf-8"</span>)</div><div class="line">text = input_file.read()</div><div class="line">html = markdown.markdown(text)</div></pre></td></tr></table></figure>
 <h4 id="2-3-html编码和html样式"><a href="#2-3-html编码和html样式" class="headerlink" title="2.3 html编码和html样式"></a>2.3 html编码和html样式</h4><p>直接<code>markdown.markdown(text)</code>生成的html文本，非常粗略，只是单纯的html内容。而且在浏览器内查看的时候中文乱码(在chrome中)，没有好看的css样式，太丑了。</p>
-<p><img src="pics/100_luanma.png" alt="乱码无样式"></p>
+<p><img src="/pics/451_luanma.png" alt="乱码无样式"></p>
 <p>解决办法也很简单，在保存文件的时候，将<code>&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt;</code>和css样式添加上。就这么简单解决了。</p>
-<p><img src="pics/101_piaoliang.png" alt="带css样式"></p>
+<p><img src="/pics/451_piaoliang.png" alt="带css样式"></p>
 <h4 id="2-4-完整python内容"><a href="#2-4-完整python内容" class="headerlink" title="2.4 完整python内容"></a>2.4 完整python内容</h4><ul>
 <li>读取md文件；</li>
 <li>将md文件转成html文本；</li>
@@ -1551,11 +1551,11 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
     </summary>
     
     
-      <category term="linux" scheme="http://rondsny.github.io/tags/linux/"/>
-    
       <category term="samba" scheme="http://rondsny.github.io/tags/samba/"/>
     
       <category term="selinux" scheme="http://rondsny.github.io/tags/selinux/"/>
+    
+      <category term="linux" scheme="http://rondsny.github.io/tags/linux/"/>
     
   </entry>
   
