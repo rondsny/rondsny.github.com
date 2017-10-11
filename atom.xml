@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://rondsny.github.io/"/>
-  <updated>2017-05-04T06:12:26.468Z</updated>
+  <updated>2017-10-11T07:41:02.492Z</updated>
   <id>http://rondsny.github.io/</id>
   
   <author>
@@ -16,9 +16,71 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title></title>
+    <link href="http://rondsny.github.io/2017/10/11/352-Unity_Plugin/"/>
+    <id>http://rondsny.github.io/2017/10/11/352-Unity_Plugin/</id>
+    <published>2017-10-11T11:55:36.321Z</published>
+    <updated>2017-10-11T07:41:02.492Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="Unity3D编辑器插件扩展和组件扩展"><a href="#Unity3D编辑器插件扩展和组件扩展" class="headerlink" title="Unity3D编辑器插件扩展和组件扩展"></a>Unity3D编辑器插件扩展和组件扩展</h1><h2 id="1-插件扩展"><a href="#1-插件扩展" class="headerlink" title="1. 插件扩展"></a>1. 插件扩展</h2><h3 id="1-1-命名空间"><a href="#1-1-命名空间" class="headerlink" title="1.1. 命名空间"></a>1.1. 命名空间</h3><figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">using</span> UnityEditor;</div><div class="line"><span class="keyword">using</span> UnityEngine;    <span class="comment">//非必需，常用到</span></div></pre></td></tr></table></figure>
+<h3 id="1-2-使用语法"><a href="#1-2-使用语法" class="headerlink" title="1.2. 使用语法"></a>1.2. 使用语法</h3><figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">[MenuItem(<span class="string">"Assets/My Test"</span>)]</div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Test</span>(<span class="params"></span>)</span></div><div class="line">&#123;</div><div class="line">    Debug.Log(<span class="string">"Hello World!"</span>)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>语法说明</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">[MenuItem(<span class="string">"path $t"</span>, Is, Priority)]</div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Test1</span>(<span class="params"></span>)</span></div><div class="line">&#123;&#125;</div><div class="line"></div><div class="line">[MenuItem(<span class="string">"path _t"</span>, Is, Priority)]</div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Test2</span>(<span class="params"></span>)</span></div><div class="line">&#123;&#125;</div></pre></td></tr></table></figure>
+<ul>
+<li>path 是菜单路径；<ul>
+<li>一级菜单名称不支持中文</li>
+</ul>
+</li>
+<li>$t 是一个快捷键实例，在路径后面接空格，然后加上快捷键表示，单纯的一个按键快捷键按键字符前带下划线。该项非必需<ul>
+<li><code>%</code> 表示 <code>ctrl</code></li>
+<li><code>#</code> 表示 <code>shift</code></li>
+<li><code>&amp;</code> 表示 <code>alt</code></li>
+</ul>
+</li>
+<li>Is 设置为true的时候，如果没有选中游戏对象，会显示不可用状态，该选项非必需</li>
+<li>Priority 是优先级，数值越小优先级越高，非必需，其默认值为1000。</li>
+</ul>
+<p>下面表示快捷键为”ctrl+h” 的实例。</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">[MenuItem(<span class="string">"Assets/My Test %h"</span>)]</div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Test</span>(<span class="params"></span>)</span></div><div class="line">&#123;</div><div class="line">    Debug.Log(<span class="string">"Hello World!"</span>)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="1-3-Selection类"><a href="#1-3-Selection类" class="headerlink" title="1.3. Selection类"></a>1.3. Selection类</h3><p><a href="https://docs.unity3d.com/ScriptReference/Selection.html" target="_blank" rel="external">https://docs.unity3d.com/ScriptReference/Selection.html</a></p>
+<h4 id="1-3-1-获取选中物体"><a href="#1-3-1-获取选中物体" class="headerlink" title="1.3.1. 获取选中物体"></a>1.3.1. 获取选中物体</h4><p><code>Selection.Objects</code>可以获得选中的物品。</p>
+<h4 id="1-3-2-获取选中目录"><a href="#1-3-2-获取选中目录" class="headerlink" title="1.3.2. 获取选中目录"></a>1.3.2. 获取选中目录</h4><figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">string</span>[] guids = Selection.assetGUIDs;</div><div class="line"><span class="keyword">foreach</span> ( <span class="keyword">var</span> id <span class="keyword">in</span> guids )</div><div class="line">&#123;</div><div class="line">    <span class="keyword">string</span> path = AssetDatabase.GUIDToAssetPath(id);</div><div class="line">    <span class="keyword">if</span>(Directory.Exists(path))</div><div class="line">    &#123;</div><div class="line">        Debug.Log(<span class="keyword">string</span>.format(<span class="string">"Directory &#123;0&#125; exist"</span>, path))</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="1-4-给控件添加右上角齿轮菜单增加功能"><a href="#1-4-给控件添加右上角齿轮菜单增加功能" class="headerlink" title="1.4. 给控件添加右上角齿轮菜单增加功能"></a>1.4. 给控件添加右上角齿轮菜单增加功能</h3><figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">[MenuItem(<span class="string">"CONTEXT/Rigidbody/wyg_test"</span>)]</div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="title">TestRightButton</span>(<span class="params"></span>)</span></div><div class="line">&#123;</div><div class="line">    Debug.Log(<span class="string">"右键测试"</span>)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ul>
+<li>CONTEXT 为固定写法；</li>
+<li>Rigidbody 是控件名称，可以修改为其他控件；</li>
+<li>我使用中文的时候不知道为什么没有显示出来。</li>
+</ul>
+<p><img src="pics/unity_plugin_001.png" alt=""></p>
+<h3 id="1-5-弹窗"><a href="#1-5-弹窗" class="headerlink" title="1.5. 弹窗"></a>1.5. 弹窗</h3><p>编辑器的弹窗类需要继承<code>EditorWindow</code>。</p>
+<p>使用方法与GUI的使用方法基本一致，有Init，Awake，OnGUI等函数。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">class TestWindow : EditorWindow</div><div class="line">&#123;</div><div class="line">    public void Init()</div><div class="line">    &#123;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    publick void OnGUI()</div><div class="line">    &#123;</div><div class="line">        GUILayout.Label(&quot;Test Window&quot;);</div><div class="line">        if (GUILayout.Button(&quot;Button&quot;))</div><div class="line">        &#123;</div><div class="line">            Debug.Log(&quot;On Button&quot;)</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="2-组件属性展示"><a href="#2-组件属性展示" class="headerlink" title="2. 组件属性展示"></a>2. 组件属性展示</h2><p>以下效果都是组件的显示，所以是属于<code>using UnityEngine;</code>的。</p>
+<h3 id="2-1-Range"><a href="#2-1-Range" class="headerlink" title="2.1. Range"></a>2.1. Range</h3><p>可以将数值的展示效果变成滑动条效果。</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">[Range(<span class="number">1</span>, <span class="number">12</span>)]</div><div class="line"><span class="keyword">public</span> <span class="keyword">int</span> month;</div><div class="line">``` </div><div class="line"></div><div class="line">![](pics/unity_plugin_004.png)</div><div class="line"></div><div class="line"><span class="meta">### 2.2. Multiline/TextArea</span></div><div class="line"></div><div class="line">控制占用多行显示。</div><div class="line"></div><div class="line">```csharp</div><div class="line">[Multiline(<span class="number">5</span>)]</div><div class="line"><span class="keyword">public</span> <span class="keyword">string</span> msg1;</div><div class="line"></div><div class="line">[TextArea(<span class="number">3</span>,<span class="number">5</span>)]</div><div class="line"><span class="keyword">public</span> <span class="keyword">string</span> msg2;     <span class="comment">// 最少显示三行，最多显示五行</span></div></pre></td></tr></table></figure>
+<p><img src="pics/unity_plugin_005.png" alt=""></p>
+<h3 id="2-3-ContextMenuItem-ContextMenu"><a href="#2-3-ContextMenuItem-ContextMenu" class="headerlink" title="2.3. ContextMenuItem/ContextMenu"></a>2.3. ContextMenuItem/ContextMenu</h3><p>添加右键小菜单，添加一些小功能。</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">[ContextMenuItem(<span class="string">"Random"</span>, <span class="string">"RandomNumber"</span>)]</div><div class="line">[ContextMenuItem(<span class="string">"Reset"</span>, <span class="string">"ResetNumber"</span>)]</div><div class="line"><span class="keyword">public</span> <span class="keyword">int</span> number;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">RandomNumber</span>(<span class="params"></span>)</span></div><div class="line">&#123;</div><div class="line">    number = Random.Range(<span class="number">0</span>, <span class="number">100</span>);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">ResetNumber</span>(<span class="params"></span>)</span></div><div class="line">&#123;</div><div class="line">    number = <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><img src="pics/unity_plugin_002.png" alt=""></p>
+<p>还有一个<code>ContextMenu</code>的特性，用法类似。</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">string</span> Name;</div><div class="line"></div><div class="line">[ContextMenu(<span class="string">"Reset Name"</span>)]</div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">ResetName</span>(<span class="params"></span>)</span></div><div class="line">&#123;</div><div class="line">    Name = <span class="string">""</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><img src="pics/unity_plugin_003.png" alt=""></p>
+<h3 id="2-4-ColorUsage"><a href="#2-4-ColorUsage" class="headerlink" title="2.4. ColorUsage"></a>2.4. ColorUsage</h3><p>设置颜色选择器。</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> Color color1;</div><div class="line"></div><div class="line">[ColorUsage(<span class="literal">false</span>)]</div><div class="line"><span class="keyword">public</span> Color color2;        <span class="comment">// 没有alpha</span></div><div class="line"></div><div class="line">[ColorUsage(<span class="literal">true</span>, <span class="literal">true</span>, <span class="number">0</span>, <span class="number">8</span>, <span class="number">0.125</span>f, <span class="number">3</span>)]</div><div class="line"><span class="keyword">public</span> Color color3;        <span class="comment">// HDR</span></div></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h1 id=&quot;Unity3D编辑器插件扩展和组件扩展&quot;&gt;&lt;a href=&quot;#Unity3D编辑器插件扩展和组件扩展&quot; class=&quot;headerlink&quot; title=&quot;Unity3D编辑器插件扩展和组件扩展&quot;&gt;&lt;/a&gt;Unity3D编辑器插件扩展和组件扩展&lt;/h1&gt;&lt;h2 i
+    
+    </summary>
+    
+    
+  </entry>
+  
+  <entry>
     <title>[Unity]Unity常见API</title>
-    <link href="http://rondsny.github.io/2017/05/04/351_u3d_api/"/>
-    <id>http://rondsny.github.io/2017/05/04/351_u3d_api/</id>
+    <link href="http://rondsny.github.io/2017/05/04/351-u3d_api/"/>
+    <id>http://rondsny.github.io/2017/05/04/351-u3d_api/</id>
     <published>2017-05-04T06:06:44.000Z</published>
     <updated>2017-05-04T06:12:26.468Z</updated>
     
@@ -278,7 +340,7 @@
     <link href="http://rondsny.github.io/2017/02/07/302-bullet3_init_shape/"/>
     <id>http://rondsny.github.io/2017/02/07/302-bullet3_init_shape/</id>
     <published>2017-02-07T12:16:57.000Z</published>
-    <updated>2017-02-07T13:07:47.579Z</updated>
+    <updated>2017-02-08T10:10:27.851Z</updated>
     
     <content type="html"><![CDATA[<p>官方文档：<a href="http://bulletphysics.org" target="_blank" rel="external">http://bulletphysics.org</a><br>开源代码：<a href="https://github.com/bulletphysics/bullet3/releases" target="_blank" rel="external">https://github.com/bulletphysics/bullet3/releases</a><br>API文档：<a href="http://bulletphysics.org/Bullet/BulletFull/annotated.html" target="_blank" rel="external">http://bulletphysics.org/Bullet/BulletFull/annotated.html</a></p>
 <h3 id="1-初始化物体"><a href="#1-初始化物体" class="headerlink" title="1. 初始化物体"></a>1. 初始化物体</h3><ol>
@@ -345,6 +407,12 @@
 <li>TRIANGLE_MESH_SHAPE_PROXYTYPE</li>
 </ul>
 </li>
+<li>btMultiSphereShape<ul>
+<li>凸球体集合</li>
+<li>MULTI_SPHERE_SHAPE_PROXYTYPE</li>
+</ul>
+</li>
+<li></li>
 </ul>
 <h4 id="3-1-物体对象常用函数"><a href="#3-1-物体对象常用函数" class="headerlink" title="3.1. 物体对象常用函数"></a>3.1. 物体对象常用函数</h4><ul>
 <li><code>int btCollisionShape::getShapeType() const</code><ul>
@@ -353,7 +421,7 @@
 </ul>
 </li>
 </ul>
-<h4 id="3-2-三角网格"><a href="#3-2-三角网格" class="headerlink" title="3.2. 三角网格"></a>3.2. 三角网格</h4><ul>
+<h4 id="3-2-三角网格btBvhTriangleMeshShape"><a href="#3-2-三角网格btBvhTriangleMeshShape" class="headerlink" title="3.2. 三角网格btBvhTriangleMeshShape"></a>3.2. 三角网格<code>btBvhTriangleMeshShape</code></h4><ul>
 <li>构造函数<code>btBvhTriangleMeshShape::btBvhTriangleMeshShape(btStridingMeshInterface* meshInterface,bool useQuantizedAabbCompression)</code></li>
 <li>构造函数<code>btBvhTriangleMeshShape::btBvhTriangleMeshShape(btStridingMeshInterface* meshInterface,bool useQuantizedAabbCompression, bool buildBvh = true)</code></li>
 <li><code>btTriangleIndexVertexArray</code>类集成于 <code>btStridingMeshInterface</code>接口。</li>
@@ -366,21 +434,51 @@
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">define</span> Landscape03.txCount 1980      <span class="comment">// 顶点数量</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> Landscape03.dxCount 11310     <span class="comment">// 三角形数量</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"LinearMath/btScalar.h"</span></span></div><div class="line"></div><div class="line">btScalar Landscape03.tx[] = &#123;         <span class="comment">// 顶点坐标列表(三维)</span></div><div class="line"><span class="number">-3.0</span><span class="number">.0f</span>,<span class="number">3.99193</span>.,<span class="number">113.3</span><span class="number">.1f</span>,</div><div class="line"><span class="number">-3.0</span><span class="number">.0f</span>,<span class="number">3.18397f</span>,<span class="number">117.188f</span>,</div><div class="line"><span class="number">-3.6</span><span class="number">.094f</span>,<span class="number">1.63</span><span class="number">.63</span>.,<span class="number">113.3</span><span class="number">.1f</span>,</div><div class="line">...&#125;;</div><div class="line"></div><div class="line"><span class="keyword">unsigned</span> <span class="keyword">short</span> Landscape03.dx[] = &#123;   <span class="comment">// 三角形列表</span></div><div class="line"><span class="number">0</span>,<span class="number">1</span>,<span class="number">3.</span></div><div class="line"><span class="number">3</span>,<span class="number">3.1</span>,</div><div class="line"><span class="number">3.3</span>,<span class="number">4</span>,</div><div class="line"><span class="number">5</span>,<span class="number">4</span>,<span class="number">3</span>,</div><div class="line"><span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>,</div><div class="line">...&#125;;</div></pre></td></tr></table></figure>
 <h5 id="3-2-3-btStridingMeshInterface接口"><a href="#3-2-3-btStridingMeshInterface接口" class="headerlink" title="3.2.3. btStridingMeshInterface接口"></a>3.2.3. <code>btStridingMeshInterface</code>接口</h5><p>通用高性能三角网格访问接口。</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">btStridingMeshInterface* meshInterface = <span class="keyword">new</span> btTriangleIndexVertexArray();</div><div class="line">btIndexedMesh part;</div><div class="line"></div><div class="line">part.m_vertexBase = (<span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>*)LandscapeVtx[i];</div><div class="line">part.m_vertexStride = <span class="keyword">sizeof</span>(btScalar) * <span class="number">3</span>;</div><div class="line">part.m_numVertices = LandscapeVtxCount[i];</div><div class="line">part.m_triangleIndexBase = (<span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>*)LandscapeIdx[i];</div><div class="line">part.m_triangleIndexStride = <span class="keyword">sizeof</span>( <span class="keyword">short</span>) * <span class="number">3</span>;</div><div class="line">part.m_numTriangles = LandscapeIdxCount[i]/<span class="number">3</span>;</div><div class="line">part.m_indexType = PHY_SHORT;</div><div class="line"></div><div class="line">meshInterface-&gt;addIndexedMesh(part,PHY_SHORT);</div><div class="line"></div><div class="line"><span class="keyword">bool</span> useQuantizedAabbCompression = <span class="literal">true</span>;</div><div class="line">btBvhTriangleMeshShape* trimeshShape = <span class="keyword">new</span> btBvhTriangleMeshShape(meshInterface,useQuantizedAabbCompression);</div></pre></td></tr></table></figure>
-<h4 id="3-3-长方体"><a href="#3-3-长方体" class="headerlink" title="3.3. 长方体"></a>3.3. 长方体</h4><ul>
+<h4 id="3-3-长方体btBoxShape"><a href="#3-3-长方体btBoxShape" class="headerlink" title="3.3. 长方体btBoxShape"></a>3.3. 长方体<code>btBoxShape</code></h4><ul>
 <li>构造函数<code>btBoxShape::btBoxShape(const btVector3 &amp; boxHalfExtents)</code></li>
 <li>长宽高，封装成<code>btVector3</code>对象</li>
 </ul>
-<h4 id="3-4-球"><a href="#3-4-球" class="headerlink" title="3.4. 球"></a>3.4. 球</h4><ul>
+<h4 id="3-4-球btSphereShape"><a href="#3-4-球btSphereShape" class="headerlink" title="3.4. 球btSphereShape"></a>3.4. 球<code>btSphereShape</code></h4><ul>
 <li>构造函数<code>btSphereShape::btSphereShape(btScalar radius)</code></li>
 <li>radius xyz轴的半径，可以设置为椭圆球</li>
 </ul>
-<h4 id="3-5-胶囊体"><a href="#3-5-胶囊体" class="headerlink" title="3.5. 胶囊体"></a>3.5. 胶囊体</h4><ul>
+<h4 id="3-5-胶囊体btCapsuleShape"><a href="#3-5-胶囊体btCapsuleShape" class="headerlink" title="3.5. 胶囊体btCapsuleShape"></a>3.5. 胶囊体<code>btCapsuleShape</code></h4><ul>
 <li>构造函数<code>btCapsuleShape::btCapsuleShape()</code></li>
 <li>构造函数<code>btCapsuleShape::btCapsuleShape(btScalar radius, btScalar height)</code></li>
 <li>radius 胶囊体半径，可以设置为椭圆球</li>
 <li>height 胶囊体长度，height为圆心之间的距离</li>
 <li>胶囊体的aabb的边的长度为 {radius<em>2, radius</em>2, radius*2+height}</li>
 </ul>
+<h4 id="3-6-凸球体集合btMultiSphereShape"><a href="#3-6-凸球体集合btMultiSphereShape" class="headerlink" title="3.6. 凸球体集合btMultiSphereShape"></a>3.6. 凸球体集合<code>btMultiSphereShape</code></h4><ul>
+<li>构造函数<code>btMultiSphereShape (const btVector3* positions,const btScalar* radi,int numSpheres)</code></li>
+<li>positions 球心位置集合（第一个数组地址）</li>
+<li>radi 球半径集合（第一个数组地址）</li>
+<li>numSpheres 球体数量</li>
+</ul>
+<p>举例和效果</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">btVector3 vectors[<span class="number">4</span>];</div><div class="line">vectors[<span class="number">0</span>] = btVector3(<span class="number">10</span>,<span class="number">10</span>,<span class="number">10</span>);</div><div class="line">vectors[<span class="number">1</span>] = btVector3(<span class="number">20</span>,<span class="number">20</span>,<span class="number">20</span>);</div><div class="line">vectors[<span class="number">2</span>] = btVector3(<span class="number">30</span>,<span class="number">20</span>,<span class="number">20</span>);</div><div class="line">vectors[<span class="number">3</span>] = btVector3(<span class="number">30</span>,<span class="number">10</span>,<span class="number">40</span>);</div><div class="line"></div><div class="line">btScalar radi[<span class="number">4</span>];</div><div class="line">radi[<span class="number">0</span>] = <span class="number">5.f</span>;</div><div class="line">radi[<span class="number">1</span>] = <span class="number">5.f</span>;</div><div class="line">radi[<span class="number">2</span>] = <span class="number">5.f</span>;</div><div class="line">radi[<span class="number">3</span>] = <span class="number">10.f</span>;</div><div class="line"></div><div class="line">btCollisionShape* shape = <span class="keyword">new</span> btMultiSphereShape(vectors, radi, <span class="number">4</span>);</div></pre></td></tr></table></figure>
+<p><img src="/pics/bullet3_col_004.png" alt="example"></p>
+<h3 id="4-射线Raycast"><a href="#4-射线Raycast" class="headerlink" title="4. 射线Raycast"></a>4. 射线<code>Raycast</code></h3><ul>
+<li><code>btCollisionWorld::rayTest(const btVector3 &amp;from, const btVector3 &amp;to, RayResultCallback &amp;callback)</code><ul>
+<li>射线检测</li>
+</ul>
+</li>
+<li><code>btCollisionWorld::ClosestRayResultCallback</code><ul>
+<li>射线回调</li>
+</ul>
+</li>
+<li>回调的<code>m_flags</code><ul>
+<li>用于设置对物体的正反面是否生效</li>
+</ul>
+</li>
+<li><code>btVector3 btVector3::lerp(btVector3&amp; v, btScalar&amp; t)</code><ul>
+<li>从当前坐标往v坐标方向距离t处的坐标</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 获取第一个击中坐标</span></div><div class="line"><span class="function">btVector3 <span class="title">from</span><span class="params">(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>)</span></span>;</div><div class="line"><span class="function">btVector3 <span class="title">to</span><span class="params">(<span class="number">10</span>,<span class="number">10</span>,<span class="number">10</span>)</span></span>;</div><div class="line">btCollisionWorld::<span class="function">ClosestRayResultCallback <span class="title">callback</span><span class="params">(from, to)</span></span>;</div><div class="line">callback.m_flags = <span class="number">0</span>;               <span class="comment">// （位运算） 击中面 标识符</span></div><div class="line"></div><div class="line">world-&gt;rayTest(from, to, callback); <span class="comment">// 射线击中检测</span></div><div class="line"><span class="keyword">if</span>(callback.hasHit())               <span class="comment">// 但射线击中物体</span></div><div class="line">&#123;</div><div class="line">    <span class="comment">// 获取击中位置坐标</span></div><div class="line">    btVector3 p = from.lerp(to, callback.m_closestHitFraction);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 获取所有击中目标</span></div><div class="line"><span class="function">btVector3 <span class="title">from</span><span class="params">(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>)</span></span>;</div><div class="line"><span class="function">btVector3 <span class="title">to</span><span class="params">(<span class="number">10</span>,<span class="number">10</span>,<span class="number">10</span>)</span></span>;</div><div class="line">btCollisionWorld::<span class="function">AllHitsRayResultCallback <span class="title">allCallback</span><span class="params">(from, to)</span></span>;</div><div class="line">allCallback.m_flags = <span class="number">0</span>;          <span class="comment">// （位运算） 击中面 标识符</span></div><div class="line"></div><div class="line">world-&gt;rayTest(from, to, allCallback);</div><div class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;allCallback.m_hitFractions.size(); i++)</div><div class="line">&#123;</div><div class="line">    btVector3 p = from.lerp(to, allCallback.m_hitFractions[i]);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><img src="/pics/bullet3_col_005.png" alt="example"></p>
 ]]></content>
     
     <summary type="html">
@@ -399,10 +497,9 @@
     <link href="http://rondsny.github.io/2017/02/06/301-bullet3_init_world/"/>
     <id>http://rondsny.github.io/2017/02/06/301-bullet3_init_world/</id>
     <published>2017-02-06T12:16:57.000Z</published>
-    <updated>2017-02-07T13:04:27.794Z</updated>
+    <updated>2017-02-07T02:10:36.606Z</updated>
     
-    <content type="html"><![CDATA[<p>官方文档：<a href="http://bulletphysics.org" target="_blank" rel="external">http://bulletphysics.org</a><br>开源代码：<a href="https://github.com/bulletphysics/bullet3/releases" target="_blank" rel="external">https://github.com/bulletphysics/bullet3/releases</a><br>API文档：<a href="http://bulletphysics.org/Bullet/BulletFull/annotated.html" target="_blank" rel="external">http://bulletphysics.org/Bullet/BulletFull/annotated.html</a></p>
-<h2 id="创建世界-场景-及常见函数"><a href="#创建世界-场景-及常见函数" class="headerlink" title="创建世界(场景)及常见函数"></a>创建世界(场景)及常见函数</h2><p>官方文档：<a href="http://bulletphysics.org" target="_blank" rel="external">http://bulletphysics.org</a><br>开源代码：<a href="https://github.com/bulletphysics/bullet3/releases" target="_blank" rel="external">https://github.com/bulletphysics/bullet3/releases</a><br>API文档：<a href="http://bulletphysics.org/Bullet/BulletFull/annotated.html" target="_blank" rel="external">http://bulletphysics.org/Bullet/BulletFull/annotated.html</a></p>
+    <content type="html"><![CDATA[<h2 id="创建世界-场景-及常见函数"><a href="#创建世界-场景-及常见函数" class="headerlink" title="创建世界(场景)及常见函数"></a>创建世界(场景)及常见函数</h2><p>官方文档：<a href="http://bulletphysics.org" target="_blank" rel="external">http://bulletphysics.org</a><br>开源代码：<a href="https://github.com/bulletphysics/bullet3/releases" target="_blank" rel="external">https://github.com/bulletphysics/bullet3/releases</a><br>API文档：<a href="http://bulletphysics.org/Bullet/BulletFull/annotated.html" target="_blank" rel="external">http://bulletphysics.org/Bullet/BulletFull/annotated.html</a></p>
 <h3 id="0-世界的继承类"><a href="#0-世界的继承类" class="headerlink" title="0. 世界的继承类"></a>0. 世界的继承类</h3><ul>
 <li><code>btCollisionWorld</code><ul>
 <li>基类</li>
@@ -460,7 +557,7 @@
     
     <summary type="html">
     
-      &lt;p&gt;官方文档：&lt;a href=&quot;http://bulletphysics.org&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://bulletphysics.org&lt;/a&gt;&lt;br&gt;开源代码：&lt;a href=&quot;https://github.com/b
+      &lt;h2 id=&quot;创建世界-场景-及常见函数&quot;&gt;&lt;a href=&quot;#创建世界-场景-及常见函数&quot; class=&quot;headerlink&quot; title=&quot;创建世界(场景)及常见函数&quot;&gt;&lt;/a&gt;创建世界(场景)及常见函数&lt;/h2&gt;&lt;p&gt;官方文档：&lt;a href=&quot;http://bulle
     
     </summary>
     
@@ -474,7 +571,7 @@
     <link href="http://rondsny.github.io/2016/12/29/702-Erlang_Supervisor/"/>
     <id>http://rondsny.github.io/2016/12/29/702-Erlang_Supervisor/</id>
     <published>2016-12-29T12:44:00.000Z</published>
-    <updated>2016-12-29T12:51:29.089Z</updated>
+    <updated>2016-12-29T12:50:10.301Z</updated>
     
     <content type="html"><![CDATA[<h2 id="supervisor-监控树-的使用和重启策略"><a href="#supervisor-监控树-的使用和重启策略" class="headerlink" title="supervisor(监控树)的使用和重启策略"></a>supervisor(监控树)的使用和重启策略</h2><h3 id="1-init函数"><a href="#1-init函数" class="headerlink" title="1. init函数"></a>1. init函数</h3><figure class="highlight erlang"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="title">init</span><span class="params">()</span> -&gt;</span></div><div class="line">    &#123;ok, &#123;SupFlags, [ChildSpec,...]&#125;&#125; | ignore.</div></pre></td></tr></table></figure>
 <p>[ChildSpec,…] 是在init之后默认要启动的子进程。</p>
@@ -1641,40 +1738,6 @@ propset (pset, ps)                # 设置属性的值
     
       &lt;h3 id=&quot;一、添加RSS&quot;&gt;&lt;a href=&quot;#一、添加RSS&quot; class=&quot;headerlink&quot; title=&quot;一、添加RSS&quot;&gt;&lt;/a&gt;一、添加RSS&lt;/h3&gt;&lt;p&gt;博客来说，RSS的重要性可想而知。&lt;/p&gt;
 &lt;h4 id=&quot;1-安装hexo-rss插件&quot;&gt;&lt;a h
-    
-    </summary>
-    
-    
-      <category term="hexo" scheme="http://rondsny.github.io/tags/hexo/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>[hexo]搭载hexo+github博客系统</title>
-    <link href="http://rondsny.github.io/2015/03/06/201-Deploy_Hexo_github/"/>
-    <id>http://rondsny.github.io/2015/03/06/201-Deploy_Hexo_github/</id>
-    <published>2015-03-06T07:16:57.000Z</published>
-    <updated>2016-11-24T06:50:02.316Z</updated>
-    
-    <content type="html"><![CDATA[<h3 id="一、安装-Node-js"><a href="#一、安装-Node-js" class="headerlink" title="一、安装 Node.js"></a>一、安装 Node.js</h3><p>在官网 <a href="http://nodejs.org/" target="_blank" rel="external">http://nodejs.org/</a> 下载winwos版本，点击安装完成即可。</p>
-<h3 id="二、git环境安装"><a href="#二、git环境安装" class="headerlink" title="二、git环境安装"></a>二、git环境安装</h3><p>对于git的安装，网上已经大量资料，就不赘述了。</p>
-<h3 id="三、安装-hexo"><a href="#三、安装-hexo" class="headerlink" title="三、安装 hexo"></a>三、安装 hexo</h3><p>启动cmd，输入命令<code>npm install hexo-cli -g</code> 即可完成hexo的安装。</p>
-<h3 id="四、初始化博客"><a href="#四、初始化博客" class="headerlink" title="四、初始化博客"></a>四、初始化博客</h3><p>随便找一个目录。在cmd里面执行命令<code>hexo init blog</code> (blog为文件夹名称，与github的项目名称一致)。<br><code>cd blog</code>进入目录。执行<code>hexo g</code>和<code>hexo s</code>就可以生成静态html文件和启动一个http服务器。<br>按照提示，访问 <a href="http://127.0.0.1:4000/" target="_blank" rel="external">http://127.0.0.1:4000/</a> 就可以看到一个博客网站了。</p>
-<pre><code>hexo init blog
-hexo generate     # hexo g
-hexo server       # hexo s
-</code></pre><h3 id="五、配置和发布到github"><a href="#五、配置和发布到github" class="headerlink" title="五、配置和发布到github"></a>五、配置和发布到github</h3><p>编辑 <code>_config.yml</code> 文件。在<code>deploy</code>字段配置以下内容</p>
-<pre><code>deploy:
-  type: git
-  repo: git@github.com:rondsny/rondsny.github.com.git
-</code></pre><p><code>git@github.com:rondsny/blog.git</code> 是在github上面托管博客的项目地址。譬如我的github 是<a href="http://github.com/rondsny/" target="_blank" rel="external">http://github.com/rondsny/</a> 然后我建立用于托管的项目是<code>rondsny.github.com</code>。</p>
-<p>执行命令 <code>hexo deploy</code> 或 <code>hexo d</code> 就可以将博客发布到github上面。</p>
-<p>访问 <a href="http://rondsny.github.io/">http://rondsny.github.io/</a> 就可以看到效果了。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h3 id=&quot;一、安装-Node-js&quot;&gt;&lt;a href=&quot;#一、安装-Node-js&quot; class=&quot;headerlink&quot; title=&quot;一、安装 Node.js&quot;&gt;&lt;/a&gt;一、安装 Node.js&lt;/h3&gt;&lt;p&gt;在官网 &lt;a href=&quot;http://nodejs.org
     
     </summary>
     

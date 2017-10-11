@@ -101,13 +101,16 @@
 1. 初始化物体
 物体的形状由btCollisionShape对象维护；
 物体的位置，旋转状态由btTra">
-<meta property="og:updated_time" content="2017-02-07T13:07:47.579Z">
+<meta property="og:image" content="http://rondsny.github.io/pics/bullet3_col_004.png">
+<meta property="og:image" content="http://rondsny.github.io/pics/bullet3_col_005.png">
+<meta property="og:updated_time" content="2017-02-08T10:10:27.851Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="[Bullet3]常见物体和初始化">
 <meta name="twitter:description" content="官方文档：http://bulletphysics.org开源代码：https://github.com/bulletphysics/bullet3/releasesAPI文档：http://bulletphysics.org/Bullet/BulletFull/annotated.html
 1. 初始化物体
 物体的形状由btCollisionShape对象维护；
 物体的位置，旋转状态由btTra">
+<meta name="twitter:image" content="http://rondsny.github.io/pics/bullet3_col_004.png">
 
 
 
@@ -387,6 +390,12 @@
 <li>TRIANGLE_MESH_SHAPE_PROXYTYPE</li>
 </ul>
 </li>
+<li>btMultiSphereShape<ul>
+<li>凸球体集合</li>
+<li>MULTI_SPHERE_SHAPE_PROXYTYPE</li>
+</ul>
+</li>
+<li></li>
 </ul>
 <h4 id="3-1-物体对象常用函数"><a href="#3-1-物体对象常用函数" class="headerlink" title="3.1. 物体对象常用函数"></a>3.1. 物体对象常用函数</h4><ul>
 <li><code>int btCollisionShape::getShapeType() const</code><ul>
@@ -395,7 +404,7 @@
 </ul>
 </li>
 </ul>
-<h4 id="3-2-三角网格"><a href="#3-2-三角网格" class="headerlink" title="3.2. 三角网格"></a>3.2. 三角网格</h4><ul>
+<h4 id="3-2-三角网格btBvhTriangleMeshShape"><a href="#3-2-三角网格btBvhTriangleMeshShape" class="headerlink" title="3.2. 三角网格btBvhTriangleMeshShape"></a>3.2. 三角网格<code>btBvhTriangleMeshShape</code></h4><ul>
 <li>构造函数<code>btBvhTriangleMeshShape::btBvhTriangleMeshShape(btStridingMeshInterface* meshInterface,bool useQuantizedAabbCompression)</code></li>
 <li>构造函数<code>btBvhTriangleMeshShape::btBvhTriangleMeshShape(btStridingMeshInterface* meshInterface,bool useQuantizedAabbCompression, bool buildBvh = true)</code></li>
 <li><code>btTriangleIndexVertexArray</code>类集成于 <code>btStridingMeshInterface</code>接口。</li>
@@ -408,21 +417,51 @@
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">define</span> Landscape03.txCount 1980      <span class="comment">// 顶点数量</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> Landscape03.dxCount 11310     <span class="comment">// 三角形数量</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"LinearMath/btScalar.h"</span></span></div><div class="line"></div><div class="line">btScalar Landscape03.tx[] = &#123;         <span class="comment">// 顶点坐标列表(三维)</span></div><div class="line"><span class="number">-3.0</span><span class="number">.0f</span>,<span class="number">3.99193</span>.,<span class="number">113.3</span><span class="number">.1f</span>,</div><div class="line"><span class="number">-3.0</span><span class="number">.0f</span>,<span class="number">3.18397f</span>,<span class="number">117.188f</span>,</div><div class="line"><span class="number">-3.6</span><span class="number">.094f</span>,<span class="number">1.63</span><span class="number">.63</span>.,<span class="number">113.3</span><span class="number">.1f</span>,</div><div class="line">...&#125;;</div><div class="line"></div><div class="line"><span class="keyword">unsigned</span> <span class="keyword">short</span> Landscape03.dx[] = &#123;   <span class="comment">// 三角形列表</span></div><div class="line"><span class="number">0</span>,<span class="number">1</span>,<span class="number">3.</span></div><div class="line"><span class="number">3</span>,<span class="number">3.1</span>,</div><div class="line"><span class="number">3.3</span>,<span class="number">4</span>,</div><div class="line"><span class="number">5</span>,<span class="number">4</span>,<span class="number">3</span>,</div><div class="line"><span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>,</div><div class="line">...&#125;;</div></pre></td></tr></table></figure>
 <h5 id="3-2-3-btStridingMeshInterface接口"><a href="#3-2-3-btStridingMeshInterface接口" class="headerlink" title="3.2.3. btStridingMeshInterface接口"></a>3.2.3. <code>btStridingMeshInterface</code>接口</h5><p>通用高性能三角网格访问接口。</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">btStridingMeshInterface* meshInterface = <span class="keyword">new</span> btTriangleIndexVertexArray();</div><div class="line">btIndexedMesh part;</div><div class="line"></div><div class="line">part.m_vertexBase = (<span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>*)LandscapeVtx[i];</div><div class="line">part.m_vertexStride = <span class="keyword">sizeof</span>(btScalar) * <span class="number">3</span>;</div><div class="line">part.m_numVertices = LandscapeVtxCount[i];</div><div class="line">part.m_triangleIndexBase = (<span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>*)LandscapeIdx[i];</div><div class="line">part.m_triangleIndexStride = <span class="keyword">sizeof</span>( <span class="keyword">short</span>) * <span class="number">3</span>;</div><div class="line">part.m_numTriangles = LandscapeIdxCount[i]/<span class="number">3</span>;</div><div class="line">part.m_indexType = PHY_SHORT;</div><div class="line"></div><div class="line">meshInterface-&gt;addIndexedMesh(part,PHY_SHORT);</div><div class="line"></div><div class="line"><span class="keyword">bool</span> useQuantizedAabbCompression = <span class="literal">true</span>;</div><div class="line">btBvhTriangleMeshShape* trimeshShape = <span class="keyword">new</span> btBvhTriangleMeshShape(meshInterface,useQuantizedAabbCompression);</div></pre></td></tr></table></figure>
-<h4 id="3-3-长方体"><a href="#3-3-长方体" class="headerlink" title="3.3. 长方体"></a>3.3. 长方体</h4><ul>
+<h4 id="3-3-长方体btBoxShape"><a href="#3-3-长方体btBoxShape" class="headerlink" title="3.3. 长方体btBoxShape"></a>3.3. 长方体<code>btBoxShape</code></h4><ul>
 <li>构造函数<code>btBoxShape::btBoxShape(const btVector3 &amp; boxHalfExtents)</code></li>
 <li>长宽高，封装成<code>btVector3</code>对象</li>
 </ul>
-<h4 id="3-4-球"><a href="#3-4-球" class="headerlink" title="3.4. 球"></a>3.4. 球</h4><ul>
+<h4 id="3-4-球btSphereShape"><a href="#3-4-球btSphereShape" class="headerlink" title="3.4. 球btSphereShape"></a>3.4. 球<code>btSphereShape</code></h4><ul>
 <li>构造函数<code>btSphereShape::btSphereShape(btScalar radius)</code></li>
 <li>radius xyz轴的半径，可以设置为椭圆球</li>
 </ul>
-<h4 id="3-5-胶囊体"><a href="#3-5-胶囊体" class="headerlink" title="3.5. 胶囊体"></a>3.5. 胶囊体</h4><ul>
+<h4 id="3-5-胶囊体btCapsuleShape"><a href="#3-5-胶囊体btCapsuleShape" class="headerlink" title="3.5. 胶囊体btCapsuleShape"></a>3.5. 胶囊体<code>btCapsuleShape</code></h4><ul>
 <li>构造函数<code>btCapsuleShape::btCapsuleShape()</code></li>
 <li>构造函数<code>btCapsuleShape::btCapsuleShape(btScalar radius, btScalar height)</code></li>
 <li>radius 胶囊体半径，可以设置为椭圆球</li>
 <li>height 胶囊体长度，height为圆心之间的距离</li>
 <li>胶囊体的aabb的边的长度为 {radius<em>2, radius</em>2, radius*2+height}</li>
 </ul>
+<h4 id="3-6-凸球体集合btMultiSphereShape"><a href="#3-6-凸球体集合btMultiSphereShape" class="headerlink" title="3.6. 凸球体集合btMultiSphereShape"></a>3.6. 凸球体集合<code>btMultiSphereShape</code></h4><ul>
+<li>构造函数<code>btMultiSphereShape (const btVector3* positions,const btScalar* radi,int numSpheres)</code></li>
+<li>positions 球心位置集合（第一个数组地址）</li>
+<li>radi 球半径集合（第一个数组地址）</li>
+<li>numSpheres 球体数量</li>
+</ul>
+<p>举例和效果</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">btVector3 vectors[<span class="number">4</span>];</div><div class="line">vectors[<span class="number">0</span>] = btVector3(<span class="number">10</span>,<span class="number">10</span>,<span class="number">10</span>);</div><div class="line">vectors[<span class="number">1</span>] = btVector3(<span class="number">20</span>,<span class="number">20</span>,<span class="number">20</span>);</div><div class="line">vectors[<span class="number">2</span>] = btVector3(<span class="number">30</span>,<span class="number">20</span>,<span class="number">20</span>);</div><div class="line">vectors[<span class="number">3</span>] = btVector3(<span class="number">30</span>,<span class="number">10</span>,<span class="number">40</span>);</div><div class="line"></div><div class="line">btScalar radi[<span class="number">4</span>];</div><div class="line">radi[<span class="number">0</span>] = <span class="number">5.f</span>;</div><div class="line">radi[<span class="number">1</span>] = <span class="number">5.f</span>;</div><div class="line">radi[<span class="number">2</span>] = <span class="number">5.f</span>;</div><div class="line">radi[<span class="number">3</span>] = <span class="number">10.f</span>;</div><div class="line"></div><div class="line">btCollisionShape* shape = <span class="keyword">new</span> btMultiSphereShape(vectors, radi, <span class="number">4</span>);</div></pre></td></tr></table></figure>
+<p><img src="/pics/bullet3_col_004.png" alt="example"></p>
+<h3 id="4-射线Raycast"><a href="#4-射线Raycast" class="headerlink" title="4. 射线Raycast"></a>4. 射线<code>Raycast</code></h3><ul>
+<li><code>btCollisionWorld::rayTest(const btVector3 &amp;from, const btVector3 &amp;to, RayResultCallback &amp;callback)</code><ul>
+<li>射线检测</li>
+</ul>
+</li>
+<li><code>btCollisionWorld::ClosestRayResultCallback</code><ul>
+<li>射线回调</li>
+</ul>
+</li>
+<li>回调的<code>m_flags</code><ul>
+<li>用于设置对物体的正反面是否生效</li>
+</ul>
+</li>
+<li><code>btVector3 btVector3::lerp(btVector3&amp; v, btScalar&amp; t)</code><ul>
+<li>从当前坐标往v坐标方向距离t处的坐标</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 获取第一个击中坐标</span></div><div class="line"><span class="function">btVector3 <span class="title">from</span><span class="params">(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>)</span></span>;</div><div class="line"><span class="function">btVector3 <span class="title">to</span><span class="params">(<span class="number">10</span>,<span class="number">10</span>,<span class="number">10</span>)</span></span>;</div><div class="line">btCollisionWorld::<span class="function">ClosestRayResultCallback <span class="title">callback</span><span class="params">(from, to)</span></span>;</div><div class="line">callback.m_flags = <span class="number">0</span>;               <span class="comment">// （位运算） 击中面 标识符</span></div><div class="line"></div><div class="line">world-&gt;rayTest(from, to, callback); <span class="comment">// 射线击中检测</span></div><div class="line"><span class="keyword">if</span>(callback.hasHit())               <span class="comment">// 但射线击中物体</span></div><div class="line">&#123;</div><div class="line">    <span class="comment">// 获取击中位置坐标</span></div><div class="line">    btVector3 p = from.lerp(to, callback.m_closestHitFraction);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 获取所有击中目标</span></div><div class="line"><span class="function">btVector3 <span class="title">from</span><span class="params">(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>)</span></span>;</div><div class="line"><span class="function">btVector3 <span class="title">to</span><span class="params">(<span class="number">10</span>,<span class="number">10</span>,<span class="number">10</span>)</span></span>;</div><div class="line">btCollisionWorld::<span class="function">AllHitsRayResultCallback <span class="title">allCallback</span><span class="params">(from, to)</span></span>;</div><div class="line">allCallback.m_flags = <span class="number">0</span>;          <span class="comment">// （位运算） 击中面 标识符</span></div><div class="line"></div><div class="line">world-&gt;rayTest(from, to, allCallback);</div><div class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;allCallback.m_hitFractions.size(); i++)</div><div class="line">&#123;</div><div class="line">    btVector3 p = from.lerp(to, allCallback.m_hitFractions[i]);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><img src="/pics/bullet3_col_005.png" alt="example"></p>
 
       
     </div>
@@ -549,7 +588,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">20</span>
+                <span class="site-state-item-count">21</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -604,7 +643,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-初始化物体"><span class="nav-number">1.</span> <span class="nav-text">1. 初始化物体</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-常见物体对象"><span class="nav-number">2.</span> <span class="nav-text">2. 常见物体对象</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-物体对象常用函数"><span class="nav-number">2.1.</span> <span class="nav-text">2.1. 物体对象常用函数</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-初始化常见物体形状"><span class="nav-number">3.</span> <span class="nav-text">3. 初始化常见物体形状</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-物体对象常用函数"><span class="nav-number">3.1.</span> <span class="nav-text">3.1. 物体对象常用函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-三角网格"><span class="nav-number">3.2.</span> <span class="nav-text">3.2. 三角网格</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2-1-三角网格数据假设格式如下"><span class="nav-number">3.2.1.</span> <span class="nav-text">3.2.1. 三角网格数据假设格式如下</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2-3-btStridingMeshInterface接口"><span class="nav-number">3.2.2.</span> <span class="nav-text">3.2.3. btStridingMeshInterface接口</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-长方体"><span class="nav-number">3.3.</span> <span class="nav-text">3.3. 长方体</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-4-球"><span class="nav-number">3.4.</span> <span class="nav-text">3.4. 球</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-5-胶囊体"><span class="nav-number">3.5.</span> <span class="nav-text">3.5. 胶囊体</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-初始化物体"><span class="nav-number">1.</span> <span class="nav-text">1. 初始化物体</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-常见物体对象"><span class="nav-number">2.</span> <span class="nav-text">2. 常见物体对象</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-物体对象常用函数"><span class="nav-number">2.1.</span> <span class="nav-text">2.1. 物体对象常用函数</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-初始化常见物体形状"><span class="nav-number">3.</span> <span class="nav-text">3. 初始化常见物体形状</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-物体对象常用函数"><span class="nav-number">3.1.</span> <span class="nav-text">3.1. 物体对象常用函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-三角网格btBvhTriangleMeshShape"><span class="nav-number">3.2.</span> <span class="nav-text">3.2. 三角网格btBvhTriangleMeshShape</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2-1-三角网格数据假设格式如下"><span class="nav-number">3.2.1.</span> <span class="nav-text">3.2.1. 三角网格数据假设格式如下</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2-3-btStridingMeshInterface接口"><span class="nav-number">3.2.2.</span> <span class="nav-text">3.2.3. btStridingMeshInterface接口</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-长方体btBoxShape"><span class="nav-number">3.3.</span> <span class="nav-text">3.3. 长方体btBoxShape</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-4-球btSphereShape"><span class="nav-number">3.4.</span> <span class="nav-text">3.4. 球btSphereShape</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-5-胶囊体btCapsuleShape"><span class="nav-number">3.5.</span> <span class="nav-text">3.5. 胶囊体btCapsuleShape</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-6-凸球体集合btMultiSphereShape"><span class="nav-number">3.6.</span> <span class="nav-text">3.6. 凸球体集合btMultiSphereShape</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-射线Raycast"><span class="nav-number">4.</span> <span class="nav-text">4. 射线Raycast</span></a></li></ol></div>
             
 
           </div>
