@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="事故背景由于误操作在erlcron设置了一个超过3个月后的定时任务。然后第二天之后发现每天的daily reset没有被执行，一些定时任务也没有被执行。瞬间感觉整个人都不好了，怎么无端端就不执行了呢。 通过排查日志，发现了以下报错： 2016-03-22 16:54:32.014 [error] gen_server ecrn_control terminated with reason: no">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[erlang]一次erlcron崩溃引起的事故分析">
+<meta property="og:url" content="http://example.com/2016/03/24/701-Erlang_erlcron_crash/index.html">
+<meta property="og:site_name" content="魏延的BLOG">
+<meta property="og:description" content="事故背景由于误操作在erlcron设置了一个超过3个月后的定时任务。然后第二天之后发现每天的daily reset没有被执行，一些定时任务也没有被执行。瞬间感觉整个人都不好了，怎么无端端就不执行了呢。 通过排查日志，发现了以下报错： 2016-03-22 16:54:32.014 [error] gen_server ecrn_control terminated with reason: no">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://i.imgur.com/H4oSaR0.png">
+<meta property="og:image" content="http://i.imgur.com/TSYo5CH.png">
+<meta property="og:image" content="http://i.imgur.com/w9NJViE.png">
+<meta property="article:published_time" content="2016-03-24T05:34:57.000Z">
+<meta property="article:modified_time" content="2021-08-29T07:02:01.177Z">
+<meta property="article:author" content="Ron Ngai">
+<meta property="article:tag" content="erlang">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://i.imgur.com/H4oSaR0.png">
+
+<link rel="canonical" href="http://example.com/2016/03/24/701-Erlang_erlcron_crash/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>[erlang]一次erlcron崩溃引起的事故分析 | 魏延的BLOG</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">魏延的BLOG</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2016/03/24/701-Erlang_erlcron_crash/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="魏延的BLOG">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [erlang]一次erlcron崩溃引起的事故分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-03-24 13:34:57" itemprop="dateCreated datePublished" datetime="2016-03-24T13:34:57+08:00">2016-03-24</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="事故背景"><a href="#事故背景" class="headerlink" title="事故背景"></a>事故背景</h3><p>由于误操作在<code>erlcron</code>设置了一个超过3个月后的定时任务。然后第二天之后发现每天的daily reset没有被执行，一些定时任务也没有被执行。瞬间感觉整个人都不好了，怎么无端端就不执行了呢。</p>
+<p>通过排查日志，发现了以下报错：</p>
+<pre><code>2016-03-22 16:54:32.014 [error] gen_server ecrn_control terminated with reason: no case clause matching &#123;ok,[&lt;0.14123.1577&gt;,&lt;0.13079.1576&gt;,&lt;0.25254.1569&gt;,&lt;0.13402.1577&gt;,...]&#125; in ecrn_control:internal_cancel/1 line 111
+2016-03-22 16:54:32.015 [error] CRASH REPORT Process ecrn_control with 0 neighbours exited with reason: no case clause matching &#123;ok,[&lt;0.14123.1577&gt;,&lt;0.13079.1576&gt;,&lt;0.25254.1569&gt;,&lt;0.13402.1577&gt;,...]&#125; in ecrn_control:internal_cancel/1 line 111 in gen_server:terminate/6 line 744
+</code></pre>
+<p>我擦，<code>ecrn_control</code>都崩了，怎么回事。</p>
+<p>找到具体出错的代码：</p>
+<pre><code>internal_cancel(AlarmRef) -&gt;
+    case ecrn_reg:get(AlarmRef) of
+        undefined -&gt;
+            undefined;
+        &#123;ok, [Pid]&#125; -&gt;
+            ecrn_agent:cancel(Pid)
+    end.
+</code></pre>
+<p>发现调用<code>ecrn_reg:get(AlarmRef)</code>被返回了{ok, List}，而且这个List的数据远不止一个。明显在设置那个超过3个月的定时任务的时候，<code>ecrn_reg</code>被注册进了脏数据。</p>
+<h3 id="事故重现"><a href="#事故重现" class="headerlink" title="事故重现"></a>事故重现</h3><h4 id="先设置几个正常的定时任务"><a href="#先设置几个正常的定时任务" class="headerlink" title="先设置几个正常的定时任务"></a>先设置几个正常的定时任务</h4><pre><code>&gt; erlcron:cron(&#123;&#123;once, 1000&#125;, &#123;io, fwrite, ["Hello, world!~n"]&#125;&#125;).
+&gt; erlcron:cron(&#123;&#123;once, 1000&#125;, &#123;io, fwrite, ["Hello, world!~n"]&#125;&#125;).
+&gt; erlcron:cron(&#123;&#123;once, 1000&#125;, &#123;io, fwrite, ["Hello, world!~n"]&#125;&#125;).
+</code></pre>
+<p>查看<code>observer:start()</code> 可以看到进程树如下：</p>
+<p><img src="http://i.imgur.com/H4oSaR0.png"></p>
+<h4 id="再设置一个4294968秒之后的定时任务"><a href="#再设置一个4294968秒之后的定时任务" class="headerlink" title="再设置一个4294968秒之后的定时任务"></a>再设置一个4294968秒之后的定时任务</h4><pre><code>&gt; erlcron:cron(&#123;&#123;once, 4294968&#125;, &#123;io, fwrite, ["Hello, world!~n"]&#125;&#125;).
+</code></pre>
+<p>结果就gg了，好多崩溃信息是不是：</p>
+<pre><code>22:49:16.818 [error] CRASH REPORT Process &lt;0.5822.64&gt; with 0 neighbours crashed with reason: timeout_value in gen_server:loop/6 line 358
+22:49:16.818 [error] Supervisor ecrn_cron_sup had child ecrn_agent started with ecrn_agent:start_link(#Ref&lt;0.0.11.11209&gt;, &#123;&#123;once,4294968&#125;,&#123;io,fwrite,["Hello, world!~n"]&#125;&#125;) at &lt;0.5822.64&gt; exit with reason timeout_value in context child_terminated
+22:49:16.819 [error] CRASH REPORT Process &lt;0.5701.64&gt; with 0 neighbours crashed with reason: timeout_value in gen_server:loop/6 line 358
+22:49:16.821 [error] Supervisor ecrn_cron_sup had child ecrn_agent started with ecrn_agent:start_link(#Ref&lt;0.0.11.11209&gt;, &#123;&#123;once,4294968&#125;,&#123;io,fwrite,["Hello, world!~n"]&#125;&#125;) at &lt;0.5701.64&gt; exit with reason timeout_value in context child_terminated
+22:49:16.821 [error] CRASH REPORT Process &lt;0.6237.64&gt; with 0 neighbours crashed with reason: timeout_value in gen_server:loop/6 line 358
+22:49:16.821 [error] Supervisor ecrn_cron_sup had child ecrn_agent started with ecrn_agent:start_link(#Ref&lt;0.0.11.11209&gt;, &#123;&#123;once,4294968&#125;,&#123;io,fwrite,["Hello, world!~n"]&#125;&#125;) at &lt;0.6237.64&gt; exit with reason timeout_value in context child_terminated
+22:49:16.821 [error] CRASH REPORT Process &lt;0.5862.64&gt; with 0 neighbours crashed with reason: timeout_value in gen_server:loop/6 line 358
+22:49:16.821 [error] Supervisor ecrn_cron_sup had child ecrn_agent started with ecrn_agent:start_link(#Ref&lt;0.0.11.11209&gt;, &#123;&#123;once,4294968&#125;,&#123;io,fwrite,["Hello, world!~n"]&#125;&#125;) at &lt;0.5862.64&gt; exit with reason timeout_value in context child_terminated
+
+...(总共有25条)
+</code></pre>
+<p>再看一下进程数：</p>
+<p><img src="http://i.imgur.com/TSYo5CH.png"></p>
+<p>我擦，为毛原来的 scrn_agent 进程也没有了。</p>
+<p>可以发现，erlcron 在尝试了25次设置 这个定时任务之后，也就是 scrn_agent 崩溃了25次之后，原来设置的三个正常的定时任务的scrn_agent 进程也没有掉了。<br>也就是说，不但我新设置的定时任务没有成功，而且我原来正常的定时任务也没有掉了。</p>
+<p>再看一下崩溃日志里面的崩掉的进程号，每一个都是不一样的。可以推算其实原来的报错<code>ecrn_reg:get(AlarmRef)</code>获取到了多个Pid，其实就是这里插入失败的定时任务产生的25个Pid。也就是说，虽然<code>ecrn_agent</code>进程崩溃了，但是<code>ecrn_reg</code>还是保存了这些Pid。所以在取消这些定时任务的时候，<code>ecrn_reg:get(AlarmRef)</code>返回的内容在<code>internal_cancel(AlarmRef)</code>没有被匹配到。</p>
+<h3 id="为什么是4294968，其实是2-32"><a href="#为什么是4294968，其实是2-32" class="headerlink" title="为什么是4294968，其实是2^32"></a>为什么是4294968，其实是2^32</h3><p>为什么设置了<code>4294968</code>秒后的定时任务就崩溃了。这个数估计很多人很熟悉，<code>2^32=4294967296</code>，而<code>4294968000</code>也就是刚好大于<code>2^32</code>。即，如果设置的定时任务超过了<code>2^32</code>毫秒，在<code>erlcron</code>里面就不支持了。</p>
+<p>查看<code>gen_server:loop</code>的源码，找到引起崩溃的代码：</p>
+<p><img src="http://i.imgur.com/w9NJViE.png"></p>
+<pre><code>loop(Parent, Name, State, Mod, hibernate, Debug) -&gt;
+    proc_lib:hibernate(?MODULE,wake_hib,[Parent, Name, State, Mod, Debug]);
+loop(Parent, Name, State, Mod, Time, Debug) -&gt;
+    Msg = receive
+          Input -&gt;
+            Input
+      after Time -&gt;
+          timeout
+      end,
+    decode_msg(Msg, Parent, Name, State, Mod, Time, Debug, false).
+</code></pre>
+<p>可以发现引起崩溃的，358行是一段<code>receive</code>代码。也就是说<code>receive</code>是不支持超过<code>2^32</code>大小的。</p>
+<p>自测了一下，的确如果<code>receive</code>的<code>after</code>后面如果是大于等于<code>2^32</code>的数值就会出现<code>bad receive timeout value</code>的报错。查看官方解释，已经明确说明不能大于<code>32位</code>大小。</p>
+<blockquote>
+<p>ExprT is to evaluate to an integer. The highest allowed value is 16#FFFFFFFF, that is, the value must fit in 32 bits. receive..after works exactly as receive, except that if no matching message has arrived within ExprT milliseconds, then BodyT is evaluated instead. The return value of BodyT then becomes the return value of the receive..after expression.</p>
+</blockquote>
+<p><em>引用自：<a target="_blank" rel="noopener" href="http://erlang.org/doc/reference_manual/expressions.html">http://erlang.org/doc/reference_manual/expressions.html</a></em></p>
+<p>再回到<code>erlcron</code>， 在 <code>ecrn_agent:start_link</code>的时候，<code>ecrn_agent:init</code>执行完<code>ecrn_reg:register(JobRef, self())</code>返回<code>&#123;ok, NewState, Millis&#125;</code>到<code>gen_server</code>之后，Millis如果超过<code>2^32</code>在<code>gen_server:loop</code>就会引起<code>gen_server</code>的<code>timeout_value</code>异常退出。</p>
+<pre><code>%% @private
+init([JobRef, Job]) -&gt;
+    State = #state&#123;job=Job,
+                   alarm_ref=JobRef&#125;,
+    &#123;DateTime, Actual&#125; = ecrn_control:datetime(),
+    NewState = set_internal_time(State, DateTime, Actual),
+    case until_next_milliseconds(NewState, Job) of
+        &#123;ok, Millis&#125; when is_integer(Millis) -&gt;
+            ecrn_reg:register(JobRef, self()),
+            &#123;ok, NewState, Millis&#125;;
+        &#123;error, _&#125;  -&gt;
+            &#123;stop, normal&#125;
+    end.
+</code></pre>
+<h3 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h3><p>这坑踩的，有点郁闷。其实这跟<code>erlcron</code>也没关系，也不是<code>gen_server</code>的问题。而是<code>erlang</code>自身<code>receive</code>不支持2^32引起的。继续往下查其实可以发现，再往下是其它语言写的了。</p>
+<pre><code>-module(prim_eval).
+
+%% This module is simply a stub which abstract code gets included in the result
+%% of compilation of prim_eval.S, to keep Dialyzer happy.
+
+-export([&#39;receive&#39;/2]).
+
+-spec &#39;receive&#39;(fun((term()) -&gt; nomatch | T), timeout()) -&gt; T.
+&#39;receive&#39;(_, _) -&gt;
+    erlang:nif_error(stub).
+</code></pre>
+<p><em>与君共勉</em></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/erlang/" rel="tag"># erlang</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2015/11/14/601-Ftp_bat_help/" rel="prev" title="[windows]快速从ftp下载最新软件包的批处理脚本 ">
+      <i class="fa fa-chevron-left"></i> [windows]快速从ftp下载最新软件包的批处理脚本 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/09/22/451-ci_md_2_html/" rel="next" title="[python]自动化将markdown文件转成html文件">
+      [python]自动化将markdown文件转成html文件 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8B%E6%95%85%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">事故背景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8B%E6%95%85%E9%87%8D%E7%8E%B0"><span class="nav-number">2.</span> <span class="nav-text">事故重现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%88%E8%AE%BE%E7%BD%AE%E5%87%A0%E4%B8%AA%E6%AD%A3%E5%B8%B8%E7%9A%84%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1"><span class="nav-number">2.1.</span> <span class="nav-text">先设置几个正常的定时任务</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%86%8D%E8%AE%BE%E7%BD%AE%E4%B8%80%E4%B8%AA4294968%E7%A7%92%E4%B9%8B%E5%90%8E%E7%9A%84%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1"><span class="nav-number">2.2.</span> <span class="nav-text">再设置一个4294968秒之后的定时任务</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF4294968%EF%BC%8C%E5%85%B6%E5%AE%9E%E6%98%AF2-32"><span class="nav-number">3.</span> <span class="nav-text">为什么是4294968，其实是2^32</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%80%E5%90%8E"><span class="nav-number">4.</span> <span class="nav-text">最后</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Ron Ngai</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2015 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ron Ngai</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

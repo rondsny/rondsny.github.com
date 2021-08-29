@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="管理属性变量的命令svn客户端有个属性ignore 用于保存忽略的文件或者目录。除此之外，svn其实有好多属性变量用来自定义，如在windows下svn客户端里面属性截图： 但是在linux 下，不可像windows那样有可视化界面进行管理。执行svn help 命令可以知道有五个命令用于管理svn 属性变量。 propdel (pdel, pd)                # 删除属性 pr">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[svn]如何在linux设置svn忽略列表">
+<meta property="og:url" content="http://example.com/2015/03/17/403-Set_svn_ignore/index.html">
+<meta property="og:site_name" content="魏延的BLOG">
+<meta property="og:description" content="管理属性变量的命令svn客户端有个属性ignore 用于保存忽略的文件或者目录。除此之外，svn其实有好多属性变量用来自定义，如在windows下svn客户端里面属性截图： 但是在linux 下，不可像windows那样有可视化界面进行管理。执行svn help 命令可以知道有五个命令用于管理svn 属性变量。 propdel (pdel, pd)                # 删除属性 pr">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/301-01.png">
+<meta property="og:image" content="http://example.com/images/301-02.png">
+<meta property="og:image" content="http://example.com/images/301-03.png">
+<meta property="og:image" content="http://example.com/images/301-04.png">
+<meta property="article:published_time" content="2015-03-17T10:35:20.000Z">
+<meta property="article:modified_time" content="2021-08-29T07:02:01.176Z">
+<meta property="article:author" content="Ron Ngai">
+<meta property="article:tag" content="linux">
+<meta property="article:tag" content="svn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/301-01.png">
+
+<link rel="canonical" href="http://example.com/2015/03/17/403-Set_svn_ignore/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>[svn]如何在linux设置svn忽略列表 | 魏延的BLOG</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">魏延的BLOG</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2015/03/17/403-Set_svn_ignore/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="魏延的BLOG">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [svn]如何在linux设置svn忽略列表
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2015-03-17 18:35:20" itemprop="dateCreated datePublished" datetime="2015-03-17T18:35:20+08:00">2015-03-17</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="管理属性变量的命令"><a href="#管理属性变量的命令" class="headerlink" title="管理属性变量的命令"></a>管理属性变量的命令</h3><p>svn客户端有个属性<code>ignore</code> 用于保存忽略的文件或者目录。除此之外，svn其实有好多属性变量用来自定义，如在windows下svn客户端里面属性截图：<br><img src="/images/301-01.png" alt="windows svn" title="windows svn"></p>
+<p>但是在linux 下，不可像windows那样有可视化界面进行管理。<br>执行svn help 命令可以知道有五个命令用于管理svn 属性变量。</p>
+<pre><code>propdel (pdel, pd)                # 删除属性
+propedit (pedit, pe)              # 编辑属性
+propget (pget, pg)                # 获取属性的值
+proplist (plist, pl)              # 列出所有的属性
+propset (pset, ps)                # 设置属性的值
+</code></pre>
+<p>那么有这几个命令，想要编辑<code>svn:ignore</code> 变量还不轻而易举。</p>
+<h3 id="方法1："><a href="#方法1：" class="headerlink" title="方法1："></a>方法1：</h3><p>首先要给SVN指定默认的编辑器，如下。当然改成其它编辑器也可以。</p>
+<ul>
+<li><code>export SVN_EDITOR=/usr/bin/vim</code> 已经设置的话，可以忽略这一步</li>
+<li><code>svn propedit svn:ignore [目录]</code></li>
+</ul>
+<p>然后可以在vim编辑器中写上需要过滤的目录或者文件。换行隔开，据说空格也可以，但是我没有试过。</p>
+<h3 id="方法2："><a href="#方法2：" class="headerlink" title="方法2："></a>方法2：</h3><p>除了propedit可以设置，当然propset 也可以设置。<br><img src="/images/301-02.png" alt="svn propset" title="svn propset"><br>图片表示将pet目录下的xg_pet.erl文件加入到忽略列表。</p>
+<h3 id="属性变量文件"><a href="#属性变量文件" class="headerlink" title="属性变量文件"></a>属性变量文件</h3><p>在当前目录，有一个<code>.svn</code> 目录。当有属性变量的时候，<code>.svn</code>目录会生成一个<code>dir-props</code>文件用来保存属性变量，如下：<br><img src="/images/301-03.png" alt="svn properties file" title=".svn/dir-props"></p>
+<h3 id="查看状态"><a href="#查看状态" class="headerlink" title="查看状态"></a>查看状态</h3><p>另外说一个linux下很常用的命令。相当于windows下commit的时候出现的文件列表。而linux下需要用<code>svn status</code>来查看。<br><code>svn status/svn st/svn stat</code></p>
+<p>延伸一下，下面两个命令：</p>
+<ul>
+<li><code>svn st | grep ^? | sed &#39;s/?    //&#39; | xargs svn add</code>  增加尚未增加到svn的文件</li>
+<li><code>svn st | grep ^! | sed &#39;s/!    //&#39; | xargs svn rm</code>    删除svn里面已经不存在的文件（本地尚存）</li>
+</ul>
+<p>当然避免误操作，我经常先执行<code>svn st | grep ^? | sed &#39;s/?    //&#39;</code> 先确认下文件列表。<br><img src="/images/301-04.png" alt="svn skill" title="svn skill"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/linux/" rel="tag"># linux</a>
+              <a href="/tags/svn/" rel="tag"># svn</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2015/03/12/202-Add_rss_in_Hexo/" rel="prev" title="[hexo]在hexo内添加RSS和sitemap">
+      <i class="fa fa-chevron-left"></i> [hexo]在hexo内添加RSS和sitemap
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2015/04/07/402-Stop_Selinux/" rel="next" title="[linux]windows无法访问samba的安全性问题(关闭selinux)">
+      [linux]windows无法访问samba的安全性问题(关闭selinux) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%A1%E7%90%86%E5%B1%9E%E6%80%A7%E5%8F%98%E9%87%8F%E7%9A%84%E5%91%BD%E4%BB%A4"><span class="nav-number">1.</span> <span class="nav-text">管理属性变量的命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%B3%951%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">方法1：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%B3%952%EF%BC%9A"><span class="nav-number">3.</span> <span class="nav-text">方法2：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B1%9E%E6%80%A7%E5%8F%98%E9%87%8F%E6%96%87%E4%BB%B6"><span class="nav-number">4.</span> <span class="nav-text">属性变量文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E7%8A%B6%E6%80%81"><span class="nav-number">5.</span> <span class="nav-text">查看状态</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Ron Ngai</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2015 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ron Ngai</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

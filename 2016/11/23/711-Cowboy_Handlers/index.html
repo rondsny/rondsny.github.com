@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="关于CowboyCowboy是基于Erlang实现的一个轻量级、快速、模块化的http web服务器。 Handlers用于处理HTTP请求的程序处理模块。 Plain HTTP Handlers（常规Handlers）Cowboy里面的handler最基础的事情就是实现 init&#x2F;2 回调函数，处理请求，发送客户端响应（可选），最后返回。Cowboy根据 router configuration">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[翻译][erlang]cowboy handler模块的使用">
+<meta property="og:url" content="http://example.com/2016/11/23/711-Cowboy_Handlers/index.html">
+<meta property="og:site_name" content="魏延的BLOG">
+<meta property="og:description" content="关于CowboyCowboy是基于Erlang实现的一个轻量级、快速、模块化的http web服务器。 Handlers用于处理HTTP请求的程序处理模块。 Plain HTTP Handlers（常规Handlers）Cowboy里面的handler最基础的事情就是实现 init&#x2F;2 回调函数，处理请求，发送客户端响应（可选），最后返回。Cowboy根据 router configuration">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2016-11-23T12:00:00.000Z">
+<meta property="article:modified_time" content="2021-08-29T07:02:01.178Z">
+<meta property="article:author" content="Ron Ngai">
+<meta property="article:tag" content="erlang">
+<meta property="article:tag" content="cowboy">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2016/11/23/711-Cowboy_Handlers/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>[翻译][erlang]cowboy handler模块的使用 | 魏延的BLOG</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">魏延的BLOG</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2016/11/23/711-Cowboy_Handlers/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="魏延的BLOG">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [翻译][erlang]cowboy handler模块的使用
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-11-23 20:00:00" itemprop="dateCreated datePublished" datetime="2016-11-23T20:00:00+08:00">2016-11-23</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="关于Cowboy"><a href="#关于Cowboy" class="headerlink" title="关于Cowboy"></a>关于Cowboy</h3><p>Cowboy是基于Erlang实现的一个轻量级、快速、模块化的http web服务器。</p>
+<h3 id="Handlers"><a href="#Handlers" class="headerlink" title="Handlers"></a>Handlers</h3><p>用于处理HTTP请求的程序处理模块。</p>
+<h3 id="Plain-HTTP-Handlers（常规Handlers）"><a href="#Plain-HTTP-Handlers（常规Handlers）" class="headerlink" title="Plain HTTP Handlers（常规Handlers）"></a>Plain HTTP Handlers（常规Handlers）</h3><p>Cowboy里面的handler最基础的事情就是实现 <code>init/2</code> 回调函数，处理请求，发送客户端响应（可选），最后返回。<br>Cowboy根据 <code>router configuration</code> （路由配置）接收请求并初始化State。<br>下面是一个不做任何处理的handler：</p>
+<pre><code>init(Req, State) -&gt;
+    &#123;ok, Req, State&#125;
+</code></pre>
+<p>Cowboy为了保证每一个相应都能有客户端响应，尽管上面例子没有发送客户端返回，客户端仍然会收到一个 <code>204 No Content</code> 的响应。</p>
+<p>下面是一个有返回响应的例子：</p>
+<pre><code>init(Req0, State) -&gt;
+    Req = cowboy_req:reply(200, [
+        &#123;&lt;&lt;&quot;content-type&quot;&gt;&gt;, &lt;&lt;&quot;text/plain&quot;&gt;&gt;&#125;
+    ], &lt;&lt;&quot;Hello, World!&quot;&gt;&gt;, Req0),
+    &#123;ok, Req, State&#125;.
+</code></pre>
+<p>当调用了 <code>cowboy:req/4</code>, Cowboy会马上返回一个客户端响应。</p>
+<p>最后我们返回一个三元组。<code>ok</code> 表示handler允许成功，然后返回处理过后的 <code>Req</code> 给Cowboy。<br>三元组的最后一个元素是一个贯穿在handler所有回调一个state。常规的HTTP handlers一般只附加一个回调函数，<code>terminate/2</code>是一个很少使用的可选的回调函数。</p>
+<h3 id="Other-Handlers（其它Handlers）"><a href="#Other-Handlers（其它Handlers）" class="headerlink" title="Other Handlers（其它Handlers）"></a>Other Handlers（其它Handlers）</h3><p><code>init/2</code> 回调函数也可以用来告诉cowboy，这是一个不同类型的handler，Cowboy应该做一些其他处理。为了方便使用，如果返回handler类型的模块名称，就可以切换handler处理模块。</p>
+<p>Cowboy提供了三种可选handler类型：cowboy_reset, Cowboy_websocke和cowboy_loop。另外也可以自己定义handler类型。</p>
+<p>切换非常简单，用handler类型替换掉返回的 <code>ok</code> 就可以了。下面是一个切换为 Websocket handler 的代码片段。</p>
+<pre><code>init(Req, State) -&gt;
+    &#123;cowboy_websocket, Req, State&#125;.
+</code></pre>
+<p>也可以切换到一个自定义的handler模块：</p>
+<pre><code>init(Req, State) -&gt;
+    &#123;my_handler_type, Req, State&#125;.
+</code></pre>
+<p>如何使用自定义的handler类型可以查看<code>Sub protocols</code> 章节（<a target="_blank" rel="noopener" href="https://ninenines.eu/docs/en/cowboy/2.0/guide/sub_protocols%EF%BC%89%E3%80%82">https://ninenines.eu/docs/en/cowboy/2.0/guide/sub_protocols）。</a></p>
+<h3 id="Cleaning-up"><a href="#Cleaning-up" class="headerlink" title="Cleaning up"></a>Cleaning up</h3><p>除了Websocket handlers，其它所有类型都提供可选回调函数<code>terminate/3</code>：</p>
+<pre><code>terminate(_Reason, _Req, _State) -&gt;
+    ok.
+</code></pre>
+<p>这个回调函数是为了cleanup保留下来的。该函数不能发送响应给客户端。也没有其他返回值（只能返回<code>ok</code>）。</p>
+<p><code>terminate/3</code>之所以是可选是因为其极少会用到。Cleanup应该在各自的进程中直接处理。（通过监控handler进程来知道其何时退出）</p>
+<p>Cowboy不会在不同的请求重复使用进程（应该是http短链接设计引起的）。进程在返回之后很快就会被销毁。</p>
+<h3 id="Others"><a href="#Others" class="headerlink" title="Others"></a>Others</h3><p>英文官方原文：</p>
+<p><a target="_blank" rel="noopener" href="https://ninenines.eu/docs/en/cowboy/2.0/guide/handlers/#_plain_http_handlers">https://ninenines.eu/docs/en/cowboy/2.0/guide/handlers/#_plain_http_handlers</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/erlang/" rel="tag"># erlang</a>
+              <a href="/tags/cowboy/" rel="tag"># cowboy</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/11/23/710-Cowboy_Routing/" rel="prev" title="[翻译][erlang]cowboy路由模块使用">
+      <i class="fa fa-chevron-left"></i> [翻译][erlang]cowboy路由模块使用
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/11/29/802-Game_AOI_Cross_Linked_List/" rel="next" title="[game]十字链表的AOI算法实现">
+      [game]十字链表的AOI算法实现 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E4%BA%8ECowboy"><span class="nav-number">1.</span> <span class="nav-text">关于Cowboy</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Handlers"><span class="nav-number">2.</span> <span class="nav-text">Handlers</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Plain-HTTP-Handlers%EF%BC%88%E5%B8%B8%E8%A7%84Handlers%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">Plain HTTP Handlers（常规Handlers）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Other-Handlers%EF%BC%88%E5%85%B6%E5%AE%83Handlers%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">Other Handlers（其它Handlers）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Cleaning-up"><span class="nav-number">5.</span> <span class="nav-text">Cleaning up</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Others"><span class="nav-number">6.</span> <span class="nav-text">Others</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Ron Ngai</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2015 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ron Ngai</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
