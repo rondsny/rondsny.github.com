@@ -150,6 +150,166 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2015/04/07/402-Stop_Selinux/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="魏延的BLOG">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/04/07/402-Stop_Selinux/" class="post-title-link" itemprop="url">[linux]windows无法访问samba的安全性问题(关闭selinux)</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2015-04-07 18:00:00" itemprop="dateCreated datePublished" datetime="2015-04-07T18:00:00+08:00">2015-04-07</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>在某一天重启了虚拟机的 <code>linux</code> 之后，我的 <code>windows</code> 在连接上 <code>samba</code> 之后，点击某些文件夹的时候，会出现没有权限打开的情况。这问题折腾了我一度重新配置了好几次 <code>samba</code> 的配置，然而无果。</p>
+<h4 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h4><p>经过搜索，发现有两个办法可以解决samba的某些文件夹无法访问的问题。</p>
+<ul>
+<li>方法一 修改文件和文件夹的安全策略；</li>
+<li>方法二 关闭 <code>selinux</code>；</li>
+</ul>
+<p>第一种方法并不合适，只是临时解决的一种方案。因为在 <code>windows</code> 下新建了一个 <code>linux</code> 文件夹之后，下一次重启了 <code>linux</code> ，新的文件夹又无法访问了。麻烦。第二种方法就简单了，一劳永逸。</p>
+<p>虽然网上又说关闭 <code>selinux</code> 会有安全问题。然而只是我虚拟机的 <code>linux</code> 开发机而已，并不是生产环境，没有太高的安全问题。</p>
+<h4 id="方法一-修改安全策略"><a href="#方法一-修改安全策略" class="headerlink" title="方法一 修改安全策略"></a>方法一 修改安全策略</h4><pre><code> chcon -t samba_share_t share
+</code></pre>
+<p>chcon 可以修改文件的安全上下文。重置windows建立的文件、文件夹的安全信息。也可以解决，但是比较麻烦，不方便。</p>
+<h4 id="方法二-关闭-selinux"><a href="#方法二-关闭-selinux" class="headerlink" title="方法二 关闭 selinux"></a>方法二 关闭 selinux</h4><h5 id="永久关闭"><a href="#永久关闭" class="headerlink" title="永久关闭"></a>永久关闭</h5><p>修改 <code>/etc/selinux/config</code> 文件，设置</p>
+<pre><code>SELINUX=disabled
+</code></pre>
+<p>然后重启linux。</p>
+<h5 id="临时关闭"><a href="#临时关闭" class="headerlink" title="临时关闭"></a>临时关闭</h5><p>使用 <code>setenforce</code> 命令可以修改 <code>selinux</code> 模式。</p>
+<ul>
+<li><code>setenforce 1</code> 设置 <code>selinux</code> 为 <code>enforcing</code> 模式；</li>
+<li><code>setenforce 0</code> 设置 <code>selinux</code> 为 <code>permissive</code> 模式。</li>
+</ul>
+<h4 id="其它方案"><a href="#其它方案" class="headerlink" title="其它方案"></a>其它方案</h4><p><a target="_blank" rel="noopener" href="https://wiki.centos.org/zh/HowTos/SetUpSamba" title="https://wiki.centos.org/zh/HowTos/SetUpSamba">https://wiki.centos.org/zh/HowTos/SetUpSamba</a> 有相当详细的解释和解决办法。有时间折腾的可以看看。</p>
+<p>以上。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2015/03/17/403-Set_svn_ignore/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="魏延的BLOG">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/03/17/403-Set_svn_ignore/" class="post-title-link" itemprop="url">[svn]如何在linux设置svn忽略列表</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2015-03-17 18:35:20" itemprop="dateCreated datePublished" datetime="2015-03-17T18:35:20+08:00">2015-03-17</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="管理属性变量的命令"><a href="#管理属性变量的命令" class="headerlink" title="管理属性变量的命令"></a>管理属性变量的命令</h3><p>svn客户端有个属性<code>ignore</code> 用于保存忽略的文件或者目录。除此之外，svn其实有好多属性变量用来自定义，如在windows下svn客户端里面属性截图：<br><img src="/images/301-01.png" alt="windows svn" title="windows svn"></p>
+<p>但是在linux 下，不可像windows那样有可视化界面进行管理。<br>执行svn help 命令可以知道有五个命令用于管理svn 属性变量。</p>
+<pre><code>propdel (pdel, pd)                # 删除属性
+propedit (pedit, pe)              # 编辑属性
+propget (pget, pg)                # 获取属性的值
+proplist (plist, pl)              # 列出所有的属性
+propset (pset, ps)                # 设置属性的值
+</code></pre>
+<p>那么有这几个命令，想要编辑<code>svn:ignore</code> 变量还不轻而易举。</p>
+<h3 id="方法1："><a href="#方法1：" class="headerlink" title="方法1："></a>方法1：</h3><p>首先要给SVN指定默认的编辑器，如下。当然改成其它编辑器也可以。</p>
+<ul>
+<li><code>export SVN_EDITOR=/usr/bin/vim</code> 已经设置的话，可以忽略这一步</li>
+<li><code>svn propedit svn:ignore [目录]</code></li>
+</ul>
+<p>然后可以在vim编辑器中写上需要过滤的目录或者文件。换行隔开，据说空格也可以，但是我没有试过。</p>
+<h3 id="方法2："><a href="#方法2：" class="headerlink" title="方法2："></a>方法2：</h3><p>除了propedit可以设置，当然propset 也可以设置。<br><img src="/images/301-02.png" alt="svn propset" title="svn propset"><br>图片表示将pet目录下的xg_pet.erl文件加入到忽略列表。</p>
+<h3 id="属性变量文件"><a href="#属性变量文件" class="headerlink" title="属性变量文件"></a>属性变量文件</h3><p>在当前目录，有一个<code>.svn</code> 目录。当有属性变量的时候，<code>.svn</code>目录会生成一个<code>dir-props</code>文件用来保存属性变量，如下：<br><img src="/images/301-03.png" alt="svn properties file" title=".svn/dir-props"></p>
+<h3 id="查看状态"><a href="#查看状态" class="headerlink" title="查看状态"></a>查看状态</h3><p>另外说一个linux下很常用的命令。相当于windows下commit的时候出现的文件列表。而linux下需要用<code>svn status</code>来查看。<br><code>svn status/svn st/svn stat</code></p>
+<p>延伸一下，下面两个命令：</p>
+<ul>
+<li><code>svn st | grep ^? | sed &#39;s/?    //&#39; | xargs svn add</code>  增加尚未增加到svn的文件</li>
+<li><code>svn st | grep ^! | sed &#39;s/!    //&#39; | xargs svn rm</code>    删除svn里面已经不存在的文件（本地尚存）</li>
+</ul>
+<p>当然避免误操作，我经常先执行<code>svn st | grep ^? | sed &#39;s/?    //&#39;</code> 先确认下文件列表。<br><img src="/images/301-04.png" alt="svn skill" title="svn skill"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://example.com/2015/03/12/202-Add_rss_in_Hexo/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -374,12 +534,12 @@ hexo server       # hexo s
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-count">24</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-count">24</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>
