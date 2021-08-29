@@ -20,26 +20,21 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="管理属性变量的命令svn客户端有个属性ignore 用于保存忽略的文件或者目录。除此之外，svn其实有好多属性变量用来自定义，如在windows下svn客户端里面属性截图： 但是在linux 下，不可像windows那样有可视化界面进行管理。执行svn help 命令可以知道有五个命令用于管理svn 属性变量。 propdel (pdel, pd)                # 删除属性 pr">
+  <meta name="description" content="基本原理将场景区域划分为小格子，然后将玩家的视野统一设定为玩家所在的格子和周边的八个格子。这样在同步的时候就只需要同步九宫格内的数据。为此需要维护玩家进入和离开格子的数据。 基本接口主要有四个接口，其中进入场景（enter）和场景内移动（move）在这里合并为set接口。  new_area: 新建aoi场景区域 set: 进入场景或者场景内移动 leave: 离开场景 get_ids_by_gr">
 <meta property="og:type" content="article">
-<meta property="og:title" content="[svn]如何在linux设置svn忽略列表">
-<meta property="og:url" content="http://example.com/2015/03/17/403-Set_svn_ignore/index.html">
+<meta property="og:title" content="九宫格AOI（lua版本）">
+<meta property="og:url" content="http://example.com/2021/02/12/850-Game_AOI_Grid_Lua/index.html">
 <meta property="og:site_name" content="魏延的BLOG">
-<meta property="og:description" content="管理属性变量的命令svn客户端有个属性ignore 用于保存忽略的文件或者目录。除此之外，svn其实有好多属性变量用来自定义，如在windows下svn客户端里面属性截图： 但是在linux 下，不可像windows那样有可视化界面进行管理。执行svn help 命令可以知道有五个命令用于管理svn 属性变量。 propdel (pdel, pd)                # 删除属性 pr">
+<meta property="og:description" content="基本原理将场景区域划分为小格子，然后将玩家的视野统一设定为玩家所在的格子和周边的八个格子。这样在同步的时候就只需要同步九宫格内的数据。为此需要维护玩家进入和离开格子的数据。 基本接口主要有四个接口，其中进入场景（enter）和场景内移动（move）在这里合并为set接口。  new_area: 新建aoi场景区域 set: 进入场景或者场景内移动 leave: 离开场景 get_ids_by_gr">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/images/301-01.png">
-<meta property="og:image" content="http://example.com/images/301-02.png">
-<meta property="og:image" content="http://example.com/images/301-03.png">
-<meta property="og:image" content="http://example.com/images/301-04.png">
-<meta property="article:published_time" content="2015-03-17T10:35:20.000Z">
-<meta property="article:modified_time" content="2021-08-29T07:02:01.176Z">
+<meta property="article:published_time" content="2021-02-12T14:28:01.000Z">
+<meta property="article:modified_time" content="2021-08-29T14:05:16.851Z">
 <meta property="article:author" content="Ron Ngai">
-<meta property="article:tag" content="linux">
-<meta property="article:tag" content="svn">
+<meta property="article:tag" content="game">
+<meta property="article:tag" content="lua">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/images/301-01.png">
 
-<link rel="canonical" href="http://example.com/2015/03/17/403-Set_svn_ignore/">
+<link rel="canonical" href="http://example.com/2021/02/12/850-Game_AOI_Grid_Lua/">
 
 
 <script id="page-configurations">
@@ -52,7 +47,7 @@
   };
 </script>
 
-  <title>[svn]如何在linux设置svn忽略列表 | 魏延的BLOG</title>
+  <title>九宫格AOI（lua版本） | 魏延的BLOG</title>
   
 
 
@@ -162,7 +157,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2015/03/17/403-Set_svn_ignore/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/02/12/850-Game_AOI_Grid_Lua/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -175,7 +170,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          [svn]如何在linux设置svn忽略列表
+          九宫格AOI（lua版本）
         </h1>
 
         <div class="post-meta">
@@ -185,7 +180,7 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2015-03-17 18:35:20" itemprop="dateCreated datePublished" datetime="2015-03-17T18:35:20+08:00">2015-03-17</time>
+              <time title="Created: 2021-02-12 22:28:01" itemprop="dateCreated datePublished" datetime="2021-02-12T22:28:01+08:00">2021-02-12</time>
             </span>
 
           
@@ -199,30 +194,23 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h3 id="管理属性变量的命令"><a href="#管理属性变量的命令" class="headerlink" title="管理属性变量的命令"></a>管理属性变量的命令</h3><p>svn客户端有个属性<code>ignore</code> 用于保存忽略的文件或者目录。除此之外，svn其实有好多属性变量用来自定义，如在windows下svn客户端里面属性截图：<br><img src="/images/301-01.png" alt="windows svn" title="windows svn"></p>
-<p>但是在linux 下，不可像windows那样有可视化界面进行管理。<br>执行svn help 命令可以知道有五个命令用于管理svn 属性变量。</p>
-<pre><code>propdel (pdel, pd)                # 删除属性
-propedit (pedit, pe)              # 编辑属性
-propget (pget, pg)                # 获取属性的值
-proplist (plist, pl)              # 列出所有的属性
-propset (pset, ps)                # 设置属性的值
-</code></pre>
-<p>那么有这几个命令，想要编辑<code>svn:ignore</code> 变量还不轻而易举。</p>
-<h3 id="方法1："><a href="#方法1：" class="headerlink" title="方法1："></a>方法1：</h3><p>首先要给SVN指定默认的编辑器，如下。当然改成其它编辑器也可以。</p>
+        <h2 id="基本原理"><a href="#基本原理" class="headerlink" title="基本原理"></a>基本原理</h2><p>将场景区域划分为小格子，然后将玩家的视野统一设定为玩家所在的格子和周边的八个格子。这样在同步的时候就只需要同步九宫格内的数据。为此需要维护玩家进入和离开格子的数据。</p>
+<h2 id="基本接口"><a href="#基本接口" class="headerlink" title="基本接口"></a>基本接口</h2><p>主要有四个接口，其中进入场景（enter）和场景内移动（move）在这里合并为set接口。</p>
 <ul>
-<li><code>export SVN_EDITOR=/usr/bin/vim</code> 已经设置的话，可以忽略这一步</li>
-<li><code>svn propedit svn:ignore [目录]</code></li>
+<li>new_area: 新建aoi场景区域</li>
+<li>set: 进入场景或者场景内移动</li>
+<li>leave: 离开场景</li>
+<li>get_ids_by_grid: 根据格子id获取格子内对象id</li>
 </ul>
-<p>然后可以在vim编辑器中写上需要过滤的目录或者文件。换行隔开，据说空格也可以，但是我没有试过。</p>
-<h3 id="方法2："><a href="#方法2：" class="headerlink" title="方法2："></a>方法2：</h3><p>除了propedit可以设置，当然propset 也可以设置。<br><img src="/images/301-02.png" alt="svn propset" title="svn propset"><br>图片表示将pet目录下的xg_pet.erl文件加入到忽略列表。</p>
-<h3 id="属性变量文件"><a href="#属性变量文件" class="headerlink" title="属性变量文件"></a>属性变量文件</h3><p>在当前目录，有一个<code>.svn</code> 目录。当有属性变量的时候，<code>.svn</code>目录会生成一个<code>dir-props</code>文件用来保存属性变量，如下：<br><img src="/images/301-03.png" alt="svn properties file" title=".svn/dir-props"></p>
-<h3 id="查看状态"><a href="#查看状态" class="headerlink" title="查看状态"></a>查看状态</h3><p>另外说一个linux下很常用的命令。相当于windows下commit的时候出现的文件列表。而linux下需要用<code>svn status</code>来查看。<br><code>svn status/svn st/svn stat</code></p>
-<p>延伸一下，下面两个命令：</p>
-<ul>
-<li><code>svn st | grep ^? | sed &#39;s/?    //&#39; | xargs svn add</code>  增加尚未增加到svn的文件</li>
-<li><code>svn st | grep ^! | sed &#39;s/!    //&#39; | xargs svn rm</code>    删除svn里面已经不存在的文件（本地尚存）</li>
-</ul>
-<p>当然避免误操作，我经常先执行<code>svn st | grep ^? | sed &#39;s/?    //&#39;</code> 先确认下文件列表。<br><img src="/images/301-04.png" alt="svn skill" title="svn skill"></p>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><h3 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h3><p>所有数据都挂在场景内，此处称为area。area内包含了场景范围，对象列表，格子列表。new_area 接口也就是创建场景数据结构。</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> tb_area = &#123;</span><br><span class="line">        min_x = args.min_x,  <span class="comment">-- 场景范围</span></span><br><span class="line">        min_y = args.min_y,</span><br><span class="line">        max_x = args.max_x,</span><br><span class="line">        max_y = args.max_y,</span><br><span class="line"></span><br><span class="line">        grid_x    = grid_x,  <span class="comment">-- x轴有几段</span></span><br><span class="line">        grid_y    = grid_y,  <span class="comment">-- y轴有几段</span></span><br><span class="line"></span><br><span class="line">        grid_max  = grid_max,  <span class="comment">-- 总格子数量</span></span><br><span class="line">        grid_size = grid_size, <span class="comment">-- 格子长度</span></span><br><span class="line"></span><br><span class="line">        map_actor = &#123;&#125;,  <span class="comment">-- 对象列表</span></span><br><span class="line">        lst_grid  = &#123;&#125;,  <span class="comment">-- 格子</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="进入场景和移动"><a href="#进入场景和移动" class="headerlink" title="进入场景和移动"></a>进入场景和移动</h3><p>进入场景非常简单，根据坐标计算出目标格子，然后分别加入 map_actor 列表和 lst_grid 列表即可。</p>
+<p>场景内移动分2种情况：</p>
+<p>第一种在格子内移动，这种情况，aoi没有变化。</p>
+<p>第二种跨格子移动，出现了离开旧格子加入新格子的情况。这里稍微注意的是，有可能旧的九宫格和新的九宫格存在重叠的区域，这样的情况，对于重叠的区域的对象视野来说，目标对象并没有离开过视野。</p>
+<h3 id="离开场景"><a href="#离开场景" class="headerlink" title="离开场景"></a>离开场景</h3><p>离开也非常简单，从 map_actor 列表和 lst_grid 列表删除即可。</p>
+<h2 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h2><p><a target="_blank" rel="noopener" href="https://github.com/rondsny/lua_aoi">GitHub - rondsny/lua_aoi</a></p>
 
     </div>
 
@@ -232,8 +220,8 @@ propset (pset, ps)                # 设置属性的值
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/linux/" rel="tag"># linux</a>
-              <a href="/tags/svn/" rel="tag"># svn</a>
+              <a href="/tags/game/" rel="tag"># game</a>
+              <a href="/tags/lua/" rel="tag"># lua</a>
           </div>
 
         
@@ -242,13 +230,10 @@ propset (pset, ps)                # 设置属性的值
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2015/03/12/202-Add_rss_in_Hexo/" rel="prev" title="[hexo]在hexo内添加RSS和sitemap">
-      <i class="fa fa-chevron-left"></i> [hexo]在hexo内添加RSS和sitemap
+    <a href="/2017/10/11/352-Unity_Plugin/" rel="prev" title="[Unity]Unity3D编辑器插件扩展和组件扩展">
+      <i class="fa fa-chevron-left"></i> [Unity]Unity3D编辑器插件扩展和组件扩展
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2015/04/07/402-Stop_Selinux/" rel="next" title="[linux]windows无法访问samba的安全性问题(关闭selinux)">
-      [linux]windows无法访问samba的安全性问题(关闭selinux) <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -307,7 +292,7 @@ propset (pset, ps)                # 设置属性的值
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%A1%E7%90%86%E5%B1%9E%E6%80%A7%E5%8F%98%E9%87%8F%E7%9A%84%E5%91%BD%E4%BB%A4"><span class="nav-number">1.</span> <span class="nav-text">管理属性变量的命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%B3%951%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">方法1：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%B3%952%EF%BC%9A"><span class="nav-number">3.</span> <span class="nav-text">方法2：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B1%9E%E6%80%A7%E5%8F%98%E9%87%8F%E6%96%87%E4%BB%B6"><span class="nav-number">4.</span> <span class="nav-text">属性变量文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E7%8A%B6%E6%80%81"><span class="nav-number">5.</span> <span class="nav-text">查看状态</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">基本原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%8E%A5%E5%8F%A3"><span class="nav-number">2.</span> <span class="nav-text">基本接口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0"><span class="nav-number">3.</span> <span class="nav-text">实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-number">3.1.</span> <span class="nav-text">数据结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9B%E5%85%A5%E5%9C%BA%E6%99%AF%E5%92%8C%E7%A7%BB%E5%8A%A8"><span class="nav-number">3.2.</span> <span class="nav-text">进入场景和移动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A6%BB%E5%BC%80%E5%9C%BA%E6%99%AF"><span class="nav-number">3.3.</span> <span class="nav-text">离开场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%8C%E6%95%B4%E4%BB%A3%E7%A0%81"><span class="nav-number">4.</span> <span class="nav-text">完整代码</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
