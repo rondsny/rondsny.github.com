@@ -150,6 +150,107 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2016/12/29/702-Erlang_Supervisor/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="魏延的BLOG">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/29/702-Erlang_Supervisor/" class="post-title-link" itemprop="url">[erlang]supervisor(监控树)的使用和重启策略</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-12-29 20:44:00" itemprop="dateCreated datePublished" datetime="2016-12-29T20:44:00+08:00">2016-12-29</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="supervisor-监控树-的使用和重启策略"><a href="#supervisor-监控树-的使用和重启策略" class="headerlink" title="supervisor(监控树)的使用和重启策略"></a>supervisor(监控树)的使用和重启策略</h2><h3 id="1-init函数"><a href="#1-init函数" class="headerlink" title="1. init函数"></a>1. init函数</h3><figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">init</span><span class="params">()</span> -&gt;</span></span><br><span class="line">    &#123;ok, &#123;SupFlags, [ChildSpec,...]&#125;&#125; | ignore.</span><br></pre></td></tr></table></figure>
+
+<p>[ChildSpec,…] 是在init之后默认要启动的子进程。</p>
+<h3 id="2-SupFlags参数"><a href="#2-SupFlags参数" class="headerlink" title="2. SupFlags参数"></a>2. SupFlags参数</h3><p>{Type, Times, Sec}</p>
+<ul>
+<li>Type: 重启策略<ul>
+<li>one_for_one: 一个子进程终止，只重启该进程，在init的时候会启动参数内的子进程</li>
+<li>simple_one_for_one: 同one_for_one，但是在init的时候不会启动子进程，需要动态调用启动</li>
+<li>one_for_all: 一个子进程终止，将重启所有子进程</li>
+<li>rest_for_one: 一个子进程终止，将按顺序重启这个子进程和之后顺序的子进程</li>
+</ul>
+</li>
+<li>Times: 次数(监控频率)</li>
+<li>Sec: 秒数(监控频率)，如果在Sec秒内重启次数超过Times，则终止所有进程，并终止监控树，将由父进程决定它的命运</li>
+</ul>
+<h3 id="3-ChildSpec参数如下"><a href="#3-ChildSpec参数如下" class="headerlink" title="3. ChildSpec参数如下"></a>3. ChildSpec参数如下</h3><figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;Id, StartFunc, Restart, Shutdown, Type, Modules&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">%% 或者</span></span><br><span class="line"></span><br><span class="line">#&#123;</span><br><span class="line">    id =&gt; child_id(),</span><br><span class="line">    start =&gt; mfaargs(),</span><br><span class="line">    restart =&gt; restart(),</span><br><span class="line">    shutdown =&gt; shutdown(),</span><br><span class="line">    type =&gt; work(),</span><br><span class="line">    modules =&gt; modules()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Id 子进程ID标识符</li>
+<li>StartFunc = {M, F, A}: 子程序启动入口</li>
+<li>Restart: 重启方案<ul>
+<li><code>permanent</code>: 如果app终止了，整个系统都会停止工作（application:stop/1除外）。</li>
+<li><code>transient</code>: 如果app以normal的原因终止，没有影响。任何其它终止原因都谁导致整个系统关闭。</li>
+<li><code>temporary</code>: app可以以任何原因终止。只产生报告，没有其它任何影响。</li>
+</ul>
+</li>
+<li>Shutdown: 终止策略<ul>
+<li><code>brutal_kill</code>: 无条件终止</li>
+<li>超时值(毫秒): 终止时，如果超时，则强制终止</li>
+<li><code>infinity</code>: 如果子进程是监控树，设置为无限大，等待其终止为止</li>
+</ul>
+</li>
+<li>Type: <ul>
+<li><code>worker</code>: 普通子进程</li>
+<li><code>supervisor</code>: 子进程是监控树</li>
+</ul>
+</li>
+<li>Modules: <ul>
+<li><code>dynamic</code>: 当子进程是gen_event</li>
+<li><code>[Module]</code>: 当子进程是监控树、gen_server或者gen_fsm，表示回调模块名称</li>
+</ul>
+</li>
+</ul>
+<h3 id="4-监控树操作"><a href="#4-监控树操作" class="headerlink" title="4. 监控树操作"></a>4. 监控树操作</h3><p>Sup通常可以为<code>?MODULE</code></p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 启动监控树</span></span><br><span class="line">supervisor:start_link(Sup, []).</span><br><span class="line"></span><br><span class="line"><span class="comment">% 启动一个子进程</span></span><br><span class="line">supervisor:start_child(Sup, ChildSpec).</span><br><span class="line"></span><br><span class="line"><span class="comment">% 停止一个子进程</span></span><br><span class="line">supervisor:terminate(Sup, Id).</span><br><span class="line"></span><br><span class="line"><span class="comment">% 删除一个子进程</span></span><br><span class="line">supervisor:delete_child(Sup, Id).</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://example.com/2016/11/29/802-Game_AOI_Cross_Linked_List/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1276,213 +1377,6 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2015/04/28/401-Deploy_Tmux/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/04/28/401-Deploy_Tmux/" class="post-title-link" itemprop="url">[linux]CentOS下安装和使用tmux</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2015-04-28 18:27:54" itemprop="dateCreated datePublished" datetime="2015-04-28T18:27:54+08:00">2015-04-28</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>前天随意点开博客园，看到了一篇关于tmux的文章 <a target="_blank" rel="noopener" href="http://cenalulu.github.io/linux/tmux/">Tmux - Linux从业者必备利器</a>，特意还点进去看了。毕竟Linux对于做游戏服务端开发的我来说，太熟悉不过了。不过我就粗略地看了一眼，就关掉了。直到第二天<code>码农周刊</code>就推荐了这篇文章，才引起我真正的关注。<code>tmux</code>真的那么好用吗？所以我自己也倒腾来一遍，的确在许多场景下还是非常有用的。如：</p>
-<ul>
-<li>做服务器的，肯定需要关注性能的，而tmux多个pane可以很方便同时关注多项性能指标；</li>
-<li>我们的游戏服刚好有多个服务存在，而联调多个服务的时候，可以同时看到多个控制台确实很方便。</li>
-</ul>
-<p>以上并不是其它方式不可以，譬如我用xshell的，同时看多个xshell可以达到相同的效果。但切换的时候还是有些不方便。 因为环境不同，原作者用Mac，而我用CentOS，有些地方存在不一样，故记载方便自己以后查阅。</p>
-<h3 id="CentOS下安装"><a href="#CentOS下安装" class="headerlink" title="CentOS下安装"></a>CentOS下安装</h3><p>首先我是用<code>yum install tmux</code>尝试安装的。估计没有源，没有找到tmux。所以习惯性直接找源代码安装。<br>但是其中有依赖，需要先安装<code>libevent</code>。</p>
-<pre><code>wget https://github.com/downloads/libevent/libevent/libevent-2.0.21-stable.tar.gz
-tar xzvf libevent-2.0.21-stable.tar.gz
-cd libevent-2.0.21-stable
-./configure &amp;&amp; make
-make install
-</code></pre>
-<p>然后再下载源码安装tmux</p>
-<pre><code>git clone git://git.code.sf.net/p/tmux/tmux-code tmux
-cd tmux
-sh autogen.sh
-./configure &amp;&amp; make
-make install
-</code></pre>
-<p>过程中遇到了两个报错，解决都比较简单，当然是查阅资料后。</p>
-<h4 id="问题1："><a href="#问题1：" class="headerlink" title="问题1："></a>问题1：</h4><p>期间我遇到了执行autogen.sh 报错，原因是我没有安装automake。这个直接<code>yum install automake</code>就简单解决了。</p>
-<h4 id="问题2："><a href="#问题2：" class="headerlink" title="问题2："></a>问题2：</h4><p>执行的时候遇到</p>
-<pre><code>libevent-2.0.so.5: cannot open shared object file: No such file or directory
-</code></pre>
-<p>的报错，解决办法也比较简单，既然找不到，那就换个找得到的地方呗。</p>
-<pre><code>ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib/libevent-2.0.so.5     # 32位系统
-ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系统
-</code></pre>
-<h3 id="使用和快捷键"><a href="#使用和快捷键" class="headerlink" title="使用和快捷键"></a>使用和快捷键</h3><p>直接在命令行输入tmux即可进入tmux的模式。</p>
-<p>tmux主要有windows窗体操作和Pane操作，个人觉得windows对于我来说，意义不大(并不是说windows模式没适用场景)，所以这里主要讲下Pane的相关操作。</p>
-<h4 id="快捷键"><a href="#快捷键" class="headerlink" title="快捷键"></a>快捷键</h4><p>tmux的快捷键都要先按<code>C-b(Ctrl-b)</code>。然后再按下面表格内容，才能达到相应的效果。</p>
-<h4 id="session和其他相关快捷键"><a href="#session和其他相关快捷键" class="headerlink" title="session和其他相关快捷键"></a>session和其他相关快捷键</h4><table>
-<thead>
-<tr>
-<th align="center">快捷键</th>
-<th align="left">功能</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">C-z</td>
-<td align="left">关闭tmux.</td>
-</tr>
-<tr>
-<td align="center">:</td>
-<td align="left">进入tmux命令行模式.</td>
-</tr>
-<tr>
-<td align="center">?</td>
-<td align="left">列出所有快捷键.</td>
-</tr>
-<tr>
-<td align="center">t</td>
-<td align="left"><strong>显示时间.</strong></td>
-</tr>
-<tr>
-<td align="center">d</td>
-<td align="left">退出当前tmux客户端，tmux后台运行.</td>
-</tr>
-</tbody></table>
-<pre><code>   | 
-</code></pre>
-<p> $     | 重命名当前session.<br> s     | <strong>切换session 显示所有session并切换到某一个session.</strong><br> (     | 切换session 切换到上一个session.<br> )     | 切换session 切换到下一个session.<br> L     | 切换session 到前一个活跃的session.</p>
-<h4 id="window相关快捷键"><a href="#window相关快捷键" class="headerlink" title="window相关快捷键"></a>window相关快捷键</h4><table>
-<thead>
-<tr>
-<th align="center">快捷键</th>
-<th align="left">功能</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">c</td>
-<td align="left"><strong>新增一个window.</strong></td>
-</tr>
-<tr>
-<td align="center">&amp;</td>
-<td align="left">退出当前window.</td>
-</tr>
-<tr>
-<td align="center">,</td>
-<td align="left">重命名当前window.</td>
-</tr>
-<tr>
-<td align="center">l</td>
-<td align="left">跳转到上一个所在window.</td>
-</tr>
-</tbody></table>
-<pre><code>    | 
-</code></pre>
-<p> i      | 显示当前window的信息.<br> w      | <strong>切换window 显示所有window并切换window.</strong><br> 0 to 9 | 切换window 到相应编号的window.<br> p      | 切换window 上一个window.<br> n      | 切换window 下一个window.<br> ’      | 切换window 到输入编号的window.<br> f      | 切换window 到搜索到的window.<br> Space  | 改变当前window下的pane布局.</p>
-<h4 id="pane相关快捷键"><a href="#pane相关快捷键" class="headerlink" title="pane相关快捷键"></a>pane相关快捷键</h4><table>
-<thead>
-<tr>
-<th align="center">快捷键</th>
-<th align="left">功能</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">!</td>
-<td align="left"><strong>从window移除当前pane.</strong></td>
-</tr>
-<tr>
-<td align="center">“</td>
-<td align="left"><strong>将当前pane变成上下两个pane.</strong></td>
-</tr>
-<tr>
-<td align="center">%</td>
-<td align="left"><strong>将当前pane变成左右两个pane.</strong></td>
-</tr>
-<tr>
-<td align="center">x</td>
-<td align="left"><strong>关闭当前pane.</strong></td>
-</tr>
-<tr>
-<td align="center">q</td>
-<td align="left">显示pane的索引.</td>
-</tr>
-<tr>
-<td align="center">z</td>
-<td align="left"><strong>最大化或者恢复当前pane.</strong></td>
-</tr>
-<tr>
-<td align="center">{</td>
-<td align="left">跟前一个pane交换位置.</td>
-</tr>
-<tr>
-<td align="center">}</td>
-<td align="left">跟后一个pane交换位置.</td>
-</tr>
-<tr>
-<td align="center">o</td>
-<td align="left">切换Pane 到下一个pane.</td>
-</tr>
-<tr>
-<td align="center">;</td>
-<td align="left"><strong>切换Pane 进入到前一个操作过的pane.</strong></td>
-</tr>
-<tr>
-<td align="center">Up, Down Left, Right</td>
-<td align="left">切换Pane 使用方向键切换到相应方向的pane.</td>
-</tr>
-</tbody></table>
-<p>可能有些快捷键有些出入，可以的话提醒下。另外有些快捷键没有搞懂，而且快捷键比较多，个人觉得记得主要的几个切换快捷键就足够用来。比较tmux只是一个协助工具，没有必要在其上面那么用心。加粗的是个人觉得比较实用的。</p>
-<p>tmux不中断session的模式确实很666666，每次连回去就可以快速接上上次结束的环境。而且多个pane也非常适合要开启并监控多个服务的情况。</p>
-<p><img src="http://i.imgur.com/guRsWo3.png" alt="多个pane例子"></p>
-<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><ol>
-<li><a target="_blank" rel="noopener" href="http://cenalulu.github.io/linux/tmux/" title="Tmux - Linux从业者必备利器">http://cenalulu.github.io/linux/tmux/</a></li>
-<li><a target="_blank" rel="noopener" href="http://elroyjetson.org/dev-notes/centos/installing-tmux-on-centos-6-2" title="Installing tmux on CentOS 6.2">http://elroyjetson.org/dev-notes/centos/installing-tmux-on-centos-6-2</a></li>
-<li><a target="_blank" rel="noopener" href="http://www.nigeldunn.com/2011/12/11/libevent-2-0-so-5-cannot-open-shared-object-file-no-such-file-or-directory/" title="libevent-2.0.so.5: cannot open shared object file: No such file or directory">http://www.nigeldunn.com/2011/12/11/libevent-2-0-so-5-cannot-open-shared-object-file-no-such-file-or-directory/</a></li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1552,12 +1446,12 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">24</span>
+          <span class="site-state-item-count">25</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-count">25</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>
