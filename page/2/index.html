@@ -150,6 +150,118 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2017/02/06/301-bullet3_init_world/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="魏延的BLOG">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/02/06/301-bullet3_init_world/" class="post-title-link" itemprop="url">[Bullet3]创建世界(场景)及常见函数</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-02-06 20:16:57" itemprop="dateCreated datePublished" datetime="2017-02-06T20:16:57+08:00">2017-02-06</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="创建世界-场景-及常见函数"><a href="#创建世界-场景-及常见函数" class="headerlink" title="创建世界(场景)及常见函数"></a>创建世界(场景)及常见函数</h2><p>官方文档：<a target="_blank" rel="noopener" href="http://bulletphysics.org/">http://bulletphysics.org</a><br>开源代码：<a target="_blank" rel="noopener" href="https://github.com/bulletphysics/bullet3/releases">https://github.com/bulletphysics/bullet3/releases</a><br>API文档：<a target="_blank" rel="noopener" href="http://bulletphysics.org/Bullet/BulletFull/annotated.html">http://bulletphysics.org/Bullet/BulletFull/annotated.html</a></p>
+<h3 id="0-世界的继承类"><a href="#0-世界的继承类" class="headerlink" title="0. 世界的继承类"></a>0. 世界的继承类</h3><ul>
+<li><code>btCollisionWorld</code><ul>
+<li>基类</li>
+</ul>
+</li>
+<li><code>btDynamicsWorld</code><ul>
+<li>继承于<code>btCollisionWorld</code></li>
+<li>基础的动力学实现</li>
+</ul>
+</li>
+<li><code>btDiscreteDynamicsWorld</code><ul>
+<li>继承于<code>btDynamicsWorld</code></li>
+<li>刚体的运动模拟</li>
+</ul>
+</li>
+</ul>
+<h3 id="1-创建世界-场景"><a href="#1-创建世界-场景" class="headerlink" title="1. 创建世界(场景)"></a>1. 创建世界(场景)</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 初始化场景</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 用于配置碰撞检测堆栈大小，默认碰撞算法，接触副本池的大小</span></span><br><span class="line">btDefaultCollisionConfiguration* collisionConfiguration = <span class="keyword">new</span> <span class="built_in">btDefaultCollisionConfiguration</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 用于计算重叠对象（碰撞检测，接触点计算）（接触点会被封装成 btPersistentManifold 对象）</span></span><br><span class="line">btCollisionDispatcher* dispatcher = <span class="keyword">new</span> <span class="built_in">btCollisionDispatcher</span>(collisionConfiguration);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 提供成对的aabb重叠监测（重叠对象的管理，存储，增加删除等）</span></span><br><span class="line">btBroadphaseInterface* overlappingPairCache = <span class="keyword">new</span> <span class="built_in">btDbvtBroadphase</span>();</span><br><span class="line"></span><br><span class="line">btSequentialImpulseConstraintSolver* solver = <span class="keyword">new</span> btSequentialImpulseConstraintSolver;</span><br><span class="line">btDynamicsWorld* world = <span class="keyword">new</span> <span class="built_in">btDiscreteDynamicsWorld</span>(dispatcher, overlappingPairCache, solver, collisionConfiguration);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-场景函数"><a href="#2-场景函数" class="headerlink" title="2. 场景函数"></a>2. 场景函数</h3><ul>
+<li><code>void btDynamicsWorld::addRigidBody(btRigidBody* body)</code><ul>
+<li>添加一个刚体</li>
+</ul>
+</li>
+<li><code>void btCollisionWorld::removeCollisionObject(btCollisionObject* collisionObject)</code><ul>
+<li>删除对象</li>
+</ul>
+</li>
+<li><code>int btCollisionWorld::getNumCollisionObjects()</code><ul>
+<li>获取数量</li>
+</ul>
+</li>
+<li><code>btAlignedObjectArray&lt;btCollisionObject*&gt; btCollisionWorld::getCollisionObjectArray()</code><ul>
+<li>获取场景所有对象</li>
+</ul>
+</li>
+<li><code>void    btDynamicsWorld::setGravity(const btVector3&amp; gravity)</code><ul>
+<li>设置重力</li>
+<li>默认值：btVector3(0,0,0)</li>
+</ul>
+</li>
+<li><code>void    btDynamicsWorld::performDiscreteCollisionDetection()</code><ul>
+<li>碰撞检测</li>
+</ul>
+</li>
+<li><code>int btDynamicsWorld::stepSimulation(btScalar timeStep, int maxSubSteps = 1, btScalar fixedTimeStep = btScalar(1.)/btScalar(60.))</code><ul>
+<li>模拟运动</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-举例"><a href="#3-举例" class="headerlink" title="3. 举例"></a>3. 举例</h3><ol>
+<li>场景场景；</li>
+<li>添加一个刚体；</li>
+<li>释放内存退出。</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;btBulletDynamicsCommon.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    <span class="comment">///-----initialization_start-----</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">///collision configuration contains default setup for memory, collision setup. Advanced users can create their own configuration.</span></span><br><span class="line">    btDefaultCollisionConfiguration* collisionConfiguration = <span class="keyword">new</span> <span class="built_in">btDefaultCollisionConfiguration</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">///use the default collision dispatcher. For parallel processing you can use a diffent dispatcher (see Extras/BulletMultiThreaded)</span></span><br><span class="line">    btCollisionDispatcher* dispatcher = <span class="keyword">new</span>	<span class="built_in">btCollisionDispatcher</span>(collisionConfiguration);</span><br><span class="line"></span><br><span class="line">    <span class="comment">///btDbvtBroadphase is a good general purpose broadphase. You can also try out btAxis3Sweep.</span></span><br><span class="line">    btBroadphaseInterface* overlappingPairCache = <span class="keyword">new</span> <span class="built_in">btDbvtBroadphase</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">///the default constraint solver. For parallel processing you can use a different solver (see Extras/BulletMultiThreaded)</span></span><br><span class="line">    btSequentialImpulseConstraintSolver* solver = <span class="keyword">new</span> btSequentialImpulseConstraintSolver;</span><br><span class="line"></span><br><span class="line">    btDiscreteDynamicsWorld* dynamicsWorld = <span class="keyword">new</span> <span class="built_in">btDiscreteDynamicsWorld</span>(dispatcher,overlappingPairCache,solver,collisionConfiguration);</span><br><span class="line"></span><br><span class="line">    dynamicsWorld-&gt;<span class="built_in">setGravity</span>(<span class="built_in">btVector3</span>(<span class="number">0</span>,<span class="number">-10</span>,<span class="number">0</span>));</span><br><span class="line"></span><br><span class="line">    <span class="comment">///-----initialization_end-----</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//keep track of the shapes, we release memory at exit.</span></span><br><span class="line">    <span class="comment">//make sure to re-use collision shapes among rigid bodies whenever possible!</span></span><br><span class="line">    btAlignedObjectArray&lt;btCollisionShape*&gt; collisionShapes;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">///create a few basic rigid bodies</span></span><br><span class="line">    btCollisionShape* groundShape = <span class="keyword">new</span> <span class="built_in">btBoxShape</span>(<span class="built_in">btVector3</span>(<span class="built_in">btScalar</span>(<span class="number">50.</span>),<span class="built_in">btScalar</span>(<span class="number">50.</span>),<span class="built_in">btScalar</span>(<span class="number">50.</span>)));</span><br><span class="line"></span><br><span class="line">    btTransform groundTransform;</span><br><span class="line">    groundTransform.<span class="built_in">setIdentity</span>();</span><br><span class="line">    groundTransform.<span class="built_in">setOrigin</span>(<span class="built_in">btVector3</span>(<span class="number">0</span>,<span class="number">-56</span>,<span class="number">0</span>));</span><br><span class="line"></span><br><span class="line">    <span class="function">btScalar <span class="title">mass</span><span class="params">(<span class="number">0.</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//rigidbody is dynamic if and only if mass is non zero, otherwise static</span></span><br><span class="line">    <span class="keyword">bool</span> isDynamic = (mass != <span class="number">0.f</span>);</span><br><span class="line"></span><br><span class="line">    <span class="function">btVector3 <span class="title">localInertia</span><span class="params">(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (isDynamic)</span><br><span class="line">        groundShape-&gt;<span class="built_in">calculateLocalInertia</span>(mass,localInertia);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//using motionstate is optional, it provides interpolation capabilities, and only synchronizes &#x27;active&#x27; objects</span></span><br><span class="line">    btDefaultMotionState* myMotionState = <span class="keyword">new</span> <span class="built_in">btDefaultMotionState</span>(groundTransform);</span><br><span class="line">    <span class="function">btRigidBody::btRigidBodyConstructionInfo <span class="title">rbInfo</span><span class="params">(mass,myMotionState,groundShape,localInertia)</span></span>;</span><br><span class="line">    btRigidBody* body = <span class="keyword">new</span> <span class="built_in">btRigidBody</span>(rbInfo);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//add the body to the dynamics world</span></span><br><span class="line">    dynamicsWorld-&gt;<span class="built_in">addRigidBody</span>(body);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//cleanup in the reverse order of creation/initialization</span></span><br><span class="line">    <span class="keyword">delete</span> body;</span><br><span class="line">    <span class="keyword">delete</span> myMotionState;</span><br><span class="line">    <span class="keyword">delete</span> groundShape;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">delete</span> dynamicsWorld;</span><br><span class="line">    <span class="keyword">delete</span> solver;</span><br><span class="line">    <span class="keyword">delete</span> overlappingPairCache;</span><br><span class="line">    <span class="keyword">delete</span> dispatcher;</span><br><span class="line">    <span class="keyword">delete</span> collisionConfiguration;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://example.com/2016/12/29/702-Erlang_Supervisor/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1308,75 +1420,6 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2015/05/25/801-Game_Server_Design/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/05/25/801-Game_Server_Design/" class="post-title-link" itemprop="url">[game]游戏服务端的逻辑分服与物理分服</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2015-05-25 12:00:00" itemprop="dateCreated datePublished" datetime="2015-05-25T12:00:00+08:00">2015-05-25</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>工作室也经历过好几个游戏了。服务端的架构跟实际业务需求出现过不少的冲突。导致后来花了挺多时间去擦屁股的。以最近的一个游戏举例，原本的世界观设想是一个大服的世界观。也就是只有一个服，撑下百万用户，数万同时在线的设计。而后随着业务变化和线上表现，原本大服的设计并不能满足，最终变成了滚服玩法。由于大服变滚服，在原来的服务器架构约束下，对于后续增加的跨服玩法和合服实现都带来了比较大的麻烦和不少的工作量。</p>
-<p><img src="http://i.imgur.com/SORhqLU.png" alt="物理分服和逻辑分服"></p>
-<h3 id="物理分服"><a href="#物理分服" class="headerlink" title="物理分服"></a>物理分服</h3><p>原来的架构是按照大服设计的，所以在数据库上面的设计一个服对应一个数据库。假设我们滚了500个服，就需要建500个数据库，部署500个游戏服。无论后续跨服、合服的业务扩展，还是运维的维护方面，都变得比较复杂和困难。特别是合服的需求上面，需要将两个数据库甚至多个数据库合并成一个数据库。在量上来的时候，这一切都变得无比繁琐和复杂。开发人员也需要花费较多的人力和时间去写相应的工具。而且操作相对复杂，也比较容易出bug。而且后续新增的业务如果出现了持久化数据就需要增加相应的合服处理。</p>
-<h3 id="逻辑分服"><a href="#逻辑分服" class="headerlink" title="逻辑分服"></a>逻辑分服</h3><p>如果说我们一开始就已经将数据库合并了呢，是不是后续根本就不需要去合并数据库了。所以如果在当初框架设计的时候就已经按照逻辑来分服的话，后续的事情处理起来就简单多了。问过同行业的一些游戏架构，他们也是这么处理的。</p>
-<h4 id="对于合服"><a href="#对于合服" class="headerlink" title="对于合服"></a>对于合服</h4><p>因为数据其实还是在同一个库里面，而且也是在同一个服务器里面。只要简单处理，或者甚至不需要任何处理，就可以将两个或多个服合并。只需要在后台设置一下入口配置、可见配置就可以解决合服的问题了。</p>
-<h4 id="对于跨服"><a href="#对于跨服" class="headerlink" title="对于跨服"></a>对于跨服</h4><p>跨服原本的问题就是需要从不同库读取数据和与不同服进行交互。如果本身就不存在多服的问题，也不存在跨服的问题。</p>
-<p>虽然逻辑分服可以比较完美解决合服的问题，但是对于跨服还是需要单独处理。毕竟如果一个逻辑分服的服务器真的扛不住的时候，就会出现真的物理分服。对于跨服的需求来说，可能都是需要跨的。</p>
-<h4 id="维护成本"><a href="#维护成本" class="headerlink" title="维护成本"></a>维护成本</h4><p>相对于物理分服，逻辑分服可以极大地降低运维成本。数据库数量级可以极大减少，服务器数量也可以减少。对于备份、更新等运维操作都相对变得简单。甚至可以不依赖于运维工具，就可以简单地维护机器了。一台机器部署一个服(多个逻辑服)对比一台机器部署多个游戏服(一个逻辑服)，需要初始化的内存一般来说会变小(不排除不一样的情况)，机器的资源占用一般来说会小很多。所以对物理机的利用效率可以提高很多。</p>
-<h4 id="用户数量级的问题"><a href="#用户数量级的问题" class="headerlink" title="用户数量级的问题"></a>用户数量级的问题</h4><p>逻辑分服必然会出现性能瓶颈，不可避免地出现了物理分服、分库的情况。而对于合服来说，合服本身就是发生在用户数量或者同时在线数量不足的情况下出现的。如果用户数量过大，基本上不太可能出现合服的需求。如果前期量级大，已经物理分服了。后期量级小了，其实重新叠回去也不是什么大的问题。只需要跟运营沟通好了，还是可以使用逻辑分服的事情去解决合服的事情。当然如果运营需要真的在不同物理服上面进行合服，我也没有想到比较好的办法，只能又苦逼地去处理的样子。</p>
-<h4 id="开发成本"><a href="#开发成本" class="headerlink" title="开发成本"></a>开发成本</h4><p>由于逻辑分服，的确是增加了一些内容，譬如玩家所在的服务器ID。但是这个处理起来并没有多大的难度，而且对key值也并没有多大的影响。</p>
-<p>逻辑分服的架构对于大世界和滚服都是支持的，只是对于大世界的话，就浪费了一个存储空间和一点点内存。但是这样的框架可以自如应对大世界到滚服之间的变化。如果一开始就按照大世界来设计，万一某一天滚服了，就要麻烦地多。</p>
-<p>所以逻辑分服并不会提升多大的开发成本。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1446,12 +1489,12 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-count">26</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">25</span>
+        <span class="site-state-item-count">27</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>
