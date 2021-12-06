@@ -20,20 +20,25 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="supervisor(监控树)的使用和重启策略1. init函数12init() -&gt;    &amp;#123;ok, &amp;#123;SupFlags, [ChildSpec,...]&amp;#125;&amp;#125; | ignore.  [ChildSpec,…] 是在init之后默认要启动的子进程。 2. SupFlags参数{Type, Times, Sec}  Type: 重启策略 one_for_">
+  <meta name="description" content="后缀 静态库 .a .lib   动态库 .so .dll    g++&#x2F;gcc编译选项 -o 指定输出目标的文件名 -L 表示要链接的库所在目录 -l 指定链接时需要的动态库，编译器查找动态库时有隐含的命名规则，即在给出的名字前面加上lib，后面加上.a或.so来确定库的名称。 -shared 指定生成动态链接库 -static 指定生成静态库 -fPIC 表示编译为位置独立的代码，用于编译共享">
 <meta property="og:type" content="article">
-<meta property="og:title" content="[erlang]supervisor(监控树)的使用和重启策略">
-<meta property="og:url" content="http://example.com/2016/12/29/702-Erlang_Supervisor/index.html">
+<meta property="og:title" content="[c++]g++&#x2F;gcc">
+<meta property="og:url" content="http://example.com/2021/12/04/310-gplusplus/index.html">
 <meta property="og:site_name" content="魏延的BLOG">
-<meta property="og:description" content="supervisor(监控树)的使用和重启策略1. init函数12init() -&gt;    &amp;#123;ok, &amp;#123;SupFlags, [ChildSpec,...]&amp;#125;&amp;#125; | ignore.  [ChildSpec,…] 是在init之后默认要启动的子进程。 2. SupFlags参数{Type, Times, Sec}  Type: 重启策略 one_for_">
+<meta property="og:description" content="后缀 静态库 .a .lib   动态库 .so .dll    g++&#x2F;gcc编译选项 -o 指定输出目标的文件名 -L 表示要链接的库所在目录 -l 指定链接时需要的动态库，编译器查找动态库时有隐含的命名规则，即在给出的名字前面加上lib，后面加上.a或.so来确定库的名称。 -shared 指定生成动态链接库 -static 指定生成静态库 -fPIC 表示编译为位置独立的代码，用于编译共享">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2016-12-29T12:44:00.000Z">
-<meta property="article:modified_time" content="2021-08-29T07:02:01.177Z">
+<meta property="og:image" content="http://example.com/pics/gcc_000.jpng">
+<meta property="og:image" content="http://example.com/pics/gcc_002.jpg">
+<meta property="og:image" content="http://example.com/pics/gcc_003.jpg">
+<meta property="article:published_time" content="2021-12-04T14:30:00.000Z">
+<meta property="article:modified_time" content="2021-12-06T15:12:52.215Z">
 <meta property="article:author" content="Ron Ngai">
-<meta property="article:tag" content="erlang">
+<meta property="article:tag" content="c++">
+<meta property="article:tag" content="c">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/pics/gcc_000.jpng">
 
-<link rel="canonical" href="http://example.com/2016/12/29/702-Erlang_Supervisor/">
+<link rel="canonical" href="http://example.com/2021/12/04/310-gplusplus/">
 
 
 <script id="page-configurations">
@@ -46,7 +51,7 @@
   };
 </script>
 
-  <title>[erlang]supervisor(监控树)的使用和重启策略 | 魏延的BLOG</title>
+  <title>[c++]g++/gcc | 魏延的BLOG</title>
   
 
 
@@ -156,7 +161,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2016/12/29/702-Erlang_Supervisor/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/12/04/310-gplusplus/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -169,7 +174,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          [erlang]supervisor(监控树)的使用和重启策略
+          [c++]g++/gcc
         </h1>
 
         <div class="post-meta">
@@ -179,7 +184,7 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2016-12-29 20:44:00" itemprop="dateCreated datePublished" datetime="2016-12-29T20:44:00+08:00">2016-12-29</time>
+              <time title="Created: 2021-12-04 22:30:00" itemprop="dateCreated datePublished" datetime="2021-12-04T22:30:00+08:00">2021-12-04</time>
             </span>
 
           
@@ -193,51 +198,67 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h2 id="supervisor-监控树-的使用和重启策略"><a href="#supervisor-监控树-的使用和重启策略" class="headerlink" title="supervisor(监控树)的使用和重启策略"></a>supervisor(监控树)的使用和重启策略</h2><h3 id="1-init函数"><a href="#1-init函数" class="headerlink" title="1. init函数"></a>1. init函数</h3><figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">init</span><span class="params">()</span> -&gt;</span></span><br><span class="line">    &#123;ok, &#123;SupFlags, [ChildSpec,...]&#125;&#125; | ignore.</span><br></pre></td></tr></table></figure>
-
-<p>[ChildSpec,…] 是在init之后默认要启动的子进程。</p>
-<h3 id="2-SupFlags参数"><a href="#2-SupFlags参数" class="headerlink" title="2. SupFlags参数"></a>2. SupFlags参数</h3><p>{Type, Times, Sec}</p>
+        <h2 id="后缀"><a href="#后缀" class="headerlink" title="后缀"></a>后缀</h2><ul>
+<li>静态库<ul>
+<li><code>.a</code></li>
+<li><code>.lib</code></li>
+</ul>
+</li>
+<li>动态库<ul>
+<li><code>.so</code></li>
+<li><code>.dll</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="g-gcc编译选项"><a href="#g-gcc编译选项" class="headerlink" title="g++/gcc编译选项"></a>g++/gcc编译选项</h2><ul>
+<li><code>-o</code> 指定输出目标的文件名</li>
+<li><code>-L</code> 表示要链接的库所在目录</li>
+<li><code>-l</code> 指定链接时需要的动态库，编译器查找动态库时有隐含的命名规则，即在给出的名字前面加上lib，后面加上.a或.so来确定库的名称。</li>
+<li><code>-shared</code> 指定生成动态链接库</li>
+<li><code>-static</code> 指定生成静态库</li>
+<li><code>-fPIC</code> 表示编译为位置独立的代码，用于编译共享库</li>
+<li><code>-Wall</code> 生成所有警告信息</li>
+<li><code>-ggdb</code> 此选项将尽可能的生成gdb的可以使用的调试信息</li>
+<li><code>-g</code> 编译器在编译的时候产生调试信息</li>
+<li><code>-c</code> 只激活预处理、编译和汇编，也就是把程序做成目标文件，后缀为.o</li>
+</ul>
+<p><img src="/pics/gcc_000.jpng" alt="undefine"></p>
+<h2 id="静态库"><a href="#静态库" class="headerlink" title="静态库"></a>静态库</h2><p>静态链接：链接阶段，会将汇编生成的目标文件.o与引用到的库一起链接打包到可执行文件中。</p>
 <ul>
-<li>Type: 重启策略<ul>
-<li>one_for_one: 一个子进程终止，只重启该进程，在init的时候会启动参数内的子进程</li>
-<li>simple_one_for_one: 同one_for_one，但是在init的时候不会启动子进程，需要动态调用启动</li>
-<li>one_for_all: 一个子进程终止，将重启所有子进程</li>
-<li>rest_for_one: 一个子进程终止，将按顺序重启这个子进程和之后顺序的子进程</li>
+<li>静态库对函数库的链接是放在编译时期完成的；</li>
+<li>程序在运行时与函数库再无瓜葛，移植方便；</li>
+<li>浪费空间和资源，因为所有相关的目标文件与牵扯到的函数库被链接合成一个可执行文件。</li>
+</ul>
+<p>linux下静态库命名规范必须是<code>lib[name].a</code>，lib是前缀，是必须的，扩展名为<code>.a</code>。</p>
+<h3 id="创建静态库"><a href="#创建静态库" class="headerlink" title="创建静态库"></a>创建静态库</h3><ul>
+<li>首先将代码编译成目标文件.o<ul>
+<li><code>g++ -c Test.cpp</code></li>
 </ul>
 </li>
-<li>Times: 次数(监控频率)</li>
-<li>Sec: 秒数(监控频率)，如果在Sec秒内重启次数超过Times，则终止所有进程，并终止监控树，将由父进程决定它的命运</li>
+<li>通过ar工具将目标文件打包成.a静态文件<ul>
+<li><code>ar -crv libtest.a Test.o</code></li>
 </ul>
-<h3 id="3-ChildSpec参数如下"><a href="#3-ChildSpec参数如下" class="headerlink" title="3. ChildSpec参数如下"></a>3. ChildSpec参数如下</h3><figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;Id, StartFunc, Restart, Shutdown, Type, Modules&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">%% 或者</span></span><br><span class="line"></span><br><span class="line">#&#123;</span><br><span class="line">    id =&gt; child_id(),</span><br><span class="line">    start =&gt; mfaargs(),</span><br><span class="line">    restart =&gt; restart(),</span><br><span class="line">    shutdown =&gt; shutdown(),</span><br><span class="line">    type =&gt; work(),</span><br><span class="line">    modules =&gt; modules()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+</li>
+</ul>
+<p><img src="/pics/gcc_002.jpg" alt="undefine"></p>
+<h2 id="动态库"><a href="#动态库" class="headerlink" title="动态库"></a>动态库</h2><p>动态库在程序编译时并不会被链接到目标代码中，而是程序运行时才被载入。不同的应用程序如果调用相同的库，那么在内存里只需要有一份被该共享库的实例，避免了内存上的浪费。</p>
 <ul>
-<li>Id 子进程ID标识符</li>
-<li>StartFunc = {M, F, A}: 子程序启动入口</li>
-<li>Restart: 重启方案<ul>
-<li><code>permanent</code>: 如果app终止了，整个系统都会停止工作（application:stop/1除外）。</li>
-<li><code>transient</code>: 如果app以normal的原因终止，没有影响。任何其它终止原因都谁导致整个系统关闭。</li>
-<li><code>temporary</code>: app可以以任何原因终止。只产生报告，没有其它任何影响。</li>
+<li>动态库把一些库函数的链接载入推迟到程序运行的时期；</li>
+<li>抗原实现进程之间的资源共享；</li>
+<li>将一些程序升级变得简单；</li>
+<li>甚至可以真正做到链接载入完全由程序员在代码中控制。</li>
 </ul>
-</li>
-<li>Shutdown: 终止策略<ul>
-<li><code>brutal_kill</code>: 无条件终止</li>
-<li>超时值(毫秒): 终止时，如果超时，则强制终止</li>
-<li><code>infinity</code>: 如果子进程是监控树，设置为无限大，等待其终止为止</li>
+<p><img src="/pics/gcc_003.jpg" alt="undefine"></p>
+<h2 id="调试帮助"><a href="#调试帮助" class="headerlink" title="调试帮助"></a>调试帮助</h2><h3 id="nm-命令"><a href="#nm-命令" class="headerlink" title="nm 命令"></a>nm 命令</h3><p>nm命令可以打印出库中的涉及到的所有符合。</p>
+<ul>
+<li>在库中被调用，但是没有在库中定义的，用U表示</li>
+<li>在库中定义的函数，用T表示</li>
+<li>弱态符合，用W表示，虽然在库中被定义，但是可能被其他库中的同名符合覆盖。</li>
 </ul>
-</li>
-<li>Type: <ul>
-<li><code>worker</code>: 普通子进程</li>
-<li><code>supervisor</code>: 子进程是监控树</li>
-</ul>
-</li>
-<li>Modules: <ul>
-<li><code>dynamic</code>: 当子进程是gen_event</li>
-<li><code>[Module]</code>: 当子进程是监控树、gen_server或者gen_fsm，表示回调模块名称</li>
-</ul>
-</li>
-</ul>
-<h3 id="4-监控树操作"><a href="#4-监控树操作" class="headerlink" title="4. 监控树操作"></a>4. 监控树操作</h3><p>Sup通常可以为<code>?MODULE</code></p>
-<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 启动监控树</span></span><br><span class="line">supervisor:start_link(Sup, []).</span><br><span class="line"></span><br><span class="line"><span class="comment">% 启动一个子进程</span></span><br><span class="line">supervisor:start_child(Sup, ChildSpec).</span><br><span class="line"></span><br><span class="line"><span class="comment">% 停止一个子进程</span></span><br><span class="line">supervisor:terminate(Sup, Id).</span><br><span class="line"></span><br><span class="line"><span class="comment">% 删除一个子进程</span></span><br><span class="line">supervisor:delete_child(Sup, Id).</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nm libtest.h</span><br></pre></td></tr></table></figure>
+
+<h3 id="ldd-命令"><a href="#ldd-命令" class="headerlink" title="ldd 命令"></a>ldd 命令</h3><p>ldd命令可以查看一个可执行程序依赖的共享库。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ldd libtest.so</span><br></pre></td></tr></table></figure>
     </div>
 
     
@@ -246,7 +267,8 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/erlang/" rel="tag"># erlang</a>
+              <a href="/tags/c/" rel="tag"># c++</a>
+              <a href="/tags/c/" rel="tag"># c</a>
           </div>
 
         
@@ -255,13 +277,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2016/11/29/802-Game_AOI_Cross_Linked_List/" rel="prev" title="[game]十字链表的AOI算法实现">
-      <i class="fa fa-chevron-left"></i> [game]十字链表的AOI算法实现
+    <a href="/2021/12/03/853-Game_NavMesh/" rel="prev" title="[game]recastnavigation">
+      <i class="fa fa-chevron-left"></i> [game]recastnavigation
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2017/02/06/301-bullet3_init_world/" rel="next" title="[Bullet3]创建世界(场景)及常见函数">
-      [Bullet3]创建世界(场景)及常见函数 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -320,7 +339,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#supervisor-%E7%9B%91%E6%8E%A7%E6%A0%91-%E7%9A%84%E4%BD%BF%E7%94%A8%E5%92%8C%E9%87%8D%E5%90%AF%E7%AD%96%E7%95%A5"><span class="nav-number">1.</span> <span class="nav-text">supervisor(监控树)的使用和重启策略</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-init%E5%87%BD%E6%95%B0"><span class="nav-number">1.1.</span> <span class="nav-text">1. init函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-SupFlags%E5%8F%82%E6%95%B0"><span class="nav-number">1.2.</span> <span class="nav-text">2. SupFlags参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-ChildSpec%E5%8F%82%E6%95%B0%E5%A6%82%E4%B8%8B"><span class="nav-number">1.3.</span> <span class="nav-text">3. ChildSpec参数如下</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E7%9B%91%E6%8E%A7%E6%A0%91%E6%93%8D%E4%BD%9C"><span class="nav-number">1.4.</span> <span class="nav-text">4. 监控树操作</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8E%E7%BC%80"><span class="nav-number">1.</span> <span class="nav-text">后缀</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#g-gcc%E7%BC%96%E8%AF%91%E9%80%89%E9%A1%B9"><span class="nav-number">2.</span> <span class="nav-text">g++&#x2F;gcc编译选项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E5%BA%93"><span class="nav-number">3.</span> <span class="nav-text">静态库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E9%9D%99%E6%80%81%E5%BA%93"><span class="nav-number">3.1.</span> <span class="nav-text">创建静态库</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E5%BA%93"><span class="nav-number">4.</span> <span class="nav-text">动态库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%E5%B8%AE%E5%8A%A9"><span class="nav-number">5.</span> <span class="nav-text">调试帮助</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#nm-%E5%91%BD%E4%BB%A4"><span class="nav-number">5.1.</span> <span class="nav-text">nm 命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ldd-%E5%91%BD%E4%BB%A4"><span class="nav-number">5.2.</span> <span class="nav-text">ldd 命令</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
