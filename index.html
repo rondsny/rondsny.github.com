@@ -21,11 +21,11 @@
   </script>
 
   <meta property="og:type" content="website">
-<meta property="og:title" content="魏延的BLOG">
+<meta property="og:title" content="Ron的BLOG">
 <meta property="og:url" content="http://example.com/index.html">
-<meta property="og:site_name" content="魏延的BLOG">
+<meta property="og:site_name" content="Ron的BLOG">
 <meta property="og:locale" content="en_US">
-<meta property="article:author" content="Ron Ngai">
+<meta property="article:author" content="Ron">
 <meta name="twitter:card" content="summary">
 
 <link rel="canonical" href="http://example.com/">
@@ -41,7 +41,7 @@
   };
 </script>
 
-  <title>魏延的BLOG</title>
+  <title>Ron的BLOG</title>
   
 
 
@@ -92,7 +92,7 @@
 
     <a href="/" class="brand" rel="start">
       <span class="logo-line-before"><i></i></span>
-      <h1 class="site-title">魏延的BLOG</h1>
+      <h1 class="site-title">Ron的BLOG</h1>
       <span class="logo-line-after"><i></i></span>
     </a>
   </div>
@@ -150,16 +150,92 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2021/12/04/310-gplusplus/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/12/26/860-Game_AI/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="name" content="Ron">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
+      <meta itemprop="name" content="Ron的BLOG">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/12/26/860-Game_AI/" class="post-title-link" itemprop="url">AI</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-12-26 21:28:01" itemprop="dateCreated datePublished" datetime="2021-12-26T21:28:01+08:00">2021-12-26</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>游戏里面的AI实现一般是状态机或者行为树。</p>
+<h3 id="状态机"><a href="#状态机" class="headerlink" title="状态机"></a>状态机</h3><p>状态机很好理解，就是AI会处于某一状态中，在不同条件下会进行切换，让AI处于正确的状态中。例如，一个怪物，有闲逛、战斗、逃跑三个状态。在没有遇到目标的时候，是处于【闲逛】状态，遇到了敌人，切换进入【战斗】状态；当血量低于5%或者远离出生点，进入【逃跑】状态。</p>
+<img  src=http://www.plantuml.com/plantuml/svg/oq_AIaqkKSXCoKdbuig7SD8oqpDAO9pKukJ40g0SI8M2dfuTH5R1Ik5bO_lJZWtFflOysRMB2o88aWQhir9ukcJZqxxTpsUlUxQW7KaMOXfG_iN2XfVj_K-Nh7gojuyBAegiVVOyeE5FstSzdpB_UTDEP1Lm-nkQNsoV2BJdnPQb0000>
+
+<h3 id="行为树"><a href="#行为树" class="headerlink" title="行为树"></a>行为树</h3><img  src=http://www.plantuml.com/plantuml/svg/qoZApo_HLD3LjLFGA4xDIKqkoI_Iv48m8JAfnSc91QcQ2bOAB_RFURvizzFsNS-dp7_Uj1D3PMPA3bZTiqqBdytfV3vxtRC5xHYAqZBJCqf0gb8hIbBpKee1>
+
+<p>行为树的执行就是从上到下，从左导游遍历整个树。每个节点执行之后都会返回true或者false，之后往上返回。不同节点遇到返回的结果执行方式不太一样。可能是往父节点返回，也可能是执行下一个子节点。具体结果要根据子节点的返回结果跟自身节点类型决定。<br>第一个节点是根节点，叶子是具体的操作行为，而中间节点是用来控制执行的顺序的。</p>
+<h4 id="组合节点"><a href="#组合节点" class="headerlink" title="组合节点"></a>组合节点</h4><ul>
+<li>Sequence 节点<ul>
+<li>AlwaysSequence 顺序执行</li>
+<li>RandomSequence 每次执行都以随机序列去执行</li>
+</ul>
+</li>
+<li>Select 节点</li>
+<li>IfElse 节点，有三个子节点，当第一个节点返回true，执行第二个子节点并返回子节点的值，否则执行第三个节点并返回节点的值。</li>
+<li>While 节点，有两个子节点，当第一个子节点返回true的时候，执行第二个子节点，然后重新开始执行流程；当第一个节点返回false的时候则执行完成，并且返回true。</li>
+<li>Root 节点，根节点，只有一个子节点。</li>
+<li>Probility 节点，随机执行节点</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/12/04/310-gplusplus/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ron的BLOG">
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
@@ -271,12 +347,12 @@
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="name" content="Ron">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
+      <meta itemprop="name" content="Ron的BLOG">
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
@@ -383,12 +459,12 @@
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="name" content="Ron">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
+      <meta itemprop="name" content="Ron的BLOG">
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
@@ -452,12 +528,12 @@
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="name" content="Ron">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
+      <meta itemprop="name" content="Ron的BLOG">
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
@@ -526,12 +602,12 @@
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="name" content="Ron">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
+      <meta itemprop="name" content="Ron的BLOG">
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
@@ -591,12 +667,12 @@
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="name" content="Ron">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
+      <meta itemprop="name" content="Ron的BLOG">
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
@@ -672,12 +748,12 @@
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="name" content="Ron">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
+      <meta itemprop="name" content="Ron的BLOG">
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
@@ -787,12 +863,12 @@
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="name" content="Ron">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
+      <meta itemprop="name" content="Ron的BLOG">
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
@@ -998,12 +1074,12 @@
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="name" content="Ron">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
+      <meta itemprop="name" content="Ron的BLOG">
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
@@ -1059,99 +1135,6 @@
 <h4 id="3-2-初始化场景"><a href="#3-2-初始化场景" class="headerlink" title="3.2. 初始化场景"></a>3.2. 初始化场景</h4><figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">-module</span><span class="params">(t_btest)</span>.</span><br><span class="line"><span class="keyword">-include</span><span class="params">(<span class="string">&quot;ts_global.hrl&quot;</span>)</span>.</span><br><span class="line"><span class="keyword">-include</span><span class="params">(<span class="string">&quot;data.hrl&quot;</span>)</span>.</span><br><span class="line"><span class="keyword">-compile</span><span class="params">([export_all])</span>.</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">init</span><span class="params">()</span> -&gt;</span></span><br><span class="line">    t_bullet:open_scene(),</span><br><span class="line"></span><br><span class="line">    Ids = data_scene:gets(),</span><br><span class="line">    Cfsg = [data_scene:get(Id)||Id&lt;-Ids],</span><br><span class="line">    lists:foreach(fun add_obj/1, Cfsg),</span><br><span class="line">    ok.</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">add_obj</span><span class="params">(#data_scene&#123;</span></span></span><br><span class="line"><span class="params"><span class="function">            type     = box,</span></span></span><br><span class="line"><span class="params"><span class="function">            position = Bpos,</span></span></span><br><span class="line"><span class="params"><span class="function">            rotation = Rota,</span></span></span><br><span class="line"><span class="params"><span class="function">            scale    = Scal</span></span></span><br><span class="line"><span class="params"><span class="function">        &#125;)</span> -&gt;</span></span><br><span class="line">    t_bullet:add_box(Scal, Bpos, Rota);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">add_obj</span><span class="params">(#data_scene&#123;</span></span></span><br><span class="line"><span class="params"><span class="function">            type     = sphere,</span></span></span><br><span class="line"><span class="params"><span class="function">            position = Bpos,</span></span></span><br><span class="line"><span class="params"><span class="function">            rotation = Rota,</span></span></span><br><span class="line"><span class="params"><span class="function">            scale    = &#123;Radius, _, _&#125;</span></span></span><br><span class="line"><span class="params"><span class="function">        &#125;)</span> -&gt;</span></span><br><span class="line">    t_bullet:add_sphere(Radius, Bpos, Rota);</span><br><span class="line"><span class="function"><span class="title">add_obj</span><span class="params">(#data_scene&#123;</span></span></span><br><span class="line"><span class="params"><span class="function">            type     = sphere,</span></span></span><br><span class="line"><span class="params"><span class="function">            position = Bpos,</span></span></span><br><span class="line"><span class="params"><span class="function">            rotation = Rota,</span></span></span><br><span class="line"><span class="params"><span class="function">            scale    = Radius</span></span></span><br><span class="line"><span class="params"><span class="function">        &#125;)</span> <span class="title">when</span> <span class="title">is_number</span><span class="params">(Radius)</span> -&gt;</span></span><br><span class="line">    t_bullet:add_sphere(Radius, Bpos, Rota);</span><br><span class="line"><span class="function"><span class="title">add_obj</span><span class="params">(#data_scene&#123;</span></span></span><br><span class="line"><span class="params"><span class="function">            type     = mesh,</span></span></span><br><span class="line"><span class="params"><span class="function">            position = Bpos,</span></span></span><br><span class="line"><span class="params"><span class="function">            rotation = Rota,</span></span></span><br><span class="line"><span class="params"><span class="function">            vtx      = Vts,</span></span></span><br><span class="line"><span class="params"><span class="function">            idx      = Idx</span></span></span><br><span class="line"><span class="params"><span class="function">        &#125;)</span> -&gt;</span></span><br><span class="line">    t_bullet:add_mesh(length(Vts)/<span class="number">3</span>, length(Idx), Vts, Idx, Bpos, Rota);</span><br><span class="line"><span class="function"><span class="title">add_obj</span><span class="params">(_Unk)</span> -&gt;</span></span><br><span class="line">    skip.</span><br></pre></td></tr></table></figure>
 
 <h4 id="3-3-测试结果"><a href="#3-3-测试结果" class="headerlink" title="3.3. 测试结果"></a>3.3. 测试结果</h4><p><img src="pics/bullet3_col_006.png"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2017/02/16/304-bullet3_collision_detection/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/02/16/304-bullet3_collision_detection/" class="post-title-link" itemprop="url">[Bullet3]三种碰撞检测及实现</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2017-02-16 21:56:57" itemprop="dateCreated datePublished" datetime="2017-02-16T21:56:57+08:00">2017-02-16</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>官方文档：<a target="_blank" rel="noopener" href="http://bulletphysics.org/">http://bulletphysics.org</a><br>开源代码：<a target="_blank" rel="noopener" href="https://github.com/bulletphysics/bullet3/releases">https://github.com/bulletphysics/bullet3/releases</a><br>API文档：<a target="_blank" rel="noopener" href="http://bulletphysics.org/Bullet/BulletFull/annotated.html">http://bulletphysics.org/Bullet/BulletFull/annotated.html</a></p>
-<h2 id="bullet3的三种碰撞检测"><a href="#bullet3的三种碰撞检测" class="headerlink" title="bullet3的三种碰撞检测"></a>bullet3的三种碰撞检测</h2><p>以下三种方式都是可以达到碰撞检测的效果：</p>
-<ol>
-<li><code>btCollisionWorld::contactTest</code> 检测指定对象是否与场景发生碰撞；</li>
-<li><code>btCollisionWorld::performDiscreteCollisionDetection</code> 检测场景中所有的碰撞；</li>
-<li><code>btDynamicsWorld::stepSimulation</code> 模拟运动。</li>
-</ol>
-<p>还有一种射线检测，但是与这里的物体碰撞稍微有些区别，这里就不展开来讲了。</p>
-<h3 id="0-准备工作"><a href="#0-准备工作" class="headerlink" title="0. 准备工作"></a>0. 准备工作</h3><p>先创建一个场景，增加一个地板（box）</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">btDefaultCollisionConfiguration* g_colConfig;</span><br><span class="line">btCollisionDispatcher* g_dispatcher;</span><br><span class="line">btBroadphaseInterface* g_broadInterface;</span><br><span class="line">btSequentialImpulseConstraintSolver* g_solver;</span><br><span class="line">btDynamicsWorld* g_world;  <span class="comment">// 场景信息，退出的时候需要delete</span></span><br><span class="line"></span><br><span class="line">g_colConfig = <span class="keyword">new</span> <span class="built_in">btDefaultCollisionConfiguration</span>();</span><br><span class="line">g_dispatcher = <span class="keyword">new</span> <span class="built_in">btCollisionDispatcher</span>(g_colConfig);</span><br><span class="line">g_broadInterface = <span class="keyword">new</span> <span class="built_in">btDbvtBroadphase</span>();</span><br><span class="line">g_solver = <span class="keyword">new</span> btSequentialImpulseConstraintSolver;</span><br><span class="line">g_world = <span class="keyword">new</span> <span class="built_in">btDiscreteDynamicsWorld</span>(g_dispatcher, g_broadInterface, g_solver, g_colConfig);</span><br><span class="line"></span><br><span class="line">g_world-&gt;<span class="built_in">setGravity</span>(<span class="built_in">btVector3</span>(<span class="number">0</span>,<span class="number">-10</span>,<span class="number">0</span>));      <span class="comment">// 设置重力加速度</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// add a test box</span></span><br><span class="line">&#123;</span><br><span class="line">    btCollisionShape* shape = <span class="keyword">new</span> <span class="built_in">btBoxShape</span>(<span class="built_in">btVector3</span>(<span class="built_in">btScalar</span>(<span class="number">1000.</span>),<span class="built_in">btScalar</span>(<span class="number">10.</span>),<span class="built_in">btScalar</span>(<span class="number">1000.</span>)));</span><br><span class="line">    btTransform trans;</span><br><span class="line">    trans.<span class="built_in">setIdentity</span>();</span><br><span class="line">    trans.<span class="built_in">setOrigin</span>(<span class="built_in">btVector3</span>(<span class="number">0</span>, <span class="number">-10</span>, <span class="number">0</span>));</span><br><span class="line"></span><br><span class="line">    btScalar mass=<span class="number">0.f</span>;</span><br><span class="line">    <span class="function">btVector3 <span class="title">localInertia</span><span class="params">(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>)</span></span>;</span><br><span class="line">    <span class="keyword">bool</span> isDynamic = (mass != <span class="number">0.f</span>);</span><br><span class="line">    <span class="keyword">if</span> (isDynamic)</span><br><span class="line">        shape-&gt;<span class="built_in">calculateLocalInertia</span>(mass, localInertia);</span><br><span class="line"></span><br><span class="line">    btDefaultMotionState* myMotionState = <span class="keyword">new</span> <span class="built_in">btDefaultMotionState</span>(trans);</span><br><span class="line">    <span class="function">btRigidBody::btRigidBodyConstructionInfo <span class="title">cInfo</span><span class="params">(mass, myMotionState, shape, localInertia)</span></span>;</span><br><span class="line">    btRigidBody* body = <span class="keyword">new</span> <span class="built_in">btRigidBody</span>(cInfo);</span><br><span class="line">    g_world-&gt;<span class="built_in">addRigidBody</span>(body);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="1-btCollisionWorld-contactTest"><a href="#1-btCollisionWorld-contactTest" class="headerlink" title="1. btCollisionWorld::contactTest"></a>1. <code>btCollisionWorld::contactTest</code></h3><p>完整函数内容为</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">btCollisionWorld::contactTest</span><span class="params">(btCollisionObject * colObj, ContactResultCallback &amp; resultCallback)</span></span></span><br></pre></td></tr></table></figure>
-
-<p><code>contactTest</code>会对确定的colObj对象与<code>btCollisionWorld</code>中的所有对象进行接触检测，并调用<code>ContactResultCallBack</code>回调。<br>其实这个函数不算碰撞检测，只是算接触检测，如果距离为0，是会触发回调的。</p>
-<h4 id="1-1-继承回调的结构体"><a href="#1-1-继承回调的结构体" class="headerlink" title="1.1. 继承回调的结构体"></a>1.1. 继承回调的结构体</h4><p><code>ContactResultCallback</code>结构体有一个名为<code>addSingleResult</code>的纯虚函数，在继承的时候一定要实现<code>addSingleResult</code>函数。这个也是碰撞的时候执行的回调函数。是这个结构体的核心。碰撞信息会存储在<code>btManifoldPoint &amp; cp</code>中，使用方法也比较简单，可以参考API文档的接口。其它地方的碰撞，也是用这个对象存储，处理方法是一样的。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 碰撞检测回调</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">MyColCallBack</span> :</span> btCollisionWorld::ContactResultCallback</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        <span class="function">btScalar <span class="title">addSingleResult</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">            btManifoldPoint &amp; cp,</span></span></span><br><span class="line"><span class="params"><span class="function">            <span class="keyword">const</span> btCollisionObjectWrapper * colObj0Wrap,</span></span></span><br><span class="line"><span class="params"><span class="function">            <span class="keyword">int</span> partId0,</span></span></span><br><span class="line"><span class="params"><span class="function">            <span class="keyword">int</span> index0,</span></span></span><br><span class="line"><span class="params"><span class="function">            <span class="keyword">const</span> btCollisionObjectWrapper * colObj1Wrap,</span></span></span><br><span class="line"><span class="params"><span class="function">            <span class="keyword">int</span> partId1,</span></span></span><br><span class="line"><span class="params"><span class="function">            <span class="keyword">int</span> index1)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            btVector3 posA = cp.<span class="built_in">getPositionWorldOnA</span>();</span><br><span class="line">            btVector3 posB = cp.<span class="built_in">getPositionWorldOnB</span>();</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;col pos for A &#123;%f, %f, %f&#125;\n&quot;</span>, posA.<span class="built_in">getX</span>(), posA.<span class="built_in">getY</span>(), posA.<span class="built_in">getZ</span>());</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;col pos for B &#123;%f, %f, %f&#125;\n&quot;</span>, posB.<span class="built_in">getX</span>(), posB.<span class="built_in">getY</span>(), posB.<span class="built_in">getZ</span>());</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">btScalar</span>(<span class="number">0.f</span>);</span><br><span class="line">        &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<h4 id="1-2-碰撞检测"><a href="#1-2-碰撞检测" class="headerlink" title="1.2. 碰撞检测"></a>1.2. 碰撞检测</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建一个球体，并加入到场景中</span></span><br><span class="line">btCollisionShape* shape = <span class="keyword">new</span> <span class="built_in">btSphereShape</span>(<span class="built_in">btScalar</span>(<span class="number">1.f</span>));</span><br><span class="line">btTransform trans;</span><br><span class="line">trans.<span class="built_in">setIdentity</span>();</span><br><span class="line">trans.<span class="built_in">setOrigin</span>(<span class="built_in">btVector3</span>(<span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>));</span><br><span class="line"></span><br><span class="line">btScalar mass=<span class="number">1.f</span>;</span><br><span class="line"><span class="function">btVector3 <span class="title">localInertia</span><span class="params">(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>)</span></span>;</span><br><span class="line"><span class="keyword">bool</span> isDynamic = (mass != <span class="number">0.f</span>);</span><br><span class="line"><span class="keyword">if</span> (isDynamic)</span><br><span class="line">    shape-&gt;<span class="built_in">calculateLocalInertia</span>(mass, localInertia);</span><br><span class="line"></span><br><span class="line">btDefaultMotionState* myMotionState = <span class="keyword">new</span> <span class="built_in">btDefaultMotionState</span>(trans);</span><br><span class="line"><span class="function">btRigidBody::btRigidBodyConstructionInfo <span class="title">cInfo</span><span class="params">(mass, myMotionState, shape, localInertia)</span></span>;</span><br><span class="line">btRigidBody* g_body = <span class="keyword">new</span> <span class="built_in">btRigidBody</span>(cInfo);</span><br><span class="line">g_world-&gt;<span class="built_in">addRigidBody</span>(g_body);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建回调并碰撞检测</span></span><br><span class="line">MyColCallBack callBack;</span><br><span class="line">g_world-&gt;<span class="built_in">contactTest</span>(g_body, callBack);</span><br><span class="line"></span><br><span class="line"><span class="comment">// todo delete</span></span><br></pre></td></tr></table></figure>
-
-<p>运行结果：<br><img src="/pics/bullet3_col_001.png" alt="result"></p>
-<h3 id="2-btCollisionWorld-performDiscreteCollisionDetection"><a href="#2-btCollisionWorld-performDiscreteCollisionDetection" class="headerlink" title="2. btCollisionWorld::performDiscreteCollisionDetection"></a>2. <code>btCollisionWorld::performDiscreteCollisionDetection</code></h3><p><code>performDiscreteCollisionDetection</code>会对场景中的所有物体进行一次碰撞检测。而<code>contactTest</code>是对确定的物体进行碰撞检测。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">g_world-&gt;<span class="built_in">performDiscreteCollisionDetection</span>();</span><br><span class="line"></span><br><span class="line">list&lt;btCollisionObject*&gt; m_collisionObjects;</span><br><span class="line"><span class="keyword">int</span> numManifolds = g_world-&gt;<span class="built_in">getDispatcher</span>()-&gt;<span class="built_in">getNumManifolds</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;numManifolds; i++)</span><br><span class="line">&#123;</span><br><span class="line">    btPersistentManifold* contactManifold = g_world-&gt;<span class="built_in">getDispatcher</span>()-&gt;<span class="built_in">getManifoldByIndexInternal</span>(i);</span><br><span class="line">    btCollisionObject* obA = (btCollisionObject*)(contactManifold-&gt;<span class="built_in">getBody0</span>());</span><br><span class="line">    btCollisionObject* obB = (btCollisionObject*)(contactManifold-&gt;<span class="built_in">getBody1</span>());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> numContacts = contactManifold-&gt;<span class="built_in">getNumContacts</span>();</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">0</span>; j&lt;numContacts; j++)</span><br><span class="line">    &#123;</span><br><span class="line">        btManifoldPoint&amp; pt = contactManifold-&gt;<span class="built_in">getContactPoint</span>(j);</span><br><span class="line">        <span class="keyword">if</span>(pt.<span class="built_in">getDistance</span>()&lt;=<span class="number">0.f</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            m_collisionObjects.<span class="built_in">push_back</span>(obA);</span><br><span class="line">            m_collisionObjects.<span class="built_in">push_back</span>(obB);</span><br><span class="line">            btVector3 posA = pt.<span class="built_in">getPositionWorldOnA</span>();</span><br><span class="line">            btVector3 posB = pt.<span class="built_in">getPositionWorldOnB</span>();</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;%d A -&gt; &#123;%f, %f, %f&#125;\n&quot;</span>, i, posA.<span class="built_in">getX</span>(), posA.<span class="built_in">getY</span>(), posA.<span class="built_in">getZ</span>()); <span class="comment">// 碰撞点</span></span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;%d B -&gt; &#123;%f, %f, %f&#125;\n&quot;</span>, i, posB.<span class="built_in">getX</span>(), posB.<span class="built_in">getY</span>(), posB.<span class="built_in">getZ</span>());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这里需要注意一下，多个物体两两碰撞的时候，列表<code>m_collisionObjects</code>内是存在重复的可能的，往往需要去重一下。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">m_collisionObjects.<span class="built_in">sort</span>();</span><br><span class="line">m_collisionObjects.<span class="built_in">unique</span>();</span><br></pre></td></tr></table></figure>
-
-<p>运行结果：<br>这里我多加了一个半径为1，位置为{1,1,0}的求，然后基本上两个球和地板发生了两两碰撞。<br><img src="/pics/bullet3_col_003.png" alt="result"></p>
-<h3 id="3-btDynamicsWorld-stepSimulation"><a href="#3-btDynamicsWorld-stepSimulation" class="headerlink" title="3. btDynamicsWorld::stepSimulation"></a>3. <code>btDynamicsWorld::stepSimulation</code></h3><p>完整的函数内容为：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="keyword">int</span> <span class="title">btDynamicsWorld::stepSimulation</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">    btScalar timeStep,</span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="keyword">int</span> maxSubSteps = <span class="number">1</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">    btScalar fixedTimeStep = btScalar(<span class="number">1.</span>)/btScalar(<span class="number">60.</span>))</span></span></span><br></pre></td></tr></table></figure>
-
-<p><code>stepSimulation</code>其实不是用来做碰撞检测的，而是用来做物理运动模拟的。既然能做运动模拟，那肯定也能够做碰撞检测了。</p>
-<h4 id="3-1-模拟运动"><a href="#3-1-模拟运动" class="headerlink" title="3.1. 模拟运动"></a>3.1. 模拟运动</h4><p>设置场景的重力加速为<code>btVector3(0,-10,0)</code>，增加一个半径为1，位置为{0,100,0}的球体，并设置其质量为1，冲量为{2,0,0}，即球体会以x轴速度为2，Y轴以-10的加速度做抛物线运动。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 设置重力加速度</span></span><br><span class="line">g_world-&gt;<span class="built_in">setGravity</span>(<span class="built_in">btVector3</span>(<span class="number">0</span>,<span class="number">-10</span>,<span class="number">0</span>));      </span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建一个球体，并加入到场景中</span></span><br><span class="line">btCollisionShape* shape = <span class="keyword">new</span> <span class="built_in">btSphereShape</span>(<span class="built_in">btScalar</span>(<span class="number">1.f</span>));</span><br><span class="line">btTransform trans;</span><br><span class="line">trans.<span class="built_in">setIdentity</span>();</span><br><span class="line">trans.<span class="built_in">setOrigin</span>(<span class="built_in">btVector3</span>(<span class="number">0</span>, <span class="number">100</span>, <span class="number">0</span>));</span><br><span class="line"></span><br><span class="line">btScalar mass=<span class="number">1.f</span>;</span><br><span class="line"><span class="function">btVector3 <span class="title">localInertia</span><span class="params">(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>)</span></span>;</span><br><span class="line"><span class="keyword">bool</span> isDynamic = (mass != <span class="number">0.f</span>);</span><br><span class="line"><span class="keyword">if</span> (isDynamic)</span><br><span class="line">    shape-&gt;<span class="built_in">calculateLocalInertia</span>(mass, localInertia);</span><br><span class="line"></span><br><span class="line">btDefaultMotionState* myMotionState = <span class="keyword">new</span> <span class="built_in">btDefaultMotionState</span>(trans);</span><br><span class="line"><span class="function">btRigidBody::btRigidBodyConstructionInfo <span class="title">cInfo</span><span class="params">(mass, myMotionState, shape, localInertia)</span></span>;</span><br><span class="line">btRigidBody* g_body = <span class="keyword">new</span> <span class="built_in">btRigidBody</span>(cInfo);</span><br><span class="line">g_body-&gt;<span class="built_in">applyCentralImpulse</span>(<span class="built_in">btVector3</span>(<span class="number">2</span>,<span class="number">0</span>,<span class="number">0</span>));  <span class="comment">// 设置冲量</span></span><br><span class="line">g_world-&gt;<span class="built_in">addRigidBody</span>(g_body);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (i=<span class="number">0</span>;i&lt;<span class="number">10</span>;i++)</span><br><span class="line">&#123;</span><br><span class="line">	g_world-&gt;<span class="built_in">stepSimulation</span>(<span class="number">1.f</span>/<span class="number">60.f</span>,<span class="number">10</span>);       <span class="comment">// 模拟运动</span></span><br><span class="line"></span><br><span class="line">    trans = g_body-&gt;<span class="built_in">getWorldTransform</span>();</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;world pos  = %f,%f,%f\n&quot;</span>, trans.<span class="built_in">getOrigin</span>().<span class="built_in">getX</span>(), </span><br><span class="line">                                      trans.<span class="built_in">getOrigin</span>().<span class="built_in">getY</span>(),</span><br><span class="line">                                      trans.<span class="built_in">getOrigin</span>().<span class="built_in">getZ</span>());</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>执行结果<br><img src="/pics/bullet3_col_007.png" alt="result"></p>
 
       
     </div>
@@ -1228,7 +1211,7 @@
 
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">Ron Ngai</p>
+  <p class="site-author-name" itemprop="name">Ron</p>
   <div class="site-description" itemprop="description"></div>
 </div>
 <div class="site-state-wrap motion-element">
@@ -1236,12 +1219,12 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">28</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-count">30</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>
@@ -1272,7 +1255,7 @@
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">Ron Ngai</span>
+  <span class="author" itemprop="copyrightHolder">Ron</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>

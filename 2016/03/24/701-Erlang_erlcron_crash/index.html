@@ -24,7 +24,7 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="[erlang]一次erlcron崩溃引起的事故分析">
 <meta property="og:url" content="http://example.com/2016/03/24/701-Erlang_erlcron_crash/index.html">
-<meta property="og:site_name" content="魏延的BLOG">
+<meta property="og:site_name" content="Ron的BLOG">
 <meta property="og:description" content="事故背景由于误操作在erlcron设置了一个超过3个月后的定时任务。然后第二天之后发现每天的daily reset没有被执行，一些定时任务也没有被执行。瞬间感觉整个人都不好了，怎么无端端就不执行了呢。 通过排查日志，发现了以下报错： 2016-03-22 16:54:32.014 [error] gen_server ecrn_control terminated with reason: no">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://i.imgur.com/H4oSaR0.png">
@@ -32,7 +32,7 @@
 <meta property="og:image" content="http://i.imgur.com/w9NJViE.png">
 <meta property="article:published_time" content="2016-03-24T05:34:57.000Z">
 <meta property="article:modified_time" content="2021-08-29T07:02:01.177Z">
-<meta property="article:author" content="Ron Ngai">
+<meta property="article:author" content="Ron">
 <meta property="article:tag" content="erlang">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://i.imgur.com/H4oSaR0.png">
@@ -50,7 +50,7 @@
   };
 </script>
 
-  <title>[erlang]一次erlcron崩溃引起的事故分析 | 魏延的BLOG</title>
+  <title>[erlang]一次erlcron崩溃引起的事故分析 | Ron的BLOG</title>
   
 
 
@@ -101,7 +101,7 @@
 
     <a href="/" class="brand" rel="start">
       <span class="logo-line-before"><i></i></span>
-      <h1 class="site-title">魏延的BLOG</h1>
+      <h1 class="site-title">Ron的BLOG</h1>
       <span class="logo-line-after"><i></i></span>
     </a>
   </div>
@@ -164,12 +164,12 @@
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="name" content="Ron">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
+      <meta itemprop="name" content="Ron的BLOG">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
@@ -375,7 +375,7 @@ init([JobRef, Job]) -&gt;
 
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">Ron Ngai</p>
+  <p class="site-author-name" itemprop="name">Ron</p>
   <div class="site-description" itemprop="description"></div>
 </div>
 <div class="site-state-wrap motion-element">
@@ -383,12 +383,12 @@ init([JobRef, Job]) -&gt;
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">28</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-count">30</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>
@@ -419,7 +419,7 @@ init([JobRef, Job]) -&gt;
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">Ron Ngai</span>
+  <span class="author" itemprop="copyrightHolder">Ron</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>

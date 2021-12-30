@@ -21,11 +21,11 @@
   </script>
 
   <meta property="og:type" content="website">
-<meta property="og:title" content="魏延的BLOG">
+<meta property="og:title" content="Ron的BLOG">
 <meta property="og:url" content="http://example.com/page/3/index.html">
-<meta property="og:site_name" content="魏延的BLOG">
+<meta property="og:site_name" content="Ron的BLOG">
 <meta property="og:locale" content="en_US">
-<meta property="article:author" content="Ron Ngai">
+<meta property="article:author" content="Ron">
 <meta name="twitter:card" content="summary">
 
 <link rel="canonical" href="http://example.com/page/3/">
@@ -41,7 +41,7 @@
   };
 </script>
 
-  <title>魏延的BLOG</title>
+  <title>Ron的BLOG</title>
   
 
 
@@ -92,7 +92,7 @@
 
     <a href="/" class="brand" rel="start">
       <span class="logo-line-before"><i></i></span>
-      <h1 class="site-title">魏延的BLOG</h1>
+      <h1 class="site-title">Ron的BLOG</h1>
       <span class="logo-line-after"><i></i></span>
     </a>
   </div>
@@ -150,16 +150,174 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2015/11/05/501-Raspberrypi_Init/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2015/11/14/601-Ftp_bat_help/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="name" content="Ron">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
+      <meta itemprop="name" content="Ron的BLOG">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/11/14/601-Ftp_bat_help/" class="post-title-link" itemprop="url">[windows]快速从ftp下载最新软件包的批处理脚本 </a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2015-11-14 17:15:57" itemprop="dateCreated datePublished" datetime="2015-11-14T17:15:57+08:00">2015-11-14</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>由于敏捷开发，快速迭代，我们项目一天会有三个版本，也就意味着我一天要去获取三次软件包。我负责服务端开发，所以我经常需要去拿最新的客户端。我们的客户端放置在一个公共的ftp上面。每天频繁登陆ftp下载，或者使用ftp工具，每次都要点击同步，都不太方便。如果在linux下就好了，然而在windows也是可以运行脚本的，何不尝试下呢。</p>
+<h3 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h3><pre><code>@echo off
+rem for download file
+rem ftp config 
+rem ip login_name password remote_dir
+
+set &quot;ftp_ip=192.168.0.1&quot;
+set &quot;ftp_user=admin&quot;
+set &quot;ftp_pass=123456&quot;
+set &quot;ftp_path=/&quot;
+
+set &quot;f_tmp=tmp&quot;
+set &quot;f_info=tmp\tmp_info.dat&quot;
+set &quot;f_list=tmp\tmp_list.dat&quot;
+
+rd /s /q pack
+mkdir %f_tmp%
+
+echo open %ftp_ip% &gt; %f_info%
+echo user %ftp_user% &gt;&gt; %f_info%
+echo %ftp_pass%&gt;&gt; %f_info%
+echo prompt &gt;&gt; %f_info%
+echo binary &gt;&gt; %f_info%
+echo cd %ftp_path% &gt;&gt; %f_info%
+echo ls . %f_list% &gt;&gt; %f_info%
+echo lcd %f_tmp% &gt;&gt; %f_info%
+echo disconnect &gt;&gt; %f_info%
+echo bye &gt;&gt; %f_info%
+
+ftp -v -n -s:%f_info%
+
+
+for /f &quot;delims=&quot; %%i in (&#39;type &quot;%f_list%&quot;&#39;) do (
+    set &quot;target_7z=%%i&quot;
+)
+
+echo open %ftp_ip% &gt; %f_info%
+echo user %ftp_user% &gt;&gt; %f_info%
+echo %ftp_pass%&gt;&gt; %f_info%
+echo prompt &gt;&gt; %f_info%
+echo binary &gt;&gt; %f_info%
+echo cd %ftp_path% &gt;&gt; %f_info%
+echo lcd %f_tmp% &gt;&gt; %f_info%
+echo get %target_7z%&gt;&gt; %f_info%
+echo disconnect &gt;&gt; %f_info%
+echo bye &gt;&gt; %f_info%
+
+ftp -v -n -s:%f_info%
+
+call tools\7z\x64\7za.exe x %f_tmp%\%target_7z%
+
+rd /s /q %f_tmp%
+
+exit
+</code></pre>
+<p><img src="http://7xaw5u.com1.z0.glb.clouddn.com/windowsQQ%E6%88%AA%E5%9B%BE20151114170729.png" alt="运行脚本"></p>
+<h3 id="逐步解释"><a href="#逐步解释" class="headerlink" title="逐步解释"></a>逐步解释</h3><h4 id="获取文件列表"><a href="#获取文件列表" class="headerlink" title="获取文件列表"></a>获取文件列表</h4><pre><code>echo open %ftp_ip% &gt; %f_info%
+echo user %ftp_user% &gt;&gt; %f_info%
+echo %ftp_pass%&gt;&gt; %f_info%
+echo prompt &gt;&gt; %f_info%
+echo binary &gt;&gt; %f_info%
+echo cd %ftp_path% &gt;&gt; %f_info%
+echo ls . %f_list% &gt;&gt; %f_info%
+echo lcd %f_tmp% &gt;&gt; %f_info%
+echo disconnect &gt;&gt; %f_info%
+echo bye &gt;&gt; %f_info%
+
+ftp -v -n -s:%f_info%
+</code></pre>
+<p>这部分代码主要有以下几个作用：</p>
+<ol>
+<li>将ftp的命令写入到文件；</li>
+<li>在ftp上获取对应目录的文件列表，并写到本地文件下。</li>
+</ol>
+<h4 id="获取最新的一个文件"><a href="#获取最新的一个文件" class="headerlink" title="获取最新的一个文件"></a>获取最新的一个文件</h4><pre><code>for /f &quot;delims=&quot; %%i in (&#39;type &quot;%f_list%&quot;&#39;) do (
+    set &quot;target_7z=%%i&quot;
+)
+</code></pre>
+<p>然后循环遍历文件列表，最终获取到最后一个列表（也就是最新的文件名）。</p>
+<h4 id="下载最新文件"><a href="#下载最新文件" class="headerlink" title="下载最新文件"></a>下载最新文件</h4><pre><code>echo open %ftp_ip% &gt; %f_info%
+echo user %ftp_user% &gt;&gt; %f_info%
+echo %ftp_pass%&gt;&gt; %f_info%
+echo prompt &gt;&gt; %f_info%
+echo binary &gt;&gt; %f_info%
+echo cd %ftp_path% &gt;&gt; %f_info%
+echo lcd %f_tmp% &gt;&gt; %f_info%
+echo get %target_7z%&gt;&gt; %f_info%
+echo disconnect &gt;&gt; %f_info%
+echo bye &gt;&gt; %f_info%
+
+ftp -v -n -s:%f_info%
+</code></pre>
+<p>有了文件名，我们就可以再执行一次ftp命令，下载我们最新的文件了。以上就实现了动态下载最新文件了。</p>
+<h4 id="解压"><a href="#解压" class="headerlink" title="解压"></a>解压</h4><p>这边我们使用的软件包是7z打包的。所以也要下载7z解压工具。<br>官方地址：<a target="_blank" rel="noopener" href="http://www.7-zip.org/">http://www.7-zip.org/</a><br>然后下载到命令行版，放置到任意可读取目录就可以了。</p>
+<pre><code>call tools\7z\x64\7za.exe x %f_tmp%\%target_7z%
+</code></pre>
+<h3 id="后话"><a href="#后话" class="headerlink" title="后话"></a>后话</h3><p>平常习惯了在linux下倒腾。可以写些脚本做些繁琐的事情，但是在windows经常就傻眼了。可视化的东西是有很多好处，但是也有些弊端。批处理脚本虽然不好用，但也并不是不可用。很多时候也可以带来很大的方便。当然会python、ruby这些脚本语言其实也是完全可以满足的。毕竟现在这年头批处理这种东西用的越来越少了。<code>windows shell</code>也可以，但是感觉也不太好用。</p>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><ul>
+<li><a target="_blank" rel="noopener" href="http://occool.com/2012/03/%E3%80%90%E8%BD%AC%E8%BD%BD%E3%80%91%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%8E%8B%E7%BC%A9%E8%A7%A3%E5%8E%8B7z/">http://occool.com/2012/03/【转载】命令行压缩解压7z/</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.robvanderwoude.com/ftp.php">http://www.robvanderwoude.com/ftp.php</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2015/11/05/501-Raspberrypi_Init/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ron的BLOG">
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
@@ -263,12 +421,12 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="name" content="Ron">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
+      <meta itemprop="name" content="Ron的BLOG">
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
@@ -332,12 +490,12 @@ deb-src http://mirrors.163.com/debian-security/ wheezy/updates main non-free con
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="name" content="Ron">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
+      <meta itemprop="name" content="Ron的BLOG">
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
@@ -539,12 +697,12 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="name" content="Ron">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
+      <meta itemprop="name" content="Ron的BLOG">
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
@@ -618,12 +776,12 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="name" content="Ron">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
+      <meta itemprop="name" content="Ron的BLOG">
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
@@ -699,12 +857,12 @@ propset (pset, ps)                # 设置属性的值
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="name" content="Ron">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
+      <meta itemprop="name" content="Ron的BLOG">
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
@@ -785,12 +943,12 @@ propset (pset, ps)                # 设置属性的值
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron Ngai">
+      <meta itemprop="name" content="Ron">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="魏延的BLOG">
+      <meta itemprop="name" content="Ron的BLOG">
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
@@ -911,7 +1069,7 @@ hexo server       # hexo s
 
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">Ron Ngai</p>
+  <p class="site-author-name" itemprop="name">Ron</p>
   <div class="site-description" itemprop="description"></div>
 </div>
 <div class="site-state-wrap motion-element">
@@ -919,12 +1077,12 @@ hexo server       # hexo s
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">28</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-count">30</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>
@@ -955,7 +1113,7 @@ hexo server       # hexo s
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">Ron Ngai</span>
+  <span class="author" itemprop="copyrightHolder">Ron</span>
 </div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
