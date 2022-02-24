@@ -204,12 +204,13 @@
 </ul>
 <h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><h3 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h3><p>所有数据都挂在场景内，此处称为area。area内包含了场景范围，对象列表，格子列表。new_area 接口也就是创建场景数据结构。</p>
 <figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> tb_area = &#123;</span><br><span class="line">        min_x = args.min_x,  <span class="comment">-- 场景范围</span></span><br><span class="line">        min_y = args.min_y,</span><br><span class="line">        max_x = args.max_x,</span><br><span class="line">        max_y = args.max_y,</span><br><span class="line"></span><br><span class="line">        grid_x    = grid_x,  <span class="comment">-- x轴有几段</span></span><br><span class="line">        grid_y    = grid_y,  <span class="comment">-- y轴有几段</span></span><br><span class="line"></span><br><span class="line">        grid_max  = grid_max,  <span class="comment">-- 总格子数量</span></span><br><span class="line">        grid_size = grid_size, <span class="comment">-- 格子长度</span></span><br><span class="line"></span><br><span class="line">        map_actor = &#123;&#125;,  <span class="comment">-- 对象列表</span></span><br><span class="line">        lst_grid  = &#123;&#125;,  <span class="comment">-- 格子</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
 <h3 id="进入场景和移动"><a href="#进入场景和移动" class="headerlink" title="进入场景和移动"></a>进入场景和移动</h3><p>进入场景非常简单，根据坐标计算出目标格子，然后分别加入 map_actor 列表和 lst_grid 列表即可。</p>
 <p>场景内移动分2种情况：</p>
 <p>第一种在格子内移动，这种情况，aoi没有变化。</p>
 <p>第二种跨格子移动，出现了离开旧格子加入新格子的情况。这里稍微注意的是，有可能旧的九宫格和新的九宫格存在重叠的区域，这样的情况，对于重叠的区域的对象视野来说，目标对象并没有离开过视野。</p>
 <h3 id="离开场景"><a href="#离开场景" class="headerlink" title="离开场景"></a>离开场景</h3><p>离开也非常简单，从 map_actor 列表和 lst_grid 列表删除即可。</p>
-<h2 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h2><p><a target="_blank" rel="noopener" href="https://github.com/rondsny/lua_aoi">GitHub - rondsny/lua_aoi</a></p>
+<h2 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h2><p><a target="_blank" rel="noopener" href="https://github.com/rondsny/lua_aoi">GitHub - rondsny&#x2F;lua_aoi</a></p>
 
     </div>
 

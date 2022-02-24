@@ -209,198 +209,136 @@ tar xzvf libevent-2.0.21-stable.tar.gz
 cd libevent-2.0.21-stable
 ./configure &amp;&amp; make
 make install
-</code></pre><p>然后再下载源码安装tmux</p>
+</code></pre>
+<p>然后再下载源码安装tmux</p>
 <pre><code>git clone git://git.code.sf.net/p/tmux/tmux-code tmux
 cd tmux
 sh autogen.sh
 ./configure &amp;&amp; make
 make install
-</code></pre><p>过程中遇到了两个报错，解决都比较简单，当然是查阅资料后。</p>
+</code></pre>
+<p>过程中遇到了两个报错，解决都比较简单，当然是查阅资料后。</p>
 <h4 id="问题1："><a href="#问题1：" class="headerlink" title="问题1："></a>问题1：</h4><p>期间我遇到了执行autogen.sh 报错，原因是我没有安装automake。这个直接<code>yum install automake</code>就简单解决了。</p>
 <h4 id="问题2："><a href="#问题2：" class="headerlink" title="问题2："></a>问题2：</h4><p>执行的时候遇到</p>
 <pre><code>libevent-2.0.so.5: cannot open shared object file: No such file or directory
-</code></pre><p>的报错，解决办法也比较简单，既然找不到，那就换个找得到的地方呗。</p>
+</code></pre>
+<p>的报错，解决办法也比较简单，既然找不到，那就换个找得到的地方呗。</p>
 <pre><code>ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib/libevent-2.0.so.5     # 32位系统
 ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系统
-</code></pre><h3 id="使用和快捷键"><a href="#使用和快捷键" class="headerlink" title="使用和快捷键"></a>使用和快捷键</h3><p>直接在命令行输入tmux即可进入tmux的模式。</p>
+</code></pre>
+<h3 id="使用和快捷键"><a href="#使用和快捷键" class="headerlink" title="使用和快捷键"></a>使用和快捷键</h3><p>直接在命令行输入tmux即可进入tmux的模式。</p>
 <p>tmux主要有windows窗体操作和Pane操作，个人觉得windows对于我来说，意义不大(并不是说windows模式没适用场景)，所以这里主要讲下Pane的相关操作。</p>
 <h4 id="快捷键"><a href="#快捷键" class="headerlink" title="快捷键"></a>快捷键</h4><p>tmux的快捷键都要先按<code>C-b(Ctrl-b)</code>。然后再按下面表格内容，才能达到相应的效果。</p>
-<h4 id="session和其他相关快捷键"><a href="#session和其他相关快捷键" class="headerlink" title="session和其他相关快捷键"></a>session和其他相关快捷键</h4><div class="table-container">
-<table>
+<h4 id="session和其他相关快捷键"><a href="#session和其他相关快捷键" class="headerlink" title="session和其他相关快捷键"></a>session和其他相关快捷键</h4><table>
 <thead>
 <tr>
-<th style="text-align:center">快捷键</th>
-<th style="text-align:left">功能      </th>
+<th align="center">快捷键</th>
+<th align="left">功能</th>
 </tr>
 </thead>
-<tbody>
-<tr>
-<td style="text-align:center"> C-z</td>
-<td style="text-align:left">关闭tmux.</td>
+<tbody><tr>
+<td align="center">C-z</td>
+<td align="left">关闭tmux.</td>
 </tr>
 <tr>
-<td style="text-align:center"> :</td>
-<td style="text-align:left">进入tmux命令行模式.</td>
+<td align="center">:</td>
+<td align="left">进入tmux命令行模式.</td>
 </tr>
 <tr>
-<td style="text-align:center"> ?</td>
-<td style="text-align:left">列出所有快捷键.</td>
+<td align="center">?</td>
+<td align="left">列出所有快捷键.</td>
 </tr>
 <tr>
-<td style="text-align:center"> t</td>
-<td style="text-align:left"><strong>显示时间.</strong></td>
+<td align="center">t</td>
+<td align="left"><strong>显示时间.</strong></td>
 </tr>
 <tr>
-<td style="text-align:center"> d</td>
-<td style="text-align:left">退出当前tmux客户端，tmux后台运行.</td>
+<td align="center">d</td>
+<td align="left">退出当前tmux客户端，tmux后台运行.</td>
 </tr>
-<tr>
-<td style="text-align:center"></td>
-<td style="text-align:left"></td>
-</tr>
-<tr>
-<td style="text-align:center"> $</td>
-<td style="text-align:left">重命名当前session.</td>
-</tr>
-<tr>
-<td style="text-align:center"> s</td>
-<td style="text-align:left"><strong>切换session 显示所有session并切换到某一个session.</strong></td>
-</tr>
-<tr>
-<td style="text-align:center"> (</td>
-<td style="text-align:left">切换session 切换到上一个session.</td>
-</tr>
-<tr>
-<td style="text-align:center"> )</td>
-<td style="text-align:left">切换session 切换到下一个session.</td>
-</tr>
-<tr>
-<td style="text-align:center"> L</td>
-<td style="text-align:left">切换session 到前一个活跃的session.</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h4 id="window相关快捷键"><a href="#window相关快捷键" class="headerlink" title="window相关快捷键"></a>window相关快捷键</h4><div class="table-container">
-<table>
+</tbody></table>
+<pre><code>   | 
+</code></pre>
+<p> $     | 重命名当前session.<br> s     | <strong>切换session 显示所有session并切换到某一个session.</strong><br> (     | 切换session 切换到上一个session.<br> )     | 切换session 切换到下一个session.<br> L     | 切换session 到前一个活跃的session.</p>
+<h4 id="window相关快捷键"><a href="#window相关快捷键" class="headerlink" title="window相关快捷键"></a>window相关快捷键</h4><table>
 <thead>
 <tr>
-<th style="text-align:center">快捷键</th>
-<th style="text-align:left">功能      </th>
+<th align="center">快捷键</th>
+<th align="left">功能</th>
 </tr>
 </thead>
-<tbody>
-<tr>
-<td style="text-align:center"> c</td>
-<td style="text-align:left"><strong>新增一个window.</strong></td>
+<tbody><tr>
+<td align="center">c</td>
+<td align="left"><strong>新增一个window.</strong></td>
 </tr>
 <tr>
-<td style="text-align:center"> &amp;</td>
-<td style="text-align:left">退出当前window.</td>
+<td align="center">&amp;</td>
+<td align="left">退出当前window.</td>
 </tr>
 <tr>
-<td style="text-align:center"> ,</td>
-<td style="text-align:left">重命名当前window.</td>
+<td align="center">,</td>
+<td align="left">重命名当前window.</td>
 </tr>
 <tr>
-<td style="text-align:center"> l</td>
-<td style="text-align:left">跳转到上一个所在window.</td>
+<td align="center">l</td>
+<td align="left">跳转到上一个所在window.</td>
 </tr>
-<tr>
-<td style="text-align:center"></td>
-<td style="text-align:left"></td>
-</tr>
-<tr>
-<td style="text-align:center"> i</td>
-<td style="text-align:left">显示当前window的信息.</td>
-</tr>
-<tr>
-<td style="text-align:center"> w</td>
-<td style="text-align:left"><strong>切换window 显示所有window并切换window.</strong></td>
-</tr>
-<tr>
-<td style="text-align:center"> 0 to 9</td>
-<td style="text-align:left">切换window 到相应编号的window.</td>
-</tr>
-<tr>
-<td style="text-align:center"> p</td>
-<td style="text-align:left">切换window 上一个window.</td>
-</tr>
-<tr>
-<td style="text-align:center"> n</td>
-<td style="text-align:left">切换window 下一个window.</td>
-</tr>
-<tr>
-<td style="text-align:center"> ’</td>
-<td style="text-align:left">切换window 到输入编号的window.</td>
-</tr>
-<tr>
-<td style="text-align:center"> f</td>
-<td style="text-align:left">切换window 到搜索到的window.</td>
-</tr>
-<tr>
-<td style="text-align:center"> Space</td>
-<td style="text-align:left">改变当前window下的pane布局.</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h4 id="pane相关快捷键"><a href="#pane相关快捷键" class="headerlink" title="pane相关快捷键"></a>pane相关快捷键</h4><div class="table-container">
-<table>
+</tbody></table>
+<pre><code>    | 
+</code></pre>
+<p> i      | 显示当前window的信息.<br> w      | <strong>切换window 显示所有window并切换window.</strong><br> 0 to 9 | 切换window 到相应编号的window.<br> p      | 切换window 上一个window.<br> n      | 切换window 下一个window.<br> ’      | 切换window 到输入编号的window.<br> f      | 切换window 到搜索到的window.<br> Space  | 改变当前window下的pane布局.</p>
+<h4 id="pane相关快捷键"><a href="#pane相关快捷键" class="headerlink" title="pane相关快捷键"></a>pane相关快捷键</h4><table>
 <thead>
 <tr>
-<th style="text-align:center">快捷键</th>
-<th style="text-align:left">功能      </th>
+<th align="center">快捷键</th>
+<th align="left">功能</th>
 </tr>
 </thead>
-<tbody>
-<tr>
-<td style="text-align:center"> !</td>
-<td style="text-align:left"><strong>从window移除当前pane.</strong></td>
+<tbody><tr>
+<td align="center">!</td>
+<td align="left"><strong>从window移除当前pane.</strong></td>
 </tr>
 <tr>
-<td style="text-align:center"> “</td>
-<td style="text-align:left"><strong>将当前pane变成上下两个pane.</strong></td>
+<td align="center">“</td>
+<td align="left"><strong>将当前pane变成上下两个pane.</strong></td>
 </tr>
 <tr>
-<td style="text-align:center"> %</td>
-<td style="text-align:left"><strong>将当前pane变成左右两个pane.</strong></td>
+<td align="center">%</td>
+<td align="left"><strong>将当前pane变成左右两个pane.</strong></td>
 </tr>
 <tr>
-<td style="text-align:center"> x</td>
-<td style="text-align:left"><strong>关闭当前pane.</strong></td>
+<td align="center">x</td>
+<td align="left"><strong>关闭当前pane.</strong></td>
 </tr>
 <tr>
-<td style="text-align:center"> q</td>
-<td style="text-align:left">显示pane的索引.</td>
+<td align="center">q</td>
+<td align="left">显示pane的索引.</td>
 </tr>
 <tr>
-<td style="text-align:center"> z</td>
-<td style="text-align:left"><strong>最大化或者恢复当前pane.</strong></td>
+<td align="center">z</td>
+<td align="left"><strong>最大化或者恢复当前pane.</strong></td>
 </tr>
 <tr>
-<td style="text-align:center"> {</td>
-<td style="text-align:left">跟前一个pane交换位置.</td>
+<td align="center">{</td>
+<td align="left">跟前一个pane交换位置.</td>
 </tr>
 <tr>
-<td style="text-align:center"> }</td>
-<td style="text-align:left">跟后一个pane交换位置.</td>
+<td align="center">}</td>
+<td align="left">跟后一个pane交换位置.</td>
 </tr>
 <tr>
-<td style="text-align:center"> o</td>
-<td style="text-align:left">切换Pane 到下一个pane.</td>
+<td align="center">o</td>
+<td align="left">切换Pane 到下一个pane.</td>
 </tr>
 <tr>
-<td style="text-align:center"> ;</td>
-<td style="text-align:left"><strong>切换Pane 进入到前一个操作过的pane.</strong></td>
+<td align="center">;</td>
+<td align="left"><strong>切换Pane 进入到前一个操作过的pane.</strong></td>
 </tr>
 <tr>
-<td style="text-align:center"> Up, Down Left, Right</td>
-<td style="text-align:left">切换Pane 使用方向键切换到相应方向的pane.</td>
+<td align="center">Up, Down Left, Right</td>
+<td align="left">切换Pane 使用方向键切换到相应方向的pane.</td>
 </tr>
-</tbody>
-</table>
-</div>
+</tbody></table>
 <p>可能有些快捷键有些出入，可以的话提醒下。另外有些快捷键没有搞懂，而且快捷键比较多，个人觉得记得主要的几个切换快捷键就足够用来。比较tmux只是一个协助工具，没有必要在其上面那么用心。加粗的是个人觉得比较实用的。</p>
 <p>tmux不中断session的模式确实很666666，每次连回去就可以快速接上上次结束的环境。而且多个pane也非常适合要开启并监控多个服务的情况。</p>
 <p><img src="http://i.imgur.com/guRsWo3.png" alt="多个pane例子"></p>

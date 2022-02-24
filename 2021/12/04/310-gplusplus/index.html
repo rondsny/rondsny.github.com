@@ -20,12 +20,12 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="后缀 静态库 .a .lib   动态库 .so .dll    g++&#x2F;gcc编译选项 -o 指定输出目标的文件名 -L 表示要链接的库所在目录 -l 指定链接时需要的动态库，编译器查找动态库时有隐含的命名规则，即在给出的名字前面加上lib，后面加上.a或.so来确定库的名称。 -shared 指定生成动态链接库 -static 指定生成静态库 -fPIC 表示编译为位置独立的代码，用于编译共享">
+  <meta name="description" content="后缀 静态库 .a .lib   动态库 .so .dll    g++&#x2F;gcc编译选项 -o 指定输出目标的文件名 -L 表示要链接的库所在目录 -l 指定链接时需要的动态库，编译器查找动态库时有隐含的命名规则，即在给出的名字前面加上lib，后面加上.a或.so来确定库的名称。 -shared 指定生成动态链接库 -static 指定生成静态库 -fPIC 表示编译为位置独立的代码，用">
 <meta property="og:type" content="article">
 <meta property="og:title" content="[c++]g++&#x2F;gcc">
 <meta property="og:url" content="http://example.com/2021/12/04/310-gplusplus/index.html">
 <meta property="og:site_name" content="Ron的BLOG">
-<meta property="og:description" content="后缀 静态库 .a .lib   动态库 .so .dll    g++&#x2F;gcc编译选项 -o 指定输出目标的文件名 -L 表示要链接的库所在目录 -l 指定链接时需要的动态库，编译器查找动态库时有隐含的命名规则，即在给出的名字前面加上lib，后面加上.a或.so来确定库的名称。 -shared 指定生成动态链接库 -static 指定生成静态库 -fPIC 表示编译为位置独立的代码，用于编译共享">
+<meta property="og:description" content="后缀 静态库 .a .lib   动态库 .so .dll    g++&#x2F;gcc编译选项 -o 指定输出目标的文件名 -L 表示要链接的库所在目录 -l 指定链接时需要的动态库，编译器查找动态库时有隐含的命名规则，即在给出的名字前面加上lib，后面加上.a或.so来确定库的名称。 -shared 指定生成动态链接库 -static 指定生成静态库 -fPIC 表示编译为位置独立的代码，用">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/pics/gcc_000.png">
 <meta property="og:image" content="http://example.com/pics/gcc_002.jpg">
@@ -210,7 +210,7 @@
 </ul>
 </li>
 </ul>
-<h2 id="g-gcc编译选项"><a href="#g-gcc编译选项" class="headerlink" title="g++/gcc编译选项"></a>g++/gcc编译选项</h2><ul>
+<h2 id="g-x2F-gcc编译选项"><a href="#g-x2F-gcc编译选项" class="headerlink" title="g++&#x2F;gcc编译选项"></a>g++&#x2F;gcc编译选项</h2><ul>
 <li><code>-o</code> 指定输出目标的文件名</li>
 <li><code>-L</code> 表示要链接的库所在目录</li>
 <li><code>-l</code> 指定链接时需要的动态库，编译器查找动态库时有隐含的命名规则，即在给出的名字前面加上lib，后面加上.a或.so来确定库的名称。</li>
@@ -256,6 +256,7 @@
 <li>弱态符合，用W表示，虽然在库中被定义，但是可能被其他库中的同名符合覆盖。</li>
 </ul>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nm libtest.h</span><br></pre></td></tr></table></figure>
+
 <h3 id="ldd-命令"><a href="#ldd-命令" class="headerlink" title="ldd 命令"></a>ldd 命令</h3><p>ldd命令可以查看一个可执行程序依赖的共享库。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ldd libtest.so</span><br></pre></td></tr></table></figure>
     </div>
@@ -341,7 +342,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8E%E7%BC%80"><span class="nav-number">1.</span> <span class="nav-text">后缀</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#g-gcc%E7%BC%96%E8%AF%91%E9%80%89%E9%A1%B9"><span class="nav-number">2.</span> <span class="nav-text">g++&#x2F;gcc编译选项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E5%BA%93"><span class="nav-number">3.</span> <span class="nav-text">静态库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E9%9D%99%E6%80%81%E5%BA%93"><span class="nav-number">3.1.</span> <span class="nav-text">创建静态库</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E5%BA%93"><span class="nav-number">4.</span> <span class="nav-text">动态库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%E5%B8%AE%E5%8A%A9"><span class="nav-number">5.</span> <span class="nav-text">调试帮助</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#nm-%E5%91%BD%E4%BB%A4"><span class="nav-number">5.1.</span> <span class="nav-text">nm 命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ldd-%E5%91%BD%E4%BB%A4"><span class="nav-number">5.2.</span> <span class="nav-text">ldd 命令</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8E%E7%BC%80"><span class="nav-number">1.</span> <span class="nav-text">后缀</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#g-x2F-gcc%E7%BC%96%E8%AF%91%E9%80%89%E9%A1%B9"><span class="nav-number">2.</span> <span class="nav-text">g++&#x2F;gcc编译选项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E5%BA%93"><span class="nav-number">3.</span> <span class="nav-text">静态库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E9%9D%99%E6%80%81%E5%BA%93"><span class="nav-number">3.1.</span> <span class="nav-text">创建静态库</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E5%BA%93"><span class="nav-number">4.</span> <span class="nav-text">动态库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%E5%B8%AE%E5%8A%A9"><span class="nav-number">5.</span> <span class="nav-text">调试帮助</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#nm-%E5%91%BD%E4%BB%A4"><span class="nav-number">5.1.</span> <span class="nav-text">nm 命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ldd-%E5%91%BD%E4%BB%A4"><span class="nav-number">5.2.</span> <span class="nav-text">ldd 命令</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
