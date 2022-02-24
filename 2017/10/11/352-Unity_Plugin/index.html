@@ -20,12 +20,12 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="1. 插件扩展1.1. 命名空间12using UnityEditor;using UnityEngine;    &#x2F;&#x2F;非必需，常用到  1.2. 使用语法12345[MenuItem(&quot;Assets&#x2F;My Test&quot;)]private static void Test()&amp;#123;    Debug.Log(&quot;Hello World!&quot;)&amp;#125;">
+  <meta name="description" content="1. 插件扩展1.1. 命名空间12using UnityEditor;using UnityEngine;    &#x2F;&#x2F;非必需，常用到 1.2. 使用语法12345[MenuItem(&quot;Assets&#x2F;My Test&quot;)]private static void Test()&amp;#123;    Debug.Log(&quot;Hello World!&quot;)&amp;#125; 语法">
 <meta property="og:type" content="article">
 <meta property="og:title" content="[Unity]Unity3D编辑器插件扩展和组件扩展">
 <meta property="og:url" content="http://example.com/2017/10/11/352-Unity_Plugin/index.html">
 <meta property="og:site_name" content="Ron的BLOG">
-<meta property="og:description" content="1. 插件扩展1.1. 命名空间12using UnityEditor;using UnityEngine;    &#x2F;&#x2F;非必需，常用到  1.2. 使用语法12345[MenuItem(&quot;Assets&#x2F;My Test&quot;)]private static void Test()&amp;#123;    Debug.Log(&quot;Hello World!&quot;)&amp;#125;">
+<meta property="og:description" content="1. 插件扩展1.1. 命名空间12using UnityEditor;using UnityEngine;    &#x2F;&#x2F;非必需，常用到 1.2. 使用语法12345[MenuItem(&quot;Assets&#x2F;My Test&quot;)]private static void Test()&amp;#123;    Debug.Log(&quot;Hello World!&quot;)&amp;#125; 语法">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2017/10/11/352-Unity_Plugin/pics/unity_plugin_001.png">
 <meta property="og:image" content="http://example.com/2017/10/11/352-Unity_Plugin/pics/unity_plugin_004.png">
@@ -201,12 +201,9 @@
 
       
         <h2 id="1-插件扩展"><a href="#1-插件扩展" class="headerlink" title="1. 插件扩展"></a>1. 插件扩展</h2><h3 id="1-1-命名空间"><a href="#1-1-命名空间" class="headerlink" title="1.1. 命名空间"></a>1.1. 命名空间</h3><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> UnityEditor;</span><br><span class="line"><span class="keyword">using</span> UnityEngine;    <span class="comment">//非必需，常用到</span></span><br></pre></td></tr></table></figure>
-
 <h3 id="1-2-使用语法"><a href="#1-2-使用语法" class="headerlink" title="1.2. 使用语法"></a>1.2. 使用语法</h3><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">MenuItem(<span class="meta-string">&quot;Assets/My Test&quot;</span>)</span>]</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Test</span>(<span class="params"></span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    Debug.Log(<span class="string">&quot;Hello World!&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <p>语法说明</p>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">MenuItem(<span class="meta-string">&quot;path $t&quot;</span>, Is, Priority)</span>]</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Test1</span>(<span class="params"></span>)</span></span><br><span class="line">&#123;&#125;</span><br><span class="line"></span><br><span class="line">[<span class="meta">MenuItem(<span class="meta-string">&quot;path _t&quot;</span>, Is, Priority)</span>]</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Test2</span>(<span class="params"></span>)</span></span><br><span class="line">&#123;&#125;</span><br></pre></td></tr></table></figure>
-
 <ul>
 <li>path 是菜单路径；<ul>
 <li>一级菜单名称不支持中文</li>
@@ -223,40 +220,32 @@
 </ul>
 <p>下面表示快捷键为”ctrl+h” 的实例。</p>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">MenuItem(<span class="meta-string">&quot;Assets/My Test %h&quot;</span>)</span>]</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Test</span>(<span class="params"></span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    Debug.Log(<span class="string">&quot;Hello World!&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <h3 id="1-3-Selection类"><a href="#1-3-Selection类" class="headerlink" title="1.3. Selection类"></a>1.3. Selection类</h3><p><a target="_blank" rel="noopener" href="https://docs.unity3d.com/ScriptReference/Selection.html">https://docs.unity3d.com/ScriptReference/Selection.html</a></p>
 <h4 id="1-3-1-获取选中物体"><a href="#1-3-1-获取选中物体" class="headerlink" title="1.3.1. 获取选中物体"></a>1.3.1. 获取选中物体</h4><p><code>Selection.Objects</code>可以获得选中的物品。</p>
 <h4 id="1-3-2-获取选中目录"><a href="#1-3-2-获取选中目录" class="headerlink" title="1.3.2. 获取选中目录"></a>1.3.2. 获取选中目录</h4><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">string</span>[] guids = Selection.assetGUIDs;</span><br><span class="line"><span class="keyword">foreach</span> ( <span class="keyword">var</span> id <span class="keyword">in</span> guids )</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">string</span> path = AssetDatabase.GUIDToAssetPath(id);</span><br><span class="line">    <span class="keyword">if</span>(Directory.Exists(path))</span><br><span class="line">    &#123;</span><br><span class="line">        Debug.Log(<span class="built_in">string</span>.format(<span class="string">&quot;Directory &#123;0&#125; exist&quot;</span>, path))</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
 <h3 id="1-4-给控件添加右上角齿轮菜单增加功能"><a href="#1-4-给控件添加右上角齿轮菜单增加功能" class="headerlink" title="1.4. 给控件添加右上角齿轮菜单增加功能"></a>1.4. 给控件添加右上角齿轮菜单增加功能</h3><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">MenuItem(<span class="meta-string">&quot;CONTEXT/Rigidbody/wyg_test&quot;</span>)</span>]</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="title">TestRightButton</span>(<span class="params"></span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    Debug.Log(<span class="string">&quot;右键测试&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <ul>
 <li>CONTEXT 为固定写法；</li>
 <li>Rigidbody 是控件名称，可以修改为其他控件；</li>
 <li>我使用中文的时候不知道为什么没有显示出来。</li>
 </ul>
-<p><img src="pics/unity_plugin_001.png"></p>
+<p><img src="pics/unity_plugin_001.png" alt=""></p>
 <h3 id="1-5-弹窗"><a href="#1-5-弹窗" class="headerlink" title="1.5. 弹窗"></a>1.5. 弹窗</h3><p>编辑器的弹窗类需要继承<code>EditorWindow</code>。</p>
 <p>使用方法与GUI的使用方法基本一致，有Init，Awake，OnGUI等函数。</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">class TestWindow : EditorWindow</span><br><span class="line">&#123;</span><br><span class="line">    public void Init()</span><br><span class="line">    &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    publick void OnGUI()</span><br><span class="line">    &#123;</span><br><span class="line">        GUILayout.Label(&quot;Test Window&quot;);</span><br><span class="line">        if (GUILayout.Button(&quot;Button&quot;))</span><br><span class="line">        &#123;</span><br><span class="line">            Debug.Log(&quot;On Button&quot;)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <h2 id="2-组件属性展示"><a href="#2-组件属性展示" class="headerlink" title="2. 组件属性展示"></a>2. 组件属性展示</h2><p>以下效果都是组件的显示，所以是属于<code>using UnityEngine;</code>的。</p>
 <h3 id="2-1-Range"><a href="#2-1-Range" class="headerlink" title="2.1. Range"></a>2.1. Range</h3><p>可以将数值的展示效果变成滑动条效果。</p>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">Range(1, 12)</span>]</span><br><span class="line"><span class="keyword">public</span> <span class="built_in">int</span> month;</span><br></pre></td></tr></table></figure>
-
-<p><img src="pics/unity_plugin_004.png"></p>
+<p><img src="pics/unity_plugin_004.png" alt=""></p>
 <h3 id="2-2-Multiline-TextArea"><a href="#2-2-Multiline-TextArea" class="headerlink" title="2.2. Multiline/TextArea"></a>2.2. Multiline/TextArea</h3><p>控制占用多行显示。</p>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">Multiline(5)</span>]</span><br><span class="line"><span class="keyword">public</span> <span class="built_in">string</span> msg1;</span><br><span class="line"></span><br><span class="line">[<span class="meta">TextArea(3,5)</span>]</span><br><span class="line"><span class="keyword">public</span> <span class="built_in">string</span> msg2;     <span class="comment">// 最少显示三行，最多显示五行</span></span><br></pre></td></tr></table></figure>
-
-<p><img src="pics/unity_plugin_005.png"></p>
+<p><img src="pics/unity_plugin_005.png" alt=""></p>
 <h3 id="2-3-ContextMenuItem-ContextMenu"><a href="#2-3-ContextMenuItem-ContextMenu" class="headerlink" title="2.3. ContextMenuItem/ContextMenu"></a>2.3. ContextMenuItem/ContextMenu</h3><p>添加右键小菜单，添加一些小功能。</p>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">ContextMenuItem(<span class="meta-string">&quot;Random&quot;</span>, <span class="meta-string">&quot;RandomNumber&quot;</span>)</span>]</span><br><span class="line">[<span class="meta">ContextMenuItem(<span class="meta-string">&quot;Reset&quot;</span>, <span class="meta-string">&quot;ResetNumber&quot;</span>)</span>]</span><br><span class="line"><span class="keyword">public</span> <span class="built_in">int</span> number;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">RandomNumber</span>(<span class="params"></span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    number = Random.Range(<span class="number">0</span>, <span class="number">100</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">ResetNumber</span>(<span class="params"></span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    number = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><img src="pics/unity_plugin_002.png"></p>
+<p><img src="pics/unity_plugin_002.png" alt=""></p>
 <p>还有一个<code>ContextMenu</code>的特性，用法类似。</p>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="built_in">string</span> Name;</span><br><span class="line"></span><br><span class="line">[<span class="meta">ContextMenu(<span class="meta-string">&quot;Reset Name&quot;</span>)</span>]</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">ResetName</span>(<span class="params"></span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    Name = <span class="string">&quot;&quot;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><img src="pics/unity_plugin_003.png"></p>
+<p><img src="pics/unity_plugin_003.png" alt=""></p>
 <h3 id="2-4-ColorUsage"><a href="#2-4-ColorUsage" class="headerlink" title="2.4. ColorUsage"></a>2.4. ColorUsage</h3><p>设置颜色选择器。</p>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Color color1;</span><br><span class="line"></span><br><span class="line">[<span class="meta">ColorUsage(false)</span>]</span><br><span class="line"><span class="keyword">public</span> Color color2;        <span class="comment">// 没有alpha</span></span><br><span class="line"></span><br><span class="line">[<span class="meta">ColorUsage(true, true, 0, 8, 0.125f, 3)</span>]</span><br><span class="line"><span class="keyword">public</span> Color color3;        <span class="comment">// HDR</span></span><br></pre></td></tr></table></figure>
     </div>
@@ -356,7 +345,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-count">30</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -443,6 +432,8 @@
 
 
 
+
+  
 
   
 

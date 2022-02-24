@@ -150,6 +150,134 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/23/320-q_rsqrt/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ron的BLOG">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/23/320-q_rsqrt/" class="post-title-link" itemprop="url">解读快速反平方根算法</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-02-23 23:28:01" itemprop="dateCreated datePublished" datetime="2022-02-23T23:28:01+08:00">2022-02-23</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="1-涉及知识"><a href="#1-涉及知识" class="headerlink" title="-1. 涉及知识"></a>-1. 涉及知识</h2><ol>
+<li>float单精度的内存表示方式；</li>
+<li>对数和指数；</li>
+<li>牛顿方法/牛顿迭代。</li>
+</ol>
+<h2 id="0-背景"><a href="#0-背景" class="headerlink" title="0. 背景"></a>0. 背景</h2><script type="math/tex; mode=display">
+\hat{x}_{k}=\hat{x}_{k}^{-}+K_{t}\left(y_{k}\right)</script><script type="math/tex; mode=display">\begin{equation} \label{eq2}
+\begin{aligned}
+a &= b + c \\
+  &= d + e + f + g \\
+  &= h + i
+\end{aligned}
+\end{equation}</script><p>在标准化向量计算的时候，会频繁使用。譬如计算A点到B点的方向，需要计算标准化向量。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">float</span> len = <span class="built_in">sqrt</span>(x^<span class="number">2</span> + y^<span class="number">2</span> + z^<span class="number">2</span>);</span><br><span class="line"><span class="keyword">float</span> x_nor = x/len;</span><br><span class="line"><span class="keyword">float</span> y_nor = y/len;</span><br><span class="line"><span class="keyword">float</span> z_nor = z/len;</span><br></pre></td></tr></table></figure>
+<script type="math/tex; mode=display">
+x\_nor = x * 1/\sqrt{x^2 +y^2 + z^2}</script><h2 id="1-计算下真实的-1-sqrt-5-？答案为：0-44721359"><a href="#1-计算下真实的-1-sqrt-5-？答案为：0-44721359" class="headerlink" title="1. 计算下真实的 $1/\sqrt{5}$ = ？答案为：0.44721359"></a>1. 计算下真实的 $1/\sqrt{5}$ = ？答案为：0.44721359</h2><h2 id="2-代码计算过程"><a href="#2-代码计算过程" class="headerlink" title="2. 代码计算过程"></a>2. 代码计算过程</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 快速反平方根</span></span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">Q_rsqrt</span><span class="params">( <span class="keyword">float</span> number )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">long</span> i;</span><br><span class="line">    <span class="keyword">float</span> x2, y;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">float</span> threehalfs = <span class="number">1.5F</span>;</span><br><span class="line"></span><br><span class="line">    x2 = number * <span class="number">0.5F</span>;</span><br><span class="line">    y = number;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;number为 = %f\n&quot;</span>, y);</span><br><span class="line">    i = * ( <span class="keyword">long</span> * ) &amp;y;         <span class="comment">// evil floating point bit hack</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;转换为long = %d\n&quot;</span>, i);</span><br><span class="line">    i = <span class="number">0x5f3759df</span> - ( i &gt;&gt; <span class="number">1</span> ); <span class="comment">// what the fuck?</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;long的结果 = %d\n&quot;</span>, i);</span><br><span class="line">    y = * ( <span class="keyword">float</span> * ) &amp;i;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;转换为float = %f\n&quot;</span>, y);</span><br><span class="line">    y = y * ( threehalfs - ( x2 * y * y ));  <span class="comment">// 1st iteration</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Netown 迭代1次 = %f\n&quot;</span>, y);</span><br><span class="line">    y = y * ( threehalfs - ( x2 * y * y ));  <span class="comment">// 2nd iteration, can be removed</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Netown 迭代2次 = %f\n&quot;</span>, y);</span><br><span class="line">    <span class="keyword">return</span> y;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//number为       = 5.000000</span></span><br><span class="line"><span class="comment">//转换为long     = 1084227584</span></span><br><span class="line"><span class="comment">//long的结果     = 1055349215</span></span><br><span class="line"><span class="comment">//转换为float    = 0.451858</span></span><br><span class="line"><span class="comment">//Netown 迭代1次 = 0.447141</span></span><br><span class="line"><span class="comment">//Netown 迭代2次 = 0.447214</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//number = 5.000000, ret = 0.447214</span></span><br></pre></td></tr></table></figure>
+<p>可以发现代码计算的结果 0.447214 与真实结果 0.44721359 非常接近，小数点前五位都是一致的。</p>
+<h2 id="3-步骤说明"><a href="#3-步骤说明" class="headerlink" title="3. 步骤说明"></a>3. 步骤说明</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 快速反平方根</span></span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">Q_rsqrt</span><span class="params">( <span class="keyword">float</span> number )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">long</span> i;</span><br><span class="line">    <span class="keyword">float</span> x2, y;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">float</span> threehalfs = <span class="number">1.5F</span>;</span><br><span class="line"></span><br><span class="line">    x2 = number * <span class="number">0.5F</span>;</span><br><span class="line">    y = number;</span><br><span class="line">    i = * ( <span class="keyword">long</span> * ) &amp;y;                     <span class="comment">//step 1, evil floating point bit hack</span></span><br><span class="line">    i = <span class="number">0x5f3759df</span> - ( i &gt;&gt; <span class="number">1</span> );             <span class="comment">//step 2, what the fuck?</span></span><br><span class="line">    y = * ( <span class="keyword">float</span> * ) &amp;i;                    <span class="comment">//step 3,</span></span><br><span class="line">    y = y * ( threehalfs - ( x2 * y * y ));  <span class="comment">//step4, 1st iteration</span></span><br><span class="line">    y = y * ( threehalfs - ( x2 * y * y ));        <span class="comment">// 2nd iteration, can be removed</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3-1-第1步：讲number的地址转成long类型地址，并取long类型的值"><a href="#3-1-第1步：讲number的地址转成long类型地址，并取long类型的值" class="headerlink" title="3.1. 第1步：讲number的地址转成long类型地址，并取long类型的值"></a>3.1. 第1步：讲number的地址转成long类型地址，并取long类型的值</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">i = * ( <span class="keyword">long</span> * ) &amp;y;</span><br><span class="line"><span class="comment">// 让i生成与y一样的内容，但是i是 long类型，y是float</span></span><br><span class="line"><span class="comment">// 不能使用强制类型转换，因为强制类型转换会丢失bit信息</span></span><br><span class="line"><span class="comment">// 此处目的是对float类型的number进行位运算，而float是不能进行位运行的，所以需要转换为long</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// &amp;y 获取到y的地址</span></span><br><span class="line"><span class="comment">// ( long * ) &amp;y 然后将float的地址转换为 long的地址</span></span><br><span class="line"><span class="comment">// * ( long * ) &amp;y 然后获取地址上的数值</span></span><br></pre></td></tr></table></figure>
+<h3 id="3-2-第2步：计算出反平方根的值（long类型下）"><a href="#3-2-第2步：计算出反平方根的值（long类型下）" class="headerlink" title="3.2. 第2步：计算出反平方根的值（long类型下）"></a>3.2. 第2步：计算出反平方根的值（long类型下）</h3><p>此处只有一句代码 <code>i = 0x5f3759df - ( i &gt;&gt; 1 )</code> 但是这里非常复杂。这里得到的最终结果是 <code>Ly=(3/2)*2^23*(127-μ) - 1/2*Lx</code> (Lx是原来的i，Ly是计算结果，结果重新赋值给了i）。<br>这里μ为 <code>0.04505</code> ，所以最终结果为 <code>(3/2)*2^23*(127-μ) - 1/2*Lx</code> 既 <code>Ly = 0x5f3759df - (Lx &gt;&gt;1)</code></p>
+<p>关于此处的解释，后面举例具体来说明。</p>
+<p>F与L之间的转换关系为：log2(F)=(2^-23)*L + μ - 127</p>
+<script type="math/tex; mode=display">
+log_2(F) = 2^{-23} * L + μ - 127</script><h3 id="3-3-第3步：重新回为浮点数"><a href="#3-3-第3步：重新回为浮点数" class="headerlink" title="3.3. 第3步：重新回为浮点数"></a>3.3. 第3步：重新回为浮点数</h3><h3 id="3-4-第4步：使用牛顿迭代法提高精度"><a href="#3-4-第4步：使用牛顿迭代法提高精度" class="headerlink" title="3.4. 第4步：使用牛顿迭代法提高精度"></a>3.4. 第4步：使用牛顿迭代法提高精度</h3><p>牛顿迭代是可以提高精度，前面得到了一个靠近的数值，但是由于μ的存在，是存在误差的，这里可以使用牛顿迭代法求到更具体的数值。</p>
+<p>牛顿迭代法的公式是：</p>
+<script type="math/tex; mode=display">
+x_{n+1} = x_n - \frac{f(x_n)}{f^{'}(x_n)}</script><p>这里的f(x)是 $f(x) = \frac{1}{x^2}-a$，其导数函数是$f^{‘}(x)=\frac{-2}{x^{-3}}$，把函数和导函数代入牛顿迭代法公式：</p>
+<script type="math/tex; mode=display">
+y_{n+1} = y_n - \frac{f(y_n)}{f^{'}(y_n)}=y_n - \frac{\frac{1}{y^2}-a}{\frac{-2}{y^{-3}}}=y_n(1.5-\frac{ay_n^2}{2})</script><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">y = y * ( threehalfs - ( x2 * y * y ));    <span class="comment">// 1st iteration</span></span><br><span class="line"><span class="comment">// 代入值下</span></span><br><span class="line">y = y * ( <span class="number">1.5F</span>- ( <span class="number">0.5F</span> * number * y * y ));   <span class="comment">// 1st iteration</span></span><br></pre></td></tr></table></figure>
+<h2 id="4-举例来说："><a href="#4-举例来说：" class="headerlink" title="4. 举例来说："></a>4. 举例来说：</h2><p>number = 5.0F</p>
+<p>float的二进制表示为</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">单精度的<span class="keyword">float</span>，有<span class="number">32b</span>it，</span><br><span class="line">第<span class="number">1</span>位位符号位，</span><br><span class="line">第<span class="number">2</span>~<span class="number">9</span>位为指数，表示为E</span><br><span class="line">最后<span class="number">23</span>位为尾数，表示为M</span><br><span class="line"></span><br><span class="line"><span class="number">1b</span>it     <span class="number">8b</span>it       <span class="number">23b</span>it</span><br><span class="line">符号位S  指数E       尾数M</span><br><span class="line"><span class="number">0</span>       <span class="number">10000001</span>   <span class="number">01000000000000000000000</span>  <span class="comment">// 表示为float的时候，值为5.0F</span></span><br><span class="line"><span class="number">0</span>       <span class="number">10000001</span>   <span class="number">01000000000000000000000</span>  <span class="comment">// 表示为long 的时候，值为1084227584</span></span><br></pre></td></tr></table></figure>
+<p>同样的一个32位的地址，可以解读成单精度的float，也可以解读成long类型的整型，下面是公式（F表示float类型的值，L表示long类型的值）：</p>
+<script type="math/tex; mode=display">
+F = (-1)^S · 2^{E-127} · (1 + 2^{-23}M)</script><script type="math/tex; mode=display">
+L = 2^{23} · E + M</script><p>根据上面两个公式，我们可以得到 <code>float</code>类型的值F，与 <code>long</code>类型的值L之间的关系如下(μ=0.04505）：</p>
+<script type="math/tex; mode=display">
+log_2F=(2^{-23})·L + μ - 127</script><p>我们再把我们想要的内容答案 X = 1/sqrt(number) 代进去。（如下，Fy是我们想要的值）</p>
+<script type="math/tex; mode=display">
+F_y = 1/\sqrt{F_x}</script><p>两边取以2为底的对数，等式是成立的</p>
+<script type="math/tex; mode=display">
+log_2F_y = log_2(1/\sqrt{F_x})\\log_2F_y = -\frac{1}{2}log_2F_x\\</script><p>获取到了上面的公式之后，可以利用 <code>float</code>类型的F与 <code>long</code>类型L的关系，把F换成L</p>
+<script type="math/tex; mode=display">
+\begin{array}{c}
+log_2F_y = -\frac{1}{2}log_2F_x \\ \\
+\because {\color{Red} log_2F=2^{-23}·L + μ - 127 } \\ \\
+\therefore {\color{Red} 2^{-23}·L_y + μ - 127 }  = -\frac{1}{2}{\color{Red} (2^{-23}·Lx + μ - 127)} \\ \\
+最终我们可以得到： \\ \\
+L_y=\frac{3}{2}·2^{23}·(127-μ) - \frac{1}{2}·L_x \\ \\
+把μ代进去算一下 \\ \\
+L_y=\frac{3}{2}·2^{23}·(127-0.04505) - \frac{1}{2}·L_x = 0x5f3759df - \frac{1}{2}·L_x \\ \\
+\frac{1}{2}·L_x也可以转化为右移操作 \\ \\
+{\color{Green} L_y=0x5f3759df - (L_x >> 1) }
+\end{array}</script><p>至此，我们得到了代码中第2步的来由。</p>
+<p>然后我们将 <code>long</code> 类型的Ly的结果，转成 <code>float</code> 类型，就能得到我们初步的答案。</p>
+<h3 id="验证一下："><a href="#验证一下：" class="headerlink" title="验证一下："></a>验证一下：</h3><p>现在，F = 0.5, L= 1084227584 的情况下，log2(F)=(2^-23)*L + μ - 127 是否成立</p>
+<p>log2(F) = 2.3219280949</p>
+<p>(2^-23)<em>L + μ - 127 = (2^-23)</em>L + 0.04505 - 127 = 2.29505</p>
+<p>此处答案接近。</p>
+<p>代入最终计算公式：</p>
+<p>Ly=(3/2)<em>2^23</em>(127-μ) - 1/2*Lx</p>
+<p>= (3/2)<em>2^23</em>(127-0.04505) - 1/2*1084227584</p>
+<p>= 1055349171</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1b</span>it     <span class="number">8b</span>it       <span class="number">23b</span>it</span><br><span class="line">符号位S  指数E       尾数M</span><br><span class="line"><span class="number">0</span>       <span class="number">10000001</span>   <span class="number">01000000000000000000000</span></span><br><span class="line"><span class="number">0</span>       <span class="number">01111101</span>   <span class="number">11001110101100110110011</span></span><br></pre></td></tr></table></figure>
+<p>将Ly转为Fy = 0.45185623</p>
+<p>牛顿迭代一次：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">y = y * ( threehalfs - ( x2 * y * y ))</span><br></pre></td></tr></table></figure>
+<p>y1 = y <em> ( 1.5- ( 0.5</em>5 <em> y </em> y ))<br>= 0.45185623 <em> ( 1.5- ( 0.5</em>5 <em> 0.45185623 </em> 0.45185623 ))<br>= 0.44714105083</p>
+<hr>
+<p>一些在线二进制转换的工具：</p>
+<p>浮点数表示：<br><a target="_blank" rel="noopener" href="https://tooltt.com/ieee/">https://tooltt.com/ieee/</a><br><a target="_blank" rel="noopener" href="https://tooltt.com/floatconverter/">https://tooltt.com/floatconverter/</a><br>进制转换：<br> <a target="_blank" rel="noopener" href="https://www.sojson.com/hexconvert.html">https://www.sojson.com/hexconvert.html</a><br>LaTeX公式编辑器：<br><a target="_blank" rel="noopener" href="https://www.latexlive.com/">https://www.latexlive.com/</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/13/855-sublime_for_lua/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -269,9 +397,7 @@
           <p>游戏里面的AI实现一般是状态机或者行为树。</p>
 <h3 id="状态机"><a href="#状态机" class="headerlink" title="状态机"></a>状态机</h3><p>状态机很好理解，就是AI会处于某一状态中，在不同条件下会进行切换，让AI处于正确的状态中。例如，一个怪物，有闲逛、战斗、逃跑三个状态。在没有遇到目标的时候，是处于【闲逛】状态，遇到了敌人，切换进入【战斗】状态；当血量低于5%或者远离出生点，进入【逃跑】状态。</p>
 <img  src=http://www.plantuml.com/plantuml/svg/oq_AIaqkKSXCoKdbuig7SD8oqpDAO9pKukJ40g0SI8M2dfuTH5R1Ik5bO_lJZWtFflOysRMB2o88aWQhir9ukcJZqxxTpsUlUxQW7KaMOXfG_iN2XfVj_K-Nh7gojuyBAegiVVOyeE5FstSzdpB_UTDEP1Lm-nkQNsoV2BJdnPQb0000>
-
 <h3 id="行为树"><a href="#行为树" class="headerlink" title="行为树"></a>行为树</h3><img  src=http://www.plantuml.com/plantuml/svg/qoZApo_HLD3LjLFGA4xDIKqkoI_Iv48m8JAfnSc91QcQ2bOAB_RFURvizzFsNS-dp7_Uj1D3PMPA3bZTiqqBdytfV3vxtRC5xHYAqZBJCqf0gb8hIbBpKee1>
-
 <p>行为树的执行就是从上到下，从左导游遍历整个树。每个节点执行之后都会返回true或者false，之后往上返回。不同节点遇到返回的结果执行方式不太一样。可能是往父节点返回，也可能是执行下一个子节点。具体结果要根据子节点的返回结果跟自身节点类型决定。<br>第一个节点是根节点，叶子是具体的操作行为，而中间节点是用来控制执行的顺序的。</p>
 <h4 id="组合节点"><a href="#组合节点" class="headerlink" title="组合节点"></a>组合节点</h4><ul>
 <li>Sequence 节点<ul>
@@ -400,7 +526,6 @@
 <li>弱态符合，用W表示，虽然在库中被定义，但是可能被其他库中的同名符合覆盖。</li>
 </ul>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nm libtest.h</span><br></pre></td></tr></table></figure>
-
 <h3 id="ldd-命令"><a href="#ldd-命令" class="headerlink" title="ldd 命令"></a>ldd 命令</h3><p>ldd命令可以查看一个可执行程序依赖的共享库。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ldd libtest.so</span><br></pre></td></tr></table></figure>
       
@@ -581,7 +706,6 @@
 <li>第二个线程则是执行 func函数，正常返回后，检查is_wait 如果为false，结束；否则wakeup原本协程。</li>
 </ul>
 <figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> Skynet = <span class="built_in">require</span> <span class="string">&quot;skynet&quot;</span></span><br><span class="line"><span class="keyword">local</span> M = &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">local</span> STATUS_SUCC = <span class="number">0</span></span><br><span class="line"><span class="keyword">local</span> STATUS_TIMEOUT = <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">M.do_func_or_timeout</span><span class="params">(msec, func, ...)</span></span></span><br><span class="line">    <span class="keyword">local</span> args = ...</span><br><span class="line">    <span class="keyword">local</span> ctx = &#123;</span><br><span class="line">        is_wait = <span class="literal">true</span>,</span><br><span class="line">        corout  = <span class="built_in">coroutine</span>.<span class="built_in">running</span>(),</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Skynet.fork(<span class="function"><span class="keyword">function</span><span class="params">()</span></span></span><br><span class="line">        Skynet.sleep(msec)  <span class="comment">-- 超时等待msec 1/00秒</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> ctx.is_wait <span class="keyword">then</span></span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">        ctx.is_wait = <span class="literal">false</span></span><br><span class="line">        ctx.<span class="built_in">status</span> = STATUS_TIMEOUT</span><br><span class="line">        Skynet.wakeup(ctx.corout)</span><br><span class="line">    <span class="keyword">end</span>)</span><br><span class="line"></span><br><span class="line">    Skynet.fork(<span class="function"><span class="keyword">function</span><span class="params">()</span></span></span><br><span class="line">        <span class="keyword">local</span> <span class="built_in">status</span> = STATUS_SUCC</span><br><span class="line">        <span class="keyword">local</span> ret = func(args)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> ctx.is_wait <span class="keyword">then</span></span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">        ctx.is_wait = <span class="literal">false</span></span><br><span class="line">        ctx.<span class="built_in">status</span>  = <span class="built_in">status</span></span><br><span class="line">        ctx.ret     = ret</span><br><span class="line"></span><br><span class="line">        Skynet.wakeup(ctx.corout)</span><br><span class="line">    <span class="keyword">end</span>)</span><br><span class="line">    Skynet.wait()</span><br><span class="line">    <span class="keyword">return</span> ctx.<span class="built_in">status</span>, ctx.ret</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;== start test ==&quot;</span>, Skynet.<span class="built_in">time</span>())</span><br><span class="line"><span class="keyword">local</span> <span class="built_in">status</span>, ret = M.do_func_or_timeout(<span class="number">200</span>, <span class="function"><span class="keyword">function</span><span class="params">()</span></span></span><br><span class="line">    Skynet.sleep(<span class="number">300</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;ok&quot;</span></span><br><span class="line"><span class="keyword">end</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;== status ret 1 ==&quot;</span>, Skynet.<span class="built_in">time</span>(), <span class="built_in">status</span>, ret)</span><br><span class="line"></span><br><span class="line"><span class="keyword">local</span> <span class="built_in">status</span>, ret = M.do_func_or_timeout(<span class="number">600</span>, <span class="function"><span class="keyword">function</span><span class="params">()</span></span></span><br><span class="line">    Skynet.sleep(<span class="number">300</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;ok&quot;</span></span><br><span class="line"><span class="keyword">end</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;== status ret 2 ==&quot;</span>, Skynet.<span class="built_in">time</span>(), <span class="built_in">status</span>, ret)</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> M</span><br></pre></td></tr></table></figure>
-
 <p>输出：</p>
 <figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">== start test ==        <span class="number">1631807810.97</span></span><br><span class="line">== <span class="built_in">status</span> ret <span class="number">1</span> ==      <span class="number">1631807812.97</span>   <span class="number">1</span>       <span class="literal">nil</span></span><br><span class="line">== <span class="built_in">status</span> ret <span class="number">2</span> ==      <span class="number">1631807815.97</span>   <span class="number">0</span>       ok</span><br></pre></td></tr></table></figure>
       
@@ -650,7 +774,6 @@
 </ul>
 <h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><h3 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h3><p>所有数据都挂在场景内，此处称为area。area内包含了场景范围，对象列表，格子列表。new_area 接口也就是创建场景数据结构。</p>
 <figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> tb_area = &#123;</span><br><span class="line">        min_x = args.min_x,  <span class="comment">-- 场景范围</span></span><br><span class="line">        min_y = args.min_y,</span><br><span class="line">        max_x = args.max_x,</span><br><span class="line">        max_y = args.max_y,</span><br><span class="line"></span><br><span class="line">        grid_x    = grid_x,  <span class="comment">-- x轴有几段</span></span><br><span class="line">        grid_y    = grid_y,  <span class="comment">-- y轴有几段</span></span><br><span class="line"></span><br><span class="line">        grid_max  = grid_max,  <span class="comment">-- 总格子数量</span></span><br><span class="line">        grid_size = grid_size, <span class="comment">-- 格子长度</span></span><br><span class="line"></span><br><span class="line">        map_actor = &#123;&#125;,  <span class="comment">-- 对象列表</span></span><br><span class="line">        lst_grid  = &#123;&#125;,  <span class="comment">-- 格子</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
 <h3 id="进入场景和移动"><a href="#进入场景和移动" class="headerlink" title="进入场景和移动"></a>进入场景和移动</h3><p>进入场景非常简单，根据坐标计算出目标格子，然后分别加入 map_actor 列表和 lst_grid 列表即可。</p>
 <p>场景内移动分2种情况：</p>
 <p>第一种在格子内移动，这种情况，aoi没有变化。</p>
@@ -721,7 +844,6 @@
 <li>CallInfo 用于记录函数调用信息：作用的栈区间，返回数量，调用链表。</li>
 </ul>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">union</span> <span class="title">lua_Value</span> &#123;</span></span><br><span class="line">    <span class="keyword">void</span> * p;            <span class="comment">// LUA_TLIGHTUSERDATA</span></span><br><span class="line">    <span class="keyword">int</span> b;               <span class="comment">// bool</span></span><br><span class="line">    lua_Integer i;       <span class="comment">// integer</span></span><br><span class="line">    lua_Number n;        <span class="comment">// number</span></span><br><span class="line">    lua_CFunction f;     <span class="comment">// function</span></span><br><span class="line">&#125; Value;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">lua_TValue</span> &#123;</span></span><br><span class="line">    Value value_;</span><br><span class="line">    <span class="keyword">int</span> tt_;</span><br><span class="line">&#125; TValue;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> TValue* StkId;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">CallInfo</span> &#123;</span></span><br><span class="line">    StkId func;                <span class="comment">// 被调用函数在栈中的位置</span></span><br><span class="line">    StkId top;                 <span class="comment">// 被调用函数的栈顶位置</span></span><br><span class="line">    <span class="keyword">int</span> nresult;               <span class="comment">// 又多少个返回值</span></span><br><span class="line">    <span class="keyword">int</span> callstatus;            <span class="comment">// 调用状态</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">CallInfo</span>* <span class="title">next</span>;</span>     <span class="comment">// 下一个调用</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">CallInfo</span>* <span class="title">previous</span>;</span> <span class="comment">// 上一个调用</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">lua_State</span> &#123;</span></span><br><span class="line">    StkId <span class="built_in">stack</span>;                  <span class="comment">// 栈</span></span><br><span class="line">    StkId stack_last;             <span class="comment">// 从这里开始，栈不能被使用</span></span><br><span class="line">    StkId top;                    <span class="comment">// 栈顶</span></span><br><span class="line">    <span class="keyword">int</span> stack_size;               <span class="comment">// 大小</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">lua_longjmp</span> * <span class="title">errorjmp</span>;</span></span><br><span class="line">    <span class="keyword">int</span> status;                    <span class="comment">// 状态</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">lua_State</span> * <span class="title">next</span>;</span>       <span class="comment">// 下一个lua_State，通常创建协程时会产生</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">lua_State</span> * <span class="title">previous</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">CallInfo</span> <span class="title">base_ci</span>;</span>       <span class="comment">// 和lua_State生命周期一致的函数调用信息</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">CallInfo</span>* <span class="title">ci</span>;</span>           <span class="comment">// 当前运作的CallInfo</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">global_State</span>* <span class="title">l_G</span>;</span>      <span class="comment">// global_state指针</span></span><br><span class="line">    <span class="keyword">ptrdiff_t</span> errorfunc;           <span class="comment">// 错误函数位于栈的那个位置</span></span><br><span class="line">    <span class="keyword">int</span> ncalls;                    <span class="comment">// 进行了多少次函数调用</span></span><br><span class="line">&#125; lua_State;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
 <h3 id="主要操作"><a href="#主要操作" class="headerlink" title="主要操作"></a>主要操作</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// lua_State的创建和销毁</span></span><br><span class="line"><span class="function">struct lua_State* <span class="title">lua_newstate</span><span class="params">(lua_Alloc alloc, <span class="keyword">void</span>* ud)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">lua_close</span><span class="params">(struct lua_State* L)</span></span>;</span><br><span class="line"><span class="comment">// 入栈</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">increase_top</span><span class="params">(struct lua_State* L)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">lua_pushinteger</span><span class="params">(struct lua_State* L, <span class="keyword">int</span> integer)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 出栈</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">lua_settop</span><span class="params">(struct lua_State* L, <span class="keyword">int</span> idx)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">lua_gettop</span><span class="params">(struct lua_State* L)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">lua_pop</span><span class="params">(struct lua_State* L)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 取栈上的值</span></span><br><span class="line"><span class="function">lua_Integer <span class="title">lua_tointegerx</span><span class="params">(struct lua_State* L, <span class="keyword">int</span> idx, <span class="keyword">int</span>* isnum)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建新的函数对象CallInfo</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> struct CallInfo* <span class="title">next_ci</span><span class="params">(struct lua_State* L, StkId func, <span class="keyword">int</span> nresult)</span></span>;</span><br></pre></td></tr></table></figure>
       
     </div>
@@ -781,7 +903,6 @@
       
           <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>在项目使用中，出现了以下报错：</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Error Code: <span class="number">1118</span> <span class="operator">-</span> <span class="type">Row</span> size too <span class="keyword">large</span> (<span class="operator">&gt;</span> <span class="number">8126</span>).</span><br><span class="line">Changing <span class="keyword">some</span> columns <span class="keyword">to</span> TEXT <span class="keyword">or</span> <span class="type">BLOB</span> <span class="keyword">or</span> <span class="keyword">using</span> ROW_FORMAT<span class="operator">=</span><span class="keyword">DYNAMIC</span> <span class="keyword">or</span> ROW_FORMAT<span class="operator">=</span>COMPRESSED may help.</span><br><span class="line"><span class="keyword">In</span> <span class="keyword">current</span> <span class="type">row</span> format, <span class="type">BLOB</span> prefix <span class="keyword">of</span> <span class="number">768</span> bytes <span class="keyword">is</span> stored inline.</span><br></pre></td></tr></table></figure>
-
 <p>上面报错，这就涉及到了row size的上限，也有可能会涉及到file format的设置。</p>
 <h2 id="一些上限"><a href="#一些上限" class="headerlink" title="一些上限"></a>一些上限</h2><ul>
 <li>创建表报错：maximum row size &gt; 65535</li>
@@ -793,14 +914,10 @@
 <h3 id="Antelope模式"><a href="#Antelope模式" class="headerlink" title="Antelope模式"></a>Antelope模式</h3><p>在MySQL 5.6之前的版本，默认file format是Antelope。<br>意思是，对于varchar和text字段，会将内容的前768字段放置在index record中，后面再接20个字节的指针。<br>剩下内容会放置在BLOB page中。</p>
 <p>假设有11个text字段，每个字段都是1000字节。那么在插入数据的时候，row size = （768+20）* 11 = 8668 &gt; 8126，将会触发<code>row size too larget &gt; 8126</code>报错。<br>如果使用Antelope模式，不建议使用超过10个text或varchar字段。</p>
 <h3 id="Barracuda模式"><a href="#Barracuda模式" class="headerlink" title="Barracuda模式"></a>Barracuda模式</h3><p>Barracude会将所有数据放在BLOB page中，在index record里面只放20个字节的指针。</p>
-<h3 id="设置切换"><a href="#设置切换" class="headerlink" title="设置切换"></a>设置切换</h3><p>查询File format设置：</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">show</span> variables <span class="keyword">like</span> &quot;%innodb_file%&quot;;</span><br></pre></td></tr></table></figure>
-<p>my.cnf 设置</p>
+<h3 id="设置切换"><a href="#设置切换" class="headerlink" title="设置切换"></a>设置切换</h3><p>查询File format设置：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">show</span> variables <span class="keyword">like</span> &quot;%innodb_file%&quot;;</span><br></pre></td></tr></table></figure><br>my.cnf 设置</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">innodb_file_format = Barracuda #</span><br><span class="line">innodb_file_per_table = 1</span><br><span class="line">innodb_large_prefix = 1</span><br></pre></td></tr></table></figure>
-
 <h2 id="Row-format"><a href="#Row-format" class="headerlink" title="Row format"></a>Row format</h2><p>innodb引擎的行格式（row format）有两种。分别是compact和dynamic/compressed。</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> test ROW_FORMAT<span class="operator">=</span>COMPRESSED;</span><br><span class="line"></span><br><span class="line"><span class="keyword">SHOW</span> <span class="keyword">TABLE</span> STATUS <span class="keyword">IN</span> test_db;</span><br></pre></td></tr></table></figure>
-
 <p>这里还是之说Antelope模式下使用text的问题。普通的数值类型，其实很难超8126的长度限制，就不说了。在Antelope模式下，text字段的前768会存储在index record中，会占用row size的768+2个字节。所以text/varchar字段不能太多。除非确定不会太长。</p>
 <hr>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"># 验证测试的<span class="keyword">sql</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> text2</span><br><span class="line">  (</span><br><span class="line">   text1   longtext,</span><br><span class="line">   text2   longtext,</span><br><span class="line">   text3   longtext,</span><br><span class="line">   text4   longtext,</span><br><span class="line">   text5   longtext,</span><br><span class="line">   text6   longtext,</span><br><span class="line">   text7   longtext,</span><br><span class="line">   text8   longtext,</span><br><span class="line">   text9   longtext,</span><br><span class="line">   text10  longtext,</span><br><span class="line">   text11  longtext</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>ascii;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> text2 <span class="keyword">values</span>(</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>)</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> text2 <span class="keyword">values</span>(</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">197</span>)    # repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">198</span>) error</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">--------</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> text3</span><br><span class="line">  (</span><br><span class="line">   text1   longtext,</span><br><span class="line">   text2   longtext,</span><br><span class="line">   text3   longtext,</span><br><span class="line">   text4   longtext,</span><br><span class="line">   text5   longtext,</span><br><span class="line">   text6   longtext,</span><br><span class="line">   text7   longtext,</span><br><span class="line">   text8   longtext,</span><br><span class="line">   text9   longtext,</span><br><span class="line">   text10  longtext,</span><br><span class="line">   text11  longtext</span><br><span class="line">) ENGINE<span class="operator">=</span>INNODB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>ascii ROW_FORMAT<span class="operator">=</span>COMPRESSED;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> text3 <span class="keyword">values</span>(</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>)</span><br><span class="line">);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
@@ -861,12 +978,9 @@
 
       
           <h2 id="1-插件扩展"><a href="#1-插件扩展" class="headerlink" title="1. 插件扩展"></a>1. 插件扩展</h2><h3 id="1-1-命名空间"><a href="#1-1-命名空间" class="headerlink" title="1.1. 命名空间"></a>1.1. 命名空间</h3><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> UnityEditor;</span><br><span class="line"><span class="keyword">using</span> UnityEngine;    <span class="comment">//非必需，常用到</span></span><br></pre></td></tr></table></figure>
-
 <h3 id="1-2-使用语法"><a href="#1-2-使用语法" class="headerlink" title="1.2. 使用语法"></a>1.2. 使用语法</h3><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">MenuItem(<span class="meta-string">&quot;Assets/My Test&quot;</span>)</span>]</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Test</span>(<span class="params"></span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    Debug.Log(<span class="string">&quot;Hello World!&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <p>语法说明</p>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">MenuItem(<span class="meta-string">&quot;path $t&quot;</span>, Is, Priority)</span>]</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Test1</span>(<span class="params"></span>)</span></span><br><span class="line">&#123;&#125;</span><br><span class="line"></span><br><span class="line">[<span class="meta">MenuItem(<span class="meta-string">&quot;path _t&quot;</span>, Is, Priority)</span>]</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Test2</span>(<span class="params"></span>)</span></span><br><span class="line">&#123;&#125;</span><br></pre></td></tr></table></figure>
-
 <ul>
 <li>path 是菜单路径；<ul>
 <li>一级菜单名称不支持中文</li>
@@ -883,253 +997,34 @@
 </ul>
 <p>下面表示快捷键为”ctrl+h” 的实例。</p>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">MenuItem(<span class="meta-string">&quot;Assets/My Test %h&quot;</span>)</span>]</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Test</span>(<span class="params"></span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    Debug.Log(<span class="string">&quot;Hello World!&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <h3 id="1-3-Selection类"><a href="#1-3-Selection类" class="headerlink" title="1.3. Selection类"></a>1.3. Selection类</h3><p><a target="_blank" rel="noopener" href="https://docs.unity3d.com/ScriptReference/Selection.html">https://docs.unity3d.com/ScriptReference/Selection.html</a></p>
 <h4 id="1-3-1-获取选中物体"><a href="#1-3-1-获取选中物体" class="headerlink" title="1.3.1. 获取选中物体"></a>1.3.1. 获取选中物体</h4><p><code>Selection.Objects</code>可以获得选中的物品。</p>
 <h4 id="1-3-2-获取选中目录"><a href="#1-3-2-获取选中目录" class="headerlink" title="1.3.2. 获取选中目录"></a>1.3.2. 获取选中目录</h4><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">string</span>[] guids = Selection.assetGUIDs;</span><br><span class="line"><span class="keyword">foreach</span> ( <span class="keyword">var</span> id <span class="keyword">in</span> guids )</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">string</span> path = AssetDatabase.GUIDToAssetPath(id);</span><br><span class="line">    <span class="keyword">if</span>(Directory.Exists(path))</span><br><span class="line">    &#123;</span><br><span class="line">        Debug.Log(<span class="built_in">string</span>.format(<span class="string">&quot;Directory &#123;0&#125; exist&quot;</span>, path))</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
 <h3 id="1-4-给控件添加右上角齿轮菜单增加功能"><a href="#1-4-给控件添加右上角齿轮菜单增加功能" class="headerlink" title="1.4. 给控件添加右上角齿轮菜单增加功能"></a>1.4. 给控件添加右上角齿轮菜单增加功能</h3><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">MenuItem(<span class="meta-string">&quot;CONTEXT/Rigidbody/wyg_test&quot;</span>)</span>]</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="title">TestRightButton</span>(<span class="params"></span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    Debug.Log(<span class="string">&quot;右键测试&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <ul>
 <li>CONTEXT 为固定写法；</li>
 <li>Rigidbody 是控件名称，可以修改为其他控件；</li>
 <li>我使用中文的时候不知道为什么没有显示出来。</li>
 </ul>
-<p><img src="pics/unity_plugin_001.png"></p>
+<p><img src="pics/unity_plugin_001.png" alt=""></p>
 <h3 id="1-5-弹窗"><a href="#1-5-弹窗" class="headerlink" title="1.5. 弹窗"></a>1.5. 弹窗</h3><p>编辑器的弹窗类需要继承<code>EditorWindow</code>。</p>
 <p>使用方法与GUI的使用方法基本一致，有Init，Awake，OnGUI等函数。</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">class TestWindow : EditorWindow</span><br><span class="line">&#123;</span><br><span class="line">    public void Init()</span><br><span class="line">    &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    publick void OnGUI()</span><br><span class="line">    &#123;</span><br><span class="line">        GUILayout.Label(&quot;Test Window&quot;);</span><br><span class="line">        if (GUILayout.Button(&quot;Button&quot;))</span><br><span class="line">        &#123;</span><br><span class="line">            Debug.Log(&quot;On Button&quot;)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <h2 id="2-组件属性展示"><a href="#2-组件属性展示" class="headerlink" title="2. 组件属性展示"></a>2. 组件属性展示</h2><p>以下效果都是组件的显示，所以是属于<code>using UnityEngine;</code>的。</p>
 <h3 id="2-1-Range"><a href="#2-1-Range" class="headerlink" title="2.1. Range"></a>2.1. Range</h3><p>可以将数值的展示效果变成滑动条效果。</p>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">Range(1, 12)</span>]</span><br><span class="line"><span class="keyword">public</span> <span class="built_in">int</span> month;</span><br></pre></td></tr></table></figure>
-
-<p><img src="pics/unity_plugin_004.png"></p>
+<p><img src="pics/unity_plugin_004.png" alt=""></p>
 <h3 id="2-2-Multiline-TextArea"><a href="#2-2-Multiline-TextArea" class="headerlink" title="2.2. Multiline/TextArea"></a>2.2. Multiline/TextArea</h3><p>控制占用多行显示。</p>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">Multiline(5)</span>]</span><br><span class="line"><span class="keyword">public</span> <span class="built_in">string</span> msg1;</span><br><span class="line"></span><br><span class="line">[<span class="meta">TextArea(3,5)</span>]</span><br><span class="line"><span class="keyword">public</span> <span class="built_in">string</span> msg2;     <span class="comment">// 最少显示三行，最多显示五行</span></span><br></pre></td></tr></table></figure>
-
-<p><img src="pics/unity_plugin_005.png"></p>
+<p><img src="pics/unity_plugin_005.png" alt=""></p>
 <h3 id="2-3-ContextMenuItem-ContextMenu"><a href="#2-3-ContextMenuItem-ContextMenu" class="headerlink" title="2.3. ContextMenuItem/ContextMenu"></a>2.3. ContextMenuItem/ContextMenu</h3><p>添加右键小菜单，添加一些小功能。</p>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">ContextMenuItem(<span class="meta-string">&quot;Random&quot;</span>, <span class="meta-string">&quot;RandomNumber&quot;</span>)</span>]</span><br><span class="line">[<span class="meta">ContextMenuItem(<span class="meta-string">&quot;Reset&quot;</span>, <span class="meta-string">&quot;ResetNumber&quot;</span>)</span>]</span><br><span class="line"><span class="keyword">public</span> <span class="built_in">int</span> number;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">RandomNumber</span>(<span class="params"></span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    number = Random.Range(<span class="number">0</span>, <span class="number">100</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">ResetNumber</span>(<span class="params"></span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    number = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><img src="pics/unity_plugin_002.png"></p>
+<p><img src="pics/unity_plugin_002.png" alt=""></p>
 <p>还有一个<code>ContextMenu</code>的特性，用法类似。</p>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="built_in">string</span> Name;</span><br><span class="line"></span><br><span class="line">[<span class="meta">ContextMenu(<span class="meta-string">&quot;Reset Name&quot;</span>)</span>]</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">ResetName</span>(<span class="params"></span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    Name = <span class="string">&quot;&quot;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><img src="pics/unity_plugin_003.png"></p>
+<p><img src="pics/unity_plugin_003.png" alt=""></p>
 <h3 id="2-4-ColorUsage"><a href="#2-4-ColorUsage" class="headerlink" title="2.4. ColorUsage"></a>2.4. ColorUsage</h3><p>设置颜色选择器。</p>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Color color1;</span><br><span class="line"></span><br><span class="line">[<span class="meta">ColorUsage(false)</span>]</span><br><span class="line"><span class="keyword">public</span> Color color2;        <span class="comment">// 没有alpha</span></span><br><span class="line"></span><br><span class="line">[<span class="meta">ColorUsage(true, true, 0, 8, 0.125f, 3)</span>]</span><br><span class="line"><span class="keyword">public</span> Color color3;        <span class="comment">// HDR</span></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2017/05/04/351-u3d_api/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ron的BLOG">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/05/04/351-u3d_api/" class="post-title-link" itemprop="url">[Unity]Unity常见API</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2017-05-04 14:06:44" itemprop="dateCreated datePublished" datetime="2017-05-04T14:06:44+08:00">2017-05-04</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="Unity常见API"><a href="#Unity常见API" class="headerlink" title="Unity常见API"></a>Unity常见API</h2><p>本文主要为了方便查阅</p>
-<h3 id="1-MonoBehaviour-生命周期"><a href="#1-MonoBehaviour-生命周期" class="headerlink" title="1. MonoBehaviour 生命周期"></a>1. MonoBehaviour 生命周期</h3><ul>
-<li>Awake 对象创建的时候调用，类似构造函数</li>
-<li>Start 在<code>Awake</code>之后执行，区别在于，如果组件不可用（在<code>Inspector</code>没有勾选该组件），是不会执行<code>Start</code>的</li>
-<li>Update 主函数循环每帧调用</li>
-<li>FixedUpdate 每次固定帧调用，在物理计算的时候，应该使用该方法，而不是<code>Update</code></li>
-<li>OnDestroy 对象销毁时调用</li>
-</ul>
-<h3 id="2-MonoBehaviour-常见回调函数"><a href="#2-MonoBehaviour-常见回调函数" class="headerlink" title="2. MonoBehaviour 常见回调函数"></a>2. MonoBehaviour 常见回调函数</h3><ul>
-<li>OnMouseEnter 鼠标移入GUI控件或者碰撞体时调用</li>
-<li>OnMouseOver 鼠标停留在GUI控件或者碰撞体时调用</li>
-<li>OnMouseExit 鼠标移出GUI控件或者碰撞体时调用</li>
-<li>OnMouseDown 鼠标在GUI控件或者碰撞体上按下时调用</li>
-<li>OnMouseUp 鼠标在GUI控件或者碰撞体上释放时调用</li>
-<li>OnTriggerEnter 当其他碰撞体进入触发器时调用</li>
-<li>OnTriggerExit 当其他碰撞体离开触发器时调用</li>
-<li>OnCollisionEnter 当碰撞体或者刚体与其他碰撞体或刚体接触时调用<ul>
-<li>OnCollisionEnter2D 其它2D函数类似</li>
-</ul>
-</li>
-<li>OnCollisionExit 当碰撞体或者刚体与其他碰撞体或刚体停止接触时调用</li>
-<li>OnCollisionStay 当碰撞体或者刚体与其他碰撞体或刚体保持接触时调用</li>
-<li>OnContollerColliderHit 当控制器移动时与碰撞体发生碰撞时调用</li>
-<li>OnBecameVisible 对于任意一个相机可见时调用</li>
-<li>OnBecameInVisible 对于任意一个相机不可见时调用</li>
-<li>OnEnable 对象启用或者激活时调用</li>
-<li>OnDisable 对象禁用或者取消激活时调用</li>
-<li>OnDestroy 脚本销毁时调用</li>
-<li>OnGUI 渲染GUI和处理GUI消息时调用</li>
-</ul>
-<h3 id="3-访问游戏对象"><a href="#3-访问游戏对象" class="headerlink" title="3. 访问游戏对象"></a>3. 访问游戏对象</h3><ul>
-<li>GameObject.Find 多个时返回第一个</li>
-<li>GameObject.FindWithTag 多个时返回第一个</li>
-<li>GameObject.FindGameObjectsWithTag 返回数组</li>
-</ul>
-<p>以上函数比较耗时，尽量避免在update函数中使用。</p>
-<h3 id="4-访问组件"><a href="#4-访问组件" class="headerlink" title="4. 访问组件"></a>4. 访问组件</h3><h4 id="4-1-常见组件"><a href="#4-1-常见组件" class="headerlink" title="4.1. 常见组件"></a>4.1. 常见组件</h4><ul>
-<li>Transform 位置、旋转、缩放</li>
-<li>Rigidbody 刚体</li>
-<li>Renderer 渲染物体模型</li>
-<li>Light 灯光属性</li>
-<li>Camera 相机属性</li>
-<li>Collider 碰撞体</li>
-<li>Animation 动画</li>
-<li>Audio 声音</li>
-<li>Mesh<ul>
-<li>Mesh Filter 网格过滤器</li>
-<li>Text Mesh 文本</li>
-<li>Mesh Renderer 网格渲染器</li>
-<li>Skinned Mesh Renderer 蒙皮渲染器，用于骨骼动画</li>
-</ul>
-</li>
-<li>Particle Sysyem 粒子系统</li>
-<li>Physics 物理</li>
-<li>Image Effects</li>
-<li>Scripts 自定义组件</li>
-</ul>
-<h4 id="4-2-获取组件"><a href="#4-2-获取组件" class="headerlink" title="4.2. 获取组件"></a>4.2. 获取组件</h4><ul>
-<li>GetComponent&lt;&gt;() 获取组件</li>
-<li>GetComponents&lt;&gt;()</li>
-<li>GetComponentInChildren&lt;&gt;() 得到对象或者对象子物体上的组件</li>
-<li>GetComponentsInChildren&lt;&gt;()</li>
-</ul>
-<p>以上函数比较耗时，尽量避免在update函数中使用。</p>
-<h4 id="4-3-Transform-组件"><a href="#4-3-Transform-组件" class="headerlink" title="4.3. Transform 组件"></a>4.3. Transform 组件</h4><h5 id="4-3-1-成员变量"><a href="#4-3-1-成员变量" class="headerlink" title="4.3.1. 成员变量"></a>4.3.1. 成员变量</h5><ul>
-<li>position 世界坐标系</li>
-<li>localPosition 相对坐标系(父对象)</li>
-<li>eulerAngles 世界坐标系中以欧拉角表示的旋转</li>
-<li>localEulerAngles 相对旋转</li>
-<li>right 右方向</li>
-<li>up 上方向</li>
-<li>forward 前方向</li>
-<li>rotation 旋转四元数</li>
-<li>localRotation 相对旋转四元数</li>
-<li>localScale 相对缩放比例</li>
-<li>parent 父对象的Transform组件</li>
-<li>worldToLocalMatrix 世界坐标系到局部坐标系的变换矩阵(只读)</li>
-<li>localToWorldMatrix 局部坐标系到世界坐标系的变换矩阵(只读)</li>
-<li>root 根对象的Transform组件</li>
-<li>childCount 子孙对象的数量</li>
-<li>lossyScale 全局缩放比例(只读)</li>
-</ul>
-<h5 id="4-3-2-成员函数"><a href="#4-3-2-成员函数" class="headerlink" title="4.3.2. 成员函数"></a>4.3.2. 成员函数</h5><ul>
-<li>Translate 按指定方向和距离平移</li>
-<li>Rotate 按指定的欧拉角旋转</li>
-<li>RotateAround 按给定旋转轴和旋转角度进行旋转</li>
-<li>LookAt 旋转使得自身的前方向指向目标的位置</li>
-<li>TransformDirection 将一个方向从局部坐标系变换到世界坐标系</li>
-<li>InverseTansformDirection 将一个方向从世界坐标系变化到局部坐标系</li>
-<li>DetachChildren 与所有子物体接触父子关系</li>
-<li>Find 按名称查找子对象</li>
-<li>IsChildOf 判断是否是指定对象的子对象</li>
-</ul>
-<h3 id="5-Time-时间类"><a href="#5-Time-时间类" class="headerlink" title="5. Time 时间类"></a>5. Time 时间类</h3><h4 id="5-1-成员变量"><a href="#5-1-成员变量" class="headerlink" title="5.1. 成员变量"></a>5.1. 成员变量</h4><ul>
-<li>time 游戏从开始到现在经历的时间(秒)(只读)</li>
-<li>timeSinceLevelLoad 此帧开始时间(秒)(只读)，从关卡加载完成开始计算</li>
-<li>dateTime 上一帧耗费的时间(秒)(只读)</li>
-<li>fixedTime 最近FixedUpdate的时间。该时间从游戏开始计算</li>
-<li>fixedDateTime 物理引擎和FixedUpdate的更新时间间隔</li>
-<li>maximunDateTime 一帧的最大耗时时间</li>
-<li>smoothDeltaTime Time.deltaTime的平滑淡出</li>
-<li>timeScale 时间流逝速度的比例。可以制作慢动作特效</li>
-<li>frameCount 已渲染的帧的总数(只读)</li>
-<li>realtimeSinceStartup 游戏从开始到现在的真实时间(秒)，该事件不受timeScale影响</li>
-<li>captureFramerate 固定帧率设置</li>
-</ul>
-<h3 id="6-Random-随机数类"><a href="#6-Random-随机数类" class="headerlink" title="6. Random 随机数类"></a>6. Random 随机数类</h3><h4 id="6-1-成员变量"><a href="#6-1-成员变量" class="headerlink" title="6.1. 成员变量"></a>6.1. 成员变量</h4><ul>
-<li>seed 随机数生成器种子</li>
-<li>value 0~1随机数，包含0和1</li>
-<li>insideUnitSphere 半径为1的球体内的一个随机点</li>
-<li>insideUnitCircle 半径为1的圆内的一个随机点</li>
-<li>onUnitSphere 半径为1的球面上的一个随机点</li>
-<li>rotation 随机旋转</li>
-<li>rotationUnitform 均匀分布的随机旋转</li>
-</ul>
-<h4 id="6-2-成员函数"><a href="#6-2-成员函数" class="headerlink" title="6.2. 成员函数"></a>6.2. 成员函数</h4><ul>
-<li>Range 返回(min,max)直接的随机浮点数，包含min和max</li>
-</ul>
-<h3 id="7-Mathf-数学类"><a href="#7-Mathf-数学类" class="headerlink" title="7. Mathf 数学类"></a>7. Mathf 数学类</h3><h4 id="7-1-成员变量"><a href="#7-1-成员变量" class="headerlink" title="7.1. 成员变量"></a>7.1. 成员变量</h4><ul>
-<li>PI</li>
-<li>Infinity 正无穷大</li>
-<li>NegativeInfinity 负无穷大</li>
-<li>Deg2Rad 度到弧度的转换系数</li>
-<li>Rad2Deg 弧度到度的转换系数</li>
-<li>Epsilon 一个很小的浮点数</li>
-</ul>
-<h4 id="7-2-成员函数"><a href="#7-2-成员函数" class="headerlink" title="7.2. 成员函数"></a>7.2. 成员函数</h4><ul>
-<li>Sin 弧度</li>
-<li>Cos 弧度</li>
-<li>Tan 弧度</li>
-<li>Asin 角度</li>
-<li>ACos 角度</li>
-<li>Atan 角度</li>
-<li>Sqrt 计算平方根</li>
-<li>Abs 绝对值</li>
-<li>Min</li>
-<li>Max</li>
-<li>Pow Pow(f,p) f的p次方</li>
-<li>Exp Exp(p) e的p次方</li>
-<li>Log 计算对数</li>
-<li>Log10 计算基为10的对数</li>
-<li>Ceil 向上取整</li>
-<li>Floor 向下取整</li>
-<li>Round 四舍五入</li>
-<li>Clamp 将数值限制在min和max之间</li>
-<li>Clamp01 将数值限制在0和1之间</li>
-</ul>
-<h3 id="8-Coroutine-协同程序函数"><a href="#8-Coroutine-协同程序函数" class="headerlink" title="8. Coroutine 协同程序函数"></a>8. Coroutine 协同程序函数</h3><ul>
-<li>StartCoroutine 启动一个协同程序</li>
-<li>StopCoroutine 终止一个协同程序</li>
-<li>StopAllCoroutines 终止所有协同程序</li>
-<li>WaitForSeconds 等到若干秒</li>
-<li>WaitForFixedUpdates 等待直到下一次FiexedUpdate调用</li>
-</ul>
-
       
     </div>
 
@@ -1213,7 +1108,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-count">30</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -1302,6 +1197,63 @@
 
 
   
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
 
   
 

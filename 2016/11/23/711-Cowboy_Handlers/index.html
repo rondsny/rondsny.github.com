@@ -199,33 +199,28 @@
 <h3 id="Plain-HTTP-Handlers（常规Handlers）"><a href="#Plain-HTTP-Handlers（常规Handlers）" class="headerlink" title="Plain HTTP Handlers（常规Handlers）"></a>Plain HTTP Handlers（常规Handlers）</h3><p>Cowboy里面的handler最基础的事情就是实现 <code>init/2</code> 回调函数，处理请求，发送客户端响应（可选），最后返回。<br>Cowboy根据 <code>router configuration</code> （路由配置）接收请求并初始化State。<br>下面是一个不做任何处理的handler：</p>
 <pre><code>init(Req, State) -&gt;
     &#123;ok, Req, State&#125;
-</code></pre>
-<p>Cowboy为了保证每一个相应都能有客户端响应，尽管上面例子没有发送客户端返回，客户端仍然会收到一个 <code>204 No Content</code> 的响应。</p>
+</code></pre><p>Cowboy为了保证每一个相应都能有客户端响应，尽管上面例子没有发送客户端返回，客户端仍然会收到一个 <code>204 No Content</code> 的响应。</p>
 <p>下面是一个有返回响应的例子：</p>
 <pre><code>init(Req0, State) -&gt;
     Req = cowboy_req:reply(200, [
         &#123;&lt;&lt;&quot;content-type&quot;&gt;&gt;, &lt;&lt;&quot;text/plain&quot;&gt;&gt;&#125;
     ], &lt;&lt;&quot;Hello, World!&quot;&gt;&gt;, Req0),
     &#123;ok, Req, State&#125;.
-</code></pre>
-<p>当调用了 <code>cowboy:req/4</code>, Cowboy会马上返回一个客户端响应。</p>
+</code></pre><p>当调用了 <code>cowboy:req/4</code>, Cowboy会马上返回一个客户端响应。</p>
 <p>最后我们返回一个三元组。<code>ok</code> 表示handler允许成功，然后返回处理过后的 <code>Req</code> 给Cowboy。<br>三元组的最后一个元素是一个贯穿在handler所有回调一个state。常规的HTTP handlers一般只附加一个回调函数，<code>terminate/2</code>是一个很少使用的可选的回调函数。</p>
 <h3 id="Other-Handlers（其它Handlers）"><a href="#Other-Handlers（其它Handlers）" class="headerlink" title="Other Handlers（其它Handlers）"></a>Other Handlers（其它Handlers）</h3><p><code>init/2</code> 回调函数也可以用来告诉cowboy，这是一个不同类型的handler，Cowboy应该做一些其他处理。为了方便使用，如果返回handler类型的模块名称，就可以切换handler处理模块。</p>
 <p>Cowboy提供了三种可选handler类型：cowboy_reset, Cowboy_websocke和cowboy_loop。另外也可以自己定义handler类型。</p>
 <p>切换非常简单，用handler类型替换掉返回的 <code>ok</code> 就可以了。下面是一个切换为 Websocket handler 的代码片段。</p>
 <pre><code>init(Req, State) -&gt;
     &#123;cowboy_websocket, Req, State&#125;.
-</code></pre>
-<p>也可以切换到一个自定义的handler模块：</p>
+</code></pre><p>也可以切换到一个自定义的handler模块：</p>
 <pre><code>init(Req, State) -&gt;
     &#123;my_handler_type, Req, State&#125;.
-</code></pre>
-<p>如何使用自定义的handler类型可以查看<code>Sub protocols</code> 章节（<a target="_blank" rel="noopener" href="https://ninenines.eu/docs/en/cowboy/2.0/guide/sub_protocols%EF%BC%89%E3%80%82">https://ninenines.eu/docs/en/cowboy/2.0/guide/sub_protocols）。</a></p>
+</code></pre><p>如何使用自定义的handler类型可以查看<code>Sub protocols</code> 章节（<a target="_blank" rel="noopener" href="https://ninenines.eu/docs/en/cowboy/2.0/guide/sub_protocols）。">https://ninenines.eu/docs/en/cowboy/2.0/guide/sub_protocols）。</a></p>
 <h3 id="Cleaning-up"><a href="#Cleaning-up" class="headerlink" title="Cleaning up"></a>Cleaning up</h3><p>除了Websocket handlers，其它所有类型都提供可选回调函数<code>terminate/3</code>：</p>
 <pre><code>terminate(_Reason, _Req, _State) -&gt;
     ok.
-</code></pre>
-<p>这个回调函数是为了cleanup保留下来的。该函数不能发送响应给客户端。也没有其他返回值（只能返回<code>ok</code>）。</p>
+</code></pre><p>这个回调函数是为了cleanup保留下来的。该函数不能发送响应给客户端。也没有其他返回值（只能返回<code>ok</code>）。</p>
 <p><code>terminate/3</code>之所以是可选是因为其极少会用到。Cleanup应该在各自的进程中直接处理。（通过监控handler进程来知道其何时退出）</p>
 <p>Cowboy不会在不同的请求重复使用进程（应该是http短链接设计引起的）。进程在返回之后很快就会被销毁。</p>
 <h3 id="Others"><a href="#Others" class="headerlink" title="Others"></a>Others</h3><p>英文官方原文：</p>
@@ -328,7 +323,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-count">30</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -415,6 +410,8 @@
 
 
 
+
+  
 
   
 

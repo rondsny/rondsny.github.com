@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="-1. 涉及知识 float单精度的内存表示方式； 对数和指数； 牛顿方法&#x2F;牛顿迭代。  0. 背景 \hat{x}_{k}&#x3D;\hat{x}_{k}^{-}+K_{t}\left(y_{k}\right)\begin{equation} \label{eq2} \begin{aligned} a &amp;&#x3D; b + c \\   &amp;&#x3D; d + e + f + g \\   &amp;&#x3D; h + i \end{a">
+<meta property="og:type" content="article">
+<meta property="og:title" content="解读快速反平方根算法">
+<meta property="og:url" content="http://example.com/2022/02/23/320-q_rsqrt/index.html">
+<meta property="og:site_name" content="Ron的BLOG">
+<meta property="og:description" content="-1. 涉及知识 float单精度的内存表示方式； 对数和指数； 牛顿方法&#x2F;牛顿迭代。  0. 背景 \hat{x}_{k}&#x3D;\hat{x}_{k}^{-}+K_{t}\left(y_{k}\right)\begin{equation} \label{eq2} \begin{aligned} a &amp;&#x3D; b + c \\   &amp;&#x3D; d + e + f + g \\   &amp;&#x3D; h + i \end{a">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-02-23T15:28:01.000Z">
+<meta property="article:modified_time" content="2022-02-24T16:09:37.574Z">
+<meta property="article:author" content="Ron">
+<meta property="article:tag" content="c">
+<meta property="article:tag" content="算法">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/02/23/320-q_rsqrt/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>解读快速反平方根算法 | Ron的BLOG</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Ron的BLOG</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/23/320-q_rsqrt/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ron的BLOG">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          解读快速反平方根算法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-02-23 23:28:01" itemprop="dateCreated datePublished" datetime="2022-02-23T23:28:01+08:00">2022-02-23</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="1-涉及知识"><a href="#1-涉及知识" class="headerlink" title="-1. 涉及知识"></a>-1. 涉及知识</h2><ol>
+<li>float单精度的内存表示方式；</li>
+<li>对数和指数；</li>
+<li>牛顿方法/牛顿迭代。</li>
+</ol>
+<h2 id="0-背景"><a href="#0-背景" class="headerlink" title="0. 背景"></a>0. 背景</h2><script type="math/tex; mode=display">
+\hat{x}_{k}=\hat{x}_{k}^{-}+K_{t}\left(y_{k}\right)</script><script type="math/tex; mode=display">\begin{equation} \label{eq2}
+\begin{aligned}
+a &= b + c \\
+  &= d + e + f + g \\
+  &= h + i
+\end{aligned}
+\end{equation}</script><p>在标准化向量计算的时候，会频繁使用。譬如计算A点到B点的方向，需要计算标准化向量。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">float</span> len = <span class="built_in">sqrt</span>(x^<span class="number">2</span> + y^<span class="number">2</span> + z^<span class="number">2</span>);</span><br><span class="line"><span class="keyword">float</span> x_nor = x/len;</span><br><span class="line"><span class="keyword">float</span> y_nor = y/len;</span><br><span class="line"><span class="keyword">float</span> z_nor = z/len;</span><br></pre></td></tr></table></figure>
+<script type="math/tex; mode=display">
+x\_nor = x * 1/\sqrt{x^2 +y^2 + z^2}</script><h2 id="1-计算下真实的-1-sqrt-5-？答案为：0-44721359"><a href="#1-计算下真实的-1-sqrt-5-？答案为：0-44721359" class="headerlink" title="1. 计算下真实的 $1/\sqrt{5}$ = ？答案为：0.44721359"></a>1. 计算下真实的 $1/\sqrt{5}$ = ？答案为：0.44721359</h2><h2 id="2-代码计算过程"><a href="#2-代码计算过程" class="headerlink" title="2. 代码计算过程"></a>2. 代码计算过程</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 快速反平方根</span></span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">Q_rsqrt</span><span class="params">( <span class="keyword">float</span> number )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">long</span> i;</span><br><span class="line">    <span class="keyword">float</span> x2, y;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">float</span> threehalfs = <span class="number">1.5F</span>;</span><br><span class="line"></span><br><span class="line">    x2 = number * <span class="number">0.5F</span>;</span><br><span class="line">    y = number;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;number为 = %f\n&quot;</span>, y);</span><br><span class="line">    i = * ( <span class="keyword">long</span> * ) &amp;y;         <span class="comment">// evil floating point bit hack</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;转换为long = %d\n&quot;</span>, i);</span><br><span class="line">    i = <span class="number">0x5f3759df</span> - ( i &gt;&gt; <span class="number">1</span> ); <span class="comment">// what the fuck?</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;long的结果 = %d\n&quot;</span>, i);</span><br><span class="line">    y = * ( <span class="keyword">float</span> * ) &amp;i;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;转换为float = %f\n&quot;</span>, y);</span><br><span class="line">    y = y * ( threehalfs - ( x2 * y * y ));  <span class="comment">// 1st iteration</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Netown 迭代1次 = %f\n&quot;</span>, y);</span><br><span class="line">    y = y * ( threehalfs - ( x2 * y * y ));  <span class="comment">// 2nd iteration, can be removed</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Netown 迭代2次 = %f\n&quot;</span>, y);</span><br><span class="line">    <span class="keyword">return</span> y;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//number为       = 5.000000</span></span><br><span class="line"><span class="comment">//转换为long     = 1084227584</span></span><br><span class="line"><span class="comment">//long的结果     = 1055349215</span></span><br><span class="line"><span class="comment">//转换为float    = 0.451858</span></span><br><span class="line"><span class="comment">//Netown 迭代1次 = 0.447141</span></span><br><span class="line"><span class="comment">//Netown 迭代2次 = 0.447214</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//number = 5.000000, ret = 0.447214</span></span><br></pre></td></tr></table></figure>
+<p>可以发现代码计算的结果 0.447214 与真实结果 0.44721359 非常接近，小数点前五位都是一致的。</p>
+<h2 id="3-步骤说明"><a href="#3-步骤说明" class="headerlink" title="3. 步骤说明"></a>3. 步骤说明</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 快速反平方根</span></span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">Q_rsqrt</span><span class="params">( <span class="keyword">float</span> number )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">long</span> i;</span><br><span class="line">    <span class="keyword">float</span> x2, y;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">float</span> threehalfs = <span class="number">1.5F</span>;</span><br><span class="line"></span><br><span class="line">    x2 = number * <span class="number">0.5F</span>;</span><br><span class="line">    y = number;</span><br><span class="line">    i = * ( <span class="keyword">long</span> * ) &amp;y;                     <span class="comment">//step 1, evil floating point bit hack</span></span><br><span class="line">    i = <span class="number">0x5f3759df</span> - ( i &gt;&gt; <span class="number">1</span> );             <span class="comment">//step 2, what the fuck?</span></span><br><span class="line">    y = * ( <span class="keyword">float</span> * ) &amp;i;                    <span class="comment">//step 3,</span></span><br><span class="line">    y = y * ( threehalfs - ( x2 * y * y ));  <span class="comment">//step4, 1st iteration</span></span><br><span class="line">    y = y * ( threehalfs - ( x2 * y * y ));        <span class="comment">// 2nd iteration, can be removed</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3-1-第1步：讲number的地址转成long类型地址，并取long类型的值"><a href="#3-1-第1步：讲number的地址转成long类型地址，并取long类型的值" class="headerlink" title="3.1. 第1步：讲number的地址转成long类型地址，并取long类型的值"></a>3.1. 第1步：讲number的地址转成long类型地址，并取long类型的值</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">i = * ( <span class="keyword">long</span> * ) &amp;y;</span><br><span class="line"><span class="comment">// 让i生成与y一样的内容，但是i是 long类型，y是float</span></span><br><span class="line"><span class="comment">// 不能使用强制类型转换，因为强制类型转换会丢失bit信息</span></span><br><span class="line"><span class="comment">// 此处目的是对float类型的number进行位运算，而float是不能进行位运行的，所以需要转换为long</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// &amp;y 获取到y的地址</span></span><br><span class="line"><span class="comment">// ( long * ) &amp;y 然后将float的地址转换为 long的地址</span></span><br><span class="line"><span class="comment">// * ( long * ) &amp;y 然后获取地址上的数值</span></span><br></pre></td></tr></table></figure>
+<h3 id="3-2-第2步：计算出反平方根的值（long类型下）"><a href="#3-2-第2步：计算出反平方根的值（long类型下）" class="headerlink" title="3.2. 第2步：计算出反平方根的值（long类型下）"></a>3.2. 第2步：计算出反平方根的值（long类型下）</h3><p>此处只有一句代码 <code>i = 0x5f3759df - ( i &gt;&gt; 1 )</code> 但是这里非常复杂。这里得到的最终结果是 <code>Ly=(3/2)*2^23*(127-μ) - 1/2*Lx</code> (Lx是原来的i，Ly是计算结果，结果重新赋值给了i）。<br>这里μ为 <code>0.04505</code> ，所以最终结果为 <code>(3/2)*2^23*(127-μ) - 1/2*Lx</code> 既 <code>Ly = 0x5f3759df - (Lx &gt;&gt;1)</code></p>
+<p>关于此处的解释，后面举例具体来说明。</p>
+<p>F与L之间的转换关系为：log2(F)=(2^-23)*L + μ - 127</p>
+<script type="math/tex; mode=display">
+log_2(F) = 2^{-23} * L + μ - 127</script><h3 id="3-3-第3步：重新回为浮点数"><a href="#3-3-第3步：重新回为浮点数" class="headerlink" title="3.3. 第3步：重新回为浮点数"></a>3.3. 第3步：重新回为浮点数</h3><h3 id="3-4-第4步：使用牛顿迭代法提高精度"><a href="#3-4-第4步：使用牛顿迭代法提高精度" class="headerlink" title="3.4. 第4步：使用牛顿迭代法提高精度"></a>3.4. 第4步：使用牛顿迭代法提高精度</h3><p>牛顿迭代是可以提高精度，前面得到了一个靠近的数值，但是由于μ的存在，是存在误差的，这里可以使用牛顿迭代法求到更具体的数值。</p>
+<p>牛顿迭代法的公式是：</p>
+<script type="math/tex; mode=display">
+x_{n+1} = x_n - \frac{f(x_n)}{f^{'}(x_n)}</script><p>这里的f(x)是 $f(x) = \frac{1}{x^2}-a$，其导数函数是$f^{‘}(x)=\frac{-2}{x^{-3}}$，把函数和导函数代入牛顿迭代法公式：</p>
+<script type="math/tex; mode=display">
+y_{n+1} = y_n - \frac{f(y_n)}{f^{'}(y_n)}=y_n - \frac{\frac{1}{y^2}-a}{\frac{-2}{y^{-3}}}=y_n(1.5-\frac{ay_n^2}{2})</script><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">y = y * ( threehalfs - ( x2 * y * y ));    <span class="comment">// 1st iteration</span></span><br><span class="line"><span class="comment">// 代入值下</span></span><br><span class="line">y = y * ( <span class="number">1.5F</span>- ( <span class="number">0.5F</span> * number * y * y ));   <span class="comment">// 1st iteration</span></span><br></pre></td></tr></table></figure>
+<h2 id="4-举例来说："><a href="#4-举例来说：" class="headerlink" title="4. 举例来说："></a>4. 举例来说：</h2><p>number = 5.0F</p>
+<p>float的二进制表示为</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">单精度的<span class="keyword">float</span>，有<span class="number">32b</span>it，</span><br><span class="line">第<span class="number">1</span>位位符号位，</span><br><span class="line">第<span class="number">2</span>~<span class="number">9</span>位为指数，表示为E</span><br><span class="line">最后<span class="number">23</span>位为尾数，表示为M</span><br><span class="line"></span><br><span class="line"><span class="number">1b</span>it     <span class="number">8b</span>it       <span class="number">23b</span>it</span><br><span class="line">符号位S  指数E       尾数M</span><br><span class="line"><span class="number">0</span>       <span class="number">10000001</span>   <span class="number">01000000000000000000000</span>  <span class="comment">// 表示为float的时候，值为5.0F</span></span><br><span class="line"><span class="number">0</span>       <span class="number">10000001</span>   <span class="number">01000000000000000000000</span>  <span class="comment">// 表示为long 的时候，值为1084227584</span></span><br></pre></td></tr></table></figure>
+<p>同样的一个32位的地址，可以解读成单精度的float，也可以解读成long类型的整型，下面是公式（F表示float类型的值，L表示long类型的值）：</p>
+<script type="math/tex; mode=display">
+F = (-1)^S · 2^{E-127} · (1 + 2^{-23}M)</script><script type="math/tex; mode=display">
+L = 2^{23} · E + M</script><p>根据上面两个公式，我们可以得到 <code>float</code>类型的值F，与 <code>long</code>类型的值L之间的关系如下(μ=0.04505）：</p>
+<script type="math/tex; mode=display">
+log_2F=(2^{-23})·L + μ - 127</script><p>我们再把我们想要的内容答案 X = 1/sqrt(number) 代进去。（如下，Fy是我们想要的值）</p>
+<script type="math/tex; mode=display">
+F_y = 1/\sqrt{F_x}</script><p>两边取以2为底的对数，等式是成立的</p>
+<script type="math/tex; mode=display">
+log_2F_y = log_2(1/\sqrt{F_x})\\log_2F_y = -\frac{1}{2}log_2F_x\\</script><p>获取到了上面的公式之后，可以利用 <code>float</code>类型的F与 <code>long</code>类型L的关系，把F换成L</p>
+<script type="math/tex; mode=display">
+\begin{array}{c}
+log_2F_y = -\frac{1}{2}log_2F_x \\ \\
+\because {\color{Red} log_2F=2^{-23}·L + μ - 127 } \\ \\
+\therefore {\color{Red} 2^{-23}·L_y + μ - 127 }  = -\frac{1}{2}{\color{Red} (2^{-23}·Lx + μ - 127)} \\ \\
+最终我们可以得到： \\ \\
+L_y=\frac{3}{2}·2^{23}·(127-μ) - \frac{1}{2}·L_x \\ \\
+把μ代进去算一下 \\ \\
+L_y=\frac{3}{2}·2^{23}·(127-0.04505) - \frac{1}{2}·L_x = 0x5f3759df - \frac{1}{2}·L_x \\ \\
+\frac{1}{2}·L_x也可以转化为右移操作 \\ \\
+{\color{Green} L_y=0x5f3759df - (L_x >> 1) }
+\end{array}</script><p>至此，我们得到了代码中第2步的来由。</p>
+<p>然后我们将 <code>long</code> 类型的Ly的结果，转成 <code>float</code> 类型，就能得到我们初步的答案。</p>
+<h3 id="验证一下："><a href="#验证一下：" class="headerlink" title="验证一下："></a>验证一下：</h3><p>现在，F = 0.5, L= 1084227584 的情况下，log2(F)=(2^-23)*L + μ - 127 是否成立</p>
+<p>log2(F) = 2.3219280949</p>
+<p>(2^-23)<em>L + μ - 127 = (2^-23)</em>L + 0.04505 - 127 = 2.29505</p>
+<p>此处答案接近。</p>
+<p>代入最终计算公式：</p>
+<p>Ly=(3/2)<em>2^23</em>(127-μ) - 1/2*Lx</p>
+<p>= (3/2)<em>2^23</em>(127-0.04505) - 1/2*1084227584</p>
+<p>= 1055349171</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1b</span>it     <span class="number">8b</span>it       <span class="number">23b</span>it</span><br><span class="line">符号位S  指数E       尾数M</span><br><span class="line"><span class="number">0</span>       <span class="number">10000001</span>   <span class="number">01000000000000000000000</span></span><br><span class="line"><span class="number">0</span>       <span class="number">01111101</span>   <span class="number">11001110101100110110011</span></span><br></pre></td></tr></table></figure>
+<p>将Ly转为Fy = 0.45185623</p>
+<p>牛顿迭代一次：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">y = y * ( threehalfs - ( x2 * y * y ))</span><br></pre></td></tr></table></figure>
+<p>y1 = y <em> ( 1.5- ( 0.5</em>5 <em> y </em> y ))<br>= 0.45185623 <em> ( 1.5- ( 0.5</em>5 <em> 0.45185623 </em> 0.45185623 ))<br>= 0.44714105083</p>
+<hr>
+<p>一些在线二进制转换的工具：</p>
+<p>浮点数表示：<br><a target="_blank" rel="noopener" href="https://tooltt.com/ieee/">https://tooltt.com/ieee/</a><br><a target="_blank" rel="noopener" href="https://tooltt.com/floatconverter/">https://tooltt.com/floatconverter/</a><br>进制转换：<br> <a target="_blank" rel="noopener" href="https://www.sojson.com/hexconvert.html">https://www.sojson.com/hexconvert.html</a><br>LaTeX公式编辑器：<br><a target="_blank" rel="noopener" href="https://www.latexlive.com/">https://www.latexlive.com/</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/c/" rel="tag"># c</a>
+              <a href="/tags/%E7%AE%97%E6%B3%95/" rel="tag"># 算法</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/02/13/855-sublime_for_lua/" rel="prev" title="sublime的lua插件luacheck">
+      <i class="fa fa-chevron-left"></i> sublime的lua插件luacheck
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%B6%89%E5%8F%8A%E7%9F%A5%E8%AF%86"><span class="nav-number">1.</span> <span class="nav-text">-1. 涉及知识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E8%83%8C%E6%99%AF"><span class="nav-number">2.</span> <span class="nav-text">0. 背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E8%AE%A1%E7%AE%97%E4%B8%8B%E7%9C%9F%E5%AE%9E%E7%9A%84-1-sqrt-5-%EF%BC%9F%E7%AD%94%E6%A1%88%E4%B8%BA%EF%BC%9A0-44721359"><span class="nav-number">3.</span> <span class="nav-text">1. 计算下真实的 $1&#x2F;\sqrt{5}$ &#x3D; ？答案为：0.44721359</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E4%BB%A3%E7%A0%81%E8%AE%A1%E7%AE%97%E8%BF%87%E7%A8%8B"><span class="nav-number">4.</span> <span class="nav-text">2. 代码计算过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%AD%A5%E9%AA%A4%E8%AF%B4%E6%98%8E"><span class="nav-number">5.</span> <span class="nav-text">3. 步骤说明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E7%AC%AC1%E6%AD%A5%EF%BC%9A%E8%AE%B2number%E7%9A%84%E5%9C%B0%E5%9D%80%E8%BD%AC%E6%88%90long%E7%B1%BB%E5%9E%8B%E5%9C%B0%E5%9D%80%EF%BC%8C%E5%B9%B6%E5%8F%96long%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%80%BC"><span class="nav-number">5.1.</span> <span class="nav-text">3.1. 第1步：讲number的地址转成long类型地址，并取long类型的值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E7%AC%AC2%E6%AD%A5%EF%BC%9A%E8%AE%A1%E7%AE%97%E5%87%BA%E5%8F%8D%E5%B9%B3%E6%96%B9%E6%A0%B9%E7%9A%84%E5%80%BC%EF%BC%88long%E7%B1%BB%E5%9E%8B%E4%B8%8B%EF%BC%89"><span class="nav-number">5.2.</span> <span class="nav-text">3.2. 第2步：计算出反平方根的值（long类型下）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E7%AC%AC3%E6%AD%A5%EF%BC%9A%E9%87%8D%E6%96%B0%E5%9B%9E%E4%B8%BA%E6%B5%AE%E7%82%B9%E6%95%B0"><span class="nav-number">5.3.</span> <span class="nav-text">3.3. 第3步：重新回为浮点数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-%E7%AC%AC4%E6%AD%A5%EF%BC%9A%E4%BD%BF%E7%94%A8%E7%89%9B%E9%A1%BF%E8%BF%AD%E4%BB%A3%E6%B3%95%E6%8F%90%E9%AB%98%E7%B2%BE%E5%BA%A6"><span class="nav-number">5.4.</span> <span class="nav-text">3.4. 第4步：使用牛顿迭代法提高精度</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E4%B8%BE%E4%BE%8B%E6%9D%A5%E8%AF%B4%EF%BC%9A"><span class="nav-number">6.</span> <span class="nav-text">4. 举例来说：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81%E4%B8%80%E4%B8%8B%EF%BC%9A"><span class="nav-number">6.1.</span> <span class="nav-text">验证一下：</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Ron</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">30</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2015 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ron</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>

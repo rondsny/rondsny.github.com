@@ -201,8 +201,7 @@
 <p>通过排查日志，发现了以下报错：</p>
 <pre><code>2016-03-22 16:54:32.014 [error] gen_server ecrn_control terminated with reason: no case clause matching &#123;ok,[&lt;0.14123.1577&gt;,&lt;0.13079.1576&gt;,&lt;0.25254.1569&gt;,&lt;0.13402.1577&gt;,...]&#125; in ecrn_control:internal_cancel/1 line 111
 2016-03-22 16:54:32.015 [error] CRASH REPORT Process ecrn_control with 0 neighbours exited with reason: no case clause matching &#123;ok,[&lt;0.14123.1577&gt;,&lt;0.13079.1576&gt;,&lt;0.25254.1569&gt;,&lt;0.13402.1577&gt;,...]&#125; in ecrn_control:internal_cancel/1 line 111 in gen_server:terminate/6 line 744
-</code></pre>
-<p>我擦，<code>ecrn_control</code>都崩了，怎么回事。</p>
+</code></pre><p>我擦，<code>ecrn_control</code>都崩了，怎么回事。</p>
 <p>找到具体出错的代码：</p>
 <pre><code>internal_cancel(AlarmRef) -&gt;
     case ecrn_reg:get(AlarmRef) of
@@ -211,17 +210,14 @@
         &#123;ok, [Pid]&#125; -&gt;
             ecrn_agent:cancel(Pid)
     end.
-</code></pre>
-<p>发现调用<code>ecrn_reg:get(AlarmRef)</code>被返回了{ok, List}，而且这个List的数据远不止一个。明显在设置那个超过3个月的定时任务的时候，<code>ecrn_reg</code>被注册进了脏数据。</p>
+</code></pre><p>发现调用<code>ecrn_reg:get(AlarmRef)</code>被返回了{ok, List}，而且这个List的数据远不止一个。明显在设置那个超过3个月的定时任务的时候，<code>ecrn_reg</code>被注册进了脏数据。</p>
 <h3 id="事故重现"><a href="#事故重现" class="headerlink" title="事故重现"></a>事故重现</h3><h4 id="先设置几个正常的定时任务"><a href="#先设置几个正常的定时任务" class="headerlink" title="先设置几个正常的定时任务"></a>先设置几个正常的定时任务</h4><pre><code>&gt; erlcron:cron(&#123;&#123;once, 1000&#125;, &#123;io, fwrite, ["Hello, world!~n"]&#125;&#125;).
 &gt; erlcron:cron(&#123;&#123;once, 1000&#125;, &#123;io, fwrite, ["Hello, world!~n"]&#125;&#125;).
 &gt; erlcron:cron(&#123;&#123;once, 1000&#125;, &#123;io, fwrite, ["Hello, world!~n"]&#125;&#125;).
-</code></pre>
-<p>查看<code>observer:start()</code> 可以看到进程树如下：</p>
-<p><img src="http://i.imgur.com/H4oSaR0.png"></p>
+</code></pre><p>查看<code>observer:start()</code> 可以看到进程树如下：</p>
+<p><img src="http://i.imgur.com/H4oSaR0.png" alt=""></p>
 <h4 id="再设置一个4294968秒之后的定时任务"><a href="#再设置一个4294968秒之后的定时任务" class="headerlink" title="再设置一个4294968秒之后的定时任务"></a>再设置一个4294968秒之后的定时任务</h4><pre><code>&gt; erlcron:cron(&#123;&#123;once, 4294968&#125;, &#123;io, fwrite, ["Hello, world!~n"]&#125;&#125;).
-</code></pre>
-<p>结果就gg了，好多崩溃信息是不是：</p>
+</code></pre><p>结果就gg了，好多崩溃信息是不是：</p>
 <pre><code>22:49:16.818 [error] CRASH REPORT Process &lt;0.5822.64&gt; with 0 neighbours crashed with reason: timeout_value in gen_server:loop/6 line 358
 22:49:16.818 [error] Supervisor ecrn_cron_sup had child ecrn_agent started with ecrn_agent:start_link(#Ref&lt;0.0.11.11209&gt;, &#123;&#123;once,4294968&#125;,&#123;io,fwrite,["Hello, world!~n"]&#125;&#125;) at &lt;0.5822.64&gt; exit with reason timeout_value in context child_terminated
 22:49:16.819 [error] CRASH REPORT Process &lt;0.5701.64&gt; with 0 neighbours crashed with reason: timeout_value in gen_server:loop/6 line 358
@@ -232,15 +228,14 @@
 22:49:16.821 [error] Supervisor ecrn_cron_sup had child ecrn_agent started with ecrn_agent:start_link(#Ref&lt;0.0.11.11209&gt;, &#123;&#123;once,4294968&#125;,&#123;io,fwrite,["Hello, world!~n"]&#125;&#125;) at &lt;0.5862.64&gt; exit with reason timeout_value in context child_terminated
 
 ...(总共有25条)
-</code></pre>
-<p>再看一下进程数：</p>
-<p><img src="http://i.imgur.com/TSYo5CH.png"></p>
+</code></pre><p>再看一下进程数：</p>
+<p><img src="http://i.imgur.com/TSYo5CH.png" alt=""></p>
 <p>我擦，为毛原来的 scrn_agent 进程也没有了。</p>
 <p>可以发现，erlcron 在尝试了25次设置 这个定时任务之后，也就是 scrn_agent 崩溃了25次之后，原来设置的三个正常的定时任务的scrn_agent 进程也没有掉了。<br>也就是说，不但我新设置的定时任务没有成功，而且我原来正常的定时任务也没有掉了。</p>
 <p>再看一下崩溃日志里面的崩掉的进程号，每一个都是不一样的。可以推算其实原来的报错<code>ecrn_reg:get(AlarmRef)</code>获取到了多个Pid，其实就是这里插入失败的定时任务产生的25个Pid。也就是说，虽然<code>ecrn_agent</code>进程崩溃了，但是<code>ecrn_reg</code>还是保存了这些Pid。所以在取消这些定时任务的时候，<code>ecrn_reg:get(AlarmRef)</code>返回的内容在<code>internal_cancel(AlarmRef)</code>没有被匹配到。</p>
 <h3 id="为什么是4294968，其实是2-32"><a href="#为什么是4294968，其实是2-32" class="headerlink" title="为什么是4294968，其实是2^32"></a>为什么是4294968，其实是2^32</h3><p>为什么设置了<code>4294968</code>秒后的定时任务就崩溃了。这个数估计很多人很熟悉，<code>2^32=4294967296</code>，而<code>4294968000</code>也就是刚好大于<code>2^32</code>。即，如果设置的定时任务超过了<code>2^32</code>毫秒，在<code>erlcron</code>里面就不支持了。</p>
 <p>查看<code>gen_server:loop</code>的源码，找到引起崩溃的代码：</p>
-<p><img src="http://i.imgur.com/w9NJViE.png"></p>
+<p><img src="http://i.imgur.com/w9NJViE.png" alt=""></p>
 <pre><code>loop(Parent, Name, State, Mod, hibernate, Debug) -&gt;
     proc_lib:hibernate(?MODULE,wake_hib,[Parent, Name, State, Mod, Debug]);
 loop(Parent, Name, State, Mod, Time, Debug) -&gt;
@@ -251,8 +246,7 @@ loop(Parent, Name, State, Mod, Time, Debug) -&gt;
           timeout
       end,
     decode_msg(Msg, Parent, Name, State, Mod, Time, Debug, false).
-</code></pre>
-<p>可以发现引起崩溃的，358行是一段<code>receive</code>代码。也就是说<code>receive</code>是不支持超过<code>2^32</code>大小的。</p>
+</code></pre><p>可以发现引起崩溃的，358行是一段<code>receive</code>代码。也就是说<code>receive</code>是不支持超过<code>2^32</code>大小的。</p>
 <p>自测了一下，的确如果<code>receive</code>的<code>after</code>后面如果是大于等于<code>2^32</code>的数值就会出现<code>bad receive timeout value</code>的报错。查看官方解释，已经明确说明不能大于<code>32位</code>大小。</p>
 <blockquote>
 <p>ExprT is to evaluate to an integer. The highest allowed value is 16#FFFFFFFF, that is, the value must fit in 32 bits. receive..after works exactly as receive, except that if no matching message has arrived within ExprT milliseconds, then BodyT is evaluated instead. The return value of BodyT then becomes the return value of the receive..after expression.</p>
@@ -272,8 +266,7 @@ init([JobRef, Job]) -&gt;
         &#123;error, _&#125;  -&gt;
             &#123;stop, normal&#125;
     end.
-</code></pre>
-<h3 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h3><p>这坑踩的，有点郁闷。其实这跟<code>erlcron</code>也没关系，也不是<code>gen_server</code>的问题。而是<code>erlang</code>自身<code>receive</code>不支持2^32引起的。继续往下查其实可以发现，再往下是其它语言写的了。</p>
+</code></pre><h3 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h3><p>这坑踩的，有点郁闷。其实这跟<code>erlcron</code>也没关系，也不是<code>gen_server</code>的问题。而是<code>erlang</code>自身<code>receive</code>不支持2^32引起的。继续往下查其实可以发现，再往下是其它语言写的了。</p>
 <pre><code>-module(prim_eval).
 
 %% This module is simply a stub which abstract code gets included in the result
@@ -284,8 +277,7 @@ init([JobRef, Job]) -&gt;
 -spec &#39;receive&#39;(fun((term()) -&gt; nomatch | T), timeout()) -&gt; T.
 &#39;receive&#39;(_, _) -&gt;
     erlang:nif_error(stub).
-</code></pre>
-<p><em>与君共勉</em></p>
+</code></pre><p><em>与君共勉</em></p>
 
     </div>
 
@@ -383,7 +375,7 @@ init([JobRef, Job]) -&gt;
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-count">30</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -470,6 +462,8 @@ init([JobRef, Job]) -&gt;
 
 
 
+
+  
 
   
 
