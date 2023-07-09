@@ -30,7 +30,7 @@
 <meta property="og:image" content="http://example.com/pics/inv_sqrt_102.png">
 <meta property="og:image" content="http://example.com/pics/inv_sqrt_101.png">
 <meta property="article:published_time" content="2023-07-09T07:02:01.000Z">
-<meta property="article:modified_time" content="2023-07-09T07:57:38.403Z">
+<meta property="article:modified_time" content="2023-07-09T08:03:54.540Z">
 <meta property="article:author" content="Ron">
 <meta property="article:tag" content="c">
 <meta property="article:tag" content="算法">
@@ -214,7 +214,7 @@
 
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>位符号位 <span class="number">11</span>位指数    <span class="number">52</span>位指数</span><br><span class="line">S        E           M</span><br><span class="line"><span class="number">0</span>        <span class="number">01111111110</span> <span class="number">1110111010110011011001111010000011111001000000000000</span></span><br><span class="line"><span class="comment">// S = 0</span></span><br><span class="line"><span class="comment">// E = 2^10 - 1 - 1 = 1022</span></span><br><span class="line"><span class="comment">// M = 4199268882550784</span></span><br><span class="line"><span class="comment">// F = (-1)^s * (2^(E-1023)) * (1 + 2^-52 * M)</span></span><br><span class="line"><span class="comment">//   = 1 * 2^(1022-1023) * (1+2^-52 * 4199268882550784)</span></span><br><span class="line"><span class="comment">//   = 0.96621249999998</span></span><br></pre></td></tr></table></figure>
 <p>结果0.966是尚未进行牛顿迭代的结果，误差要大的多，进行一次迭代之后，数值是0.998323，进行两次迭代之后是0.999996。</p>
-<h2 id="5-角度误差对比"><a href="#5-角度误差对比" class="headerlink" title="5. 角度误差对比"></a>5. 角度误差对比</h2><p>虽然快速快速反平方根运算计算1的时候，误差在0.002，看起来也不是很大。但是在运算角度的时候，会放大这个误差，误差。特别是在角度80度~</p>
+<h2 id="5-角度误差对比"><a href="#5-角度误差对比" class="headerlink" title="5. 角度误差对比"></a>5. 角度误差对比</h2><p>虽然快速快速反平方根运算计算1的时候，误差在0.002，看起来也不是很大。但是在运算角度的时候，会放大这个误差，误差。特别是在角度-10度到10度，170度到190度之间。</p>
 <p><img src="/pics/inv_sqrt_101.png" alt="误差对比"></p>
 <p>一次迭代 vs 两次迭代 的误差</p>
 <table>
