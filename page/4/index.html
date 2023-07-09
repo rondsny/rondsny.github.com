@@ -150,6 +150,92 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2015/03/12/202-Add_rss_in_Hexo/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ron的BLOG">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/03/12/202-Add_rss_in_Hexo/" class="post-title-link" itemprop="url">[hexo]在hexo内添加RSS和sitemap</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2015-03-12 15:28:01" itemprop="dateCreated datePublished" datetime="2015-03-12T15:28:01+08:00">2015-03-12</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="一、添加RSS"><a href="#一、添加RSS" class="headerlink" title="一、添加RSS"></a>一、添加RSS</h3><p>博客来说，RSS的重要性可想而知。</p>
+<h4 id="1-安装hexo-rss插件"><a href="#1-安装hexo-rss插件" class="headerlink" title="1. 安装hexo rss插件"></a>1. 安装hexo rss插件</h4><p>hexo提供了生成RSS xml的插件<code>hexo-generator-feed</code>，执行<code>npm install hexo-generator-feed</code>即可。</p>
+<h4 id="2-配置"><a href="#2-配置" class="headerlink" title="2. 配置"></a>2. 配置</h4><p>编辑<code>blog/_config.yml</code>文件。在里面添加查看配置，如下</p>
+<pre><code>plugins: 
+  hexo-generator-feed
+</code></pre>
+<p>还要修改主题的配置文件<code>blog/theme/_config.yml</code>。在rss里面配置<code>rss: /atom.xml</code>。在菜单里面添加RSS菜单。</p>
+<pre><code>menu: 
+  Home: / 
+  Archives: /archives 
+  Rss: /atom.xml
+</code></pre>
+<h3 id="二、添加sitemap"><a href="#二、添加sitemap" class="headerlink" title="二、添加sitemap"></a>二、添加sitemap</h3><p>当关注seo的时候，sitemap也同样重要。</p>
+<h4 id="1-安装hexo-sitemap插件"><a href="#1-安装hexo-sitemap插件" class="headerlink" title="1. 安装hexo sitemap插件"></a>1. 安装hexo sitemap插件</h4><p>同样，执行命令<code>npm install hexo-generator-sitemap</code>即可完成插件的安装。</p>
+<h4 id="2-配置-1"><a href="#2-配置-1" class="headerlink" title="2. 配置"></a>2. 配置</h4><p>一样修改<code>blog/_config.yml</code>文件，添加上插件名称</p>
+<pre><code>plugins: 
+  hexo-generator-feed
+  hexo-generator-sitemap 
+  
+</code></pre>
+<h3 id="三、其它"><a href="#三、其它" class="headerlink" title="三、其它"></a>三、其它</h3><p>其实两个插件是在<code>hexo g</code>的时候生成atom.xml 文件和sitemap.xml 文件。由于sitemap.xml 是对搜索引擎服务的，所以不需要显示在博客里面。而Rss是要给读者收藏的，需要在菜单里面添加显示。当然你不喜欢在菜单里面显示可以直接修改模板显示在你喜欢的地方。如编辑<code>blog/theme/[light]/layout/_partial/header.ejs</code>文件：</p>
+<pre><code>&lt;ul&gt;
+&lt;% for (var i in theme.menu)&#123; %&gt;
+  &lt;li&gt;&lt;a href=&quot;&lt;%- theme.menu[i] %&gt;&quot;&gt;&lt;%= i %&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;% &#125; %&gt;
+&lt;li&gt;&lt;a href=&quot;/atom.xml&quot;&gt;RSS&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</code></pre>
+<p>可以不配置menu达到相同的效果。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://example.com/2015/03/06/201-Deploy_Hexo_github/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -288,7 +374,7 @@ hexo server       # hexo s
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">31</span>
+          <span class="site-state-item-count">32</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -320,7 +406,7 @@ hexo server       # hexo s
 <div class="copyright">
   
   &copy; 2015 – 
-  <span itemprop="copyrightYear">2022</span>
+  <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

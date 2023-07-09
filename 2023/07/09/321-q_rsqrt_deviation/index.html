@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="1. 问题现象我们策划在配置技能的时候，当技能方向趋向于y轴方向的时候，发现技能方向总是有一定的偏差，进行细节调整的时候，也达不到效果，一直微调，微调到一定大小后，方向会突然偏向于另一边。如下图： 在趋向于x轴的时候，策划发现一直有4.69度想右边的偏差。进行微调也不会发生变化，直到微调到大约偏向于左边的时候，左边偏差却来到了3.79度。也就是说有3.79+4.69&#x3D;8.48度的角度，策划是指向的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="快速反平方根算法精度误差问题">
+<meta property="og:url" content="http://example.com/2023/07/09/321-q_rsqrt_deviation/index.html">
+<meta property="og:site_name" content="Ron的BLOG">
+<meta property="og:description" content="1. 问题现象我们策划在配置技能的时候，当技能方向趋向于y轴方向的时候，发现技能方向总是有一定的偏差，进行细节调整的时候，也达不到效果，一直微调，微调到一定大小后，方向会突然偏向于另一边。如下图： 在趋向于x轴的时候，策划发现一直有4.69度想右边的偏差。进行微调也不会发生变化，直到微调到大约偏向于左边的时候，左边偏差却来到了3.79度。也就是说有3.79+4.69&#x3D;8.48度的角度，策划是指向的">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/pics/inv_sqrt_102.png">
+<meta property="og:image" content="http://example.com/pics/inv_sqrt_101.png">
+<meta property="article:published_time" content="2023-07-09T07:02:01.000Z">
+<meta property="article:modified_time" content="2023-07-09T07:12:54.377Z">
+<meta property="article:author" content="Ron">
+<meta property="article:tag" content="c">
+<meta property="article:tag" content="算法">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/pics/inv_sqrt_102.png">
+
+<link rel="canonical" href="http://example.com/2023/07/09/321-q_rsqrt_deviation/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>快速反平方根算法精度误差问题 | Ron的BLOG</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Ron的BLOG</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/07/09/321-q_rsqrt_deviation/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ron的BLOG">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          快速反平方根算法精度误差问题
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-07-09 15:02:01" itemprop="dateCreated datePublished" datetime="2023-07-09T15:02:01+08:00">2023-07-09</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="1-问题现象"><a href="#1-问题现象" class="headerlink" title="1. 问题现象"></a>1. 问题现象</h2><p>我们策划在配置技能的时候，当技能方向趋向于y轴方向的时候，发现技能方向总是有一定的偏差，进行细节调整的时候，也达不到效果，一直微调，微调到一定大小后，方向会突然偏向于另一边。如下图：</p>
+<p>在趋向于x轴的时候，策划发现一直有4.69度想右边的偏差。进行微调也不会发生变化，直到微调到大约偏向于左边的时候，左边偏差却来到了3.79度。<br>也就是说有3.79+4.69=8.48度的角度，策划是指向的。<br><img src="/pics/inv_sqrt_102.png" alt="误差对比"></p>
+<h2 id="2-排查问题"><a href="#2-排查问题" class="headerlink" title="2. 排查问题"></a>2. 排查问题</h2><p>策划配置的角度是怪物站在(x1, y1)的位置，然后怪物技能的朝向目标坐标是(x1, y1-1000)的位置。策划进行微调的时候，是对目标坐标的x轴的值进行微调，发现无法调到想要的方向。</p>
+<p>游戏内的实现逻辑是，释放技能的时候，把怪物转到设定方向。原本怪物的方向是(0, 1)，虽然已经是策划需要的方向，但是此时也是会进行转向的运算。需要转到的目标方向也是(0, 1)。此时只要运算出怪物需要转向的角度为0即可。但事实是怪物转向逆时针转向了4.69度。</p>
+<p>排查发现，计算转向的函数返回了这4.69度，进一步排查发现<code>快速反平方根函数 fast_inv_sqrt</code> 返回的值是有一定误差的。在运行 <code>fast_inv_sqrt(1.0f)</code> 的时候，返回的是<code>0.998323</code>,虽然已经很接近1了，但是仍然是有误差的。就是这小小的0.002左右的误差，最终计算角度的时候出现了4.69度的误差。</p>
+<h2 id="3-验证误差"><a href="#3-验证误差" class="headerlink" title="3. 验证误差"></a>3. 验证误差</h2><p>下面代码是三种求反平方根的结果。调用math.h库的sqrt函数进行运算是没有误差的。<br>快速反平方根有<code>牛顿迭代</code>进行修正，一次迭代的时候，结果是<code>0.998323</code>，进行两次牛顿迭代的时候，数值会更加精确，来到了<code>0.999996</code>，小数点比一次迭代多精确3位数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">normal_inv_sqrt</span><span class="params">(<span class="keyword">double</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">1</span>/<span class="built_in">sqrt</span>(x);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">fast_inv_sqrt</span><span class="params">(<span class="keyword">double</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">double</span> y = x;</span><br><span class="line">	<span class="keyword">double</span> xhalf = (<span class="keyword">double</span>)<span class="number">0.5</span> * y;</span><br><span class="line">	<span class="keyword">long</span> <span class="keyword">long</span> i = *(<span class="keyword">long</span> <span class="keyword">long</span>*) (&amp;y);</span><br><span class="line">	i = <span class="number">0x5fe6ec85e7de30da</span>LL - (i &gt;&gt; <span class="number">1</span>);</span><br><span class="line">	y = *(<span class="keyword">double</span>*) (&amp;i);</span><br><span class="line">	y = y * ((<span class="keyword">double</span>)<span class="number">1.5</span> - xhalf * y * y);</span><br><span class="line">	<span class="comment">// y = y * ((double)1.5 - xhalf * y * y);</span></span><br><span class="line">	<span class="keyword">return</span> y;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">fast_inv_sqrt2</span><span class="params">(<span class="keyword">double</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">double</span> y = x;</span><br><span class="line">	<span class="keyword">double</span> xhalf = (<span class="keyword">double</span>)<span class="number">0.5</span> * y;</span><br><span class="line">	<span class="keyword">long</span> <span class="keyword">long</span> i = *(<span class="keyword">long</span> <span class="keyword">long</span>*) (&amp;y);</span><br><span class="line">	i = <span class="number">0x5fe6ec85e7de30da</span>LL - (i &gt;&gt; <span class="number">1</span>);</span><br><span class="line">	y = *(<span class="keyword">double</span>*) (&amp;i);</span><br><span class="line">	y = y * ((<span class="keyword">double</span>)<span class="number">1.5</span> - xhalf * y * y);</span><br><span class="line">	y = y * ((<span class="keyword">double</span>)<span class="number">1.5</span> - xhalf * y * y);</span><br><span class="line">	<span class="keyword">return</span> y;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">vec3</span> <span class="title">a</span> =</span> &#123; <span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span> &#125;;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">vec3</span> <span class="title">b</span> =</span> &#123; <span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span> &#125;;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;normal_inv_sqrt %f\n&quot;</span>, normal_inv_sqrt(<span class="number">1.0f</span>));</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;fast_inv_sqrt   %f\n&quot;</span>, fast_inv_sqrt(<span class="number">1.0f</span>));</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;fast_inv_sqrt2  %f\n&quot;</span>, fast_inv_sqrt2(<span class="number">1.0f</span>));</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;signed_angle_xz by normal_inv_sqrt %f\n&quot;</span>, signed_angle_xz(&amp;a, &amp;b, normal_inv_sqrt));</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;signed_angle_xz by fast_inv_sqrt   %f\n&quot;</span>, signed_angle_xz(&amp;a, &amp;b, fast_inv_sqrt));</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;signed_angle_xz by fast_inv_sqrt2  %f\n&quot;</span>, signed_angle_xz(&amp;a, &amp;b, fast_inv_sqrt2));</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出结果：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">normal_inv_sqrt <span class="number">1.000000</span></span><br><span class="line">fast_inv_sqrt   <span class="number">0.998323</span></span><br><span class="line">fast_inv_sqrt2  <span class="number">0.999996</span></span><br><span class="line">signed_angle_xz by normal_inv_sqrt <span class="number">-0.000000</span></span><br><span class="line">signed_angle_xz by fast_inv_sqrt   <span class="number">-0.081896</span></span><br><span class="line">signed_angle_xz by fast_inv_sqrt2  <span class="number">-0.004114</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="4-快速反平方根运算过程"><a href="#4-快速反平方根运算过程" class="headerlink" title="4. 快速反平方根运算过程"></a>4. 快速反平方根运算过程</h2><p>double 类型的数据中符号位占用 1 位，指数占用 11 位，尾数占用 52 位。<br>那么double表示1.0f，用64位表示就是<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>位符号位 <span class="number">11</span>位指数    <span class="number">52</span>位指数</span><br><span class="line">S        E           M</span><br><span class="line"><span class="number">0</span>        <span class="number">01111111111</span> <span class="number">0000000000000000000000000000000000000000000000000000</span></span><br><span class="line"><span class="comment">// 双精度的公式是 F = (-1)^s * (2^(E-1023)) * (1 + 2^-52 * M)</span></span><br><span class="line"><span class="comment">// F= (-1)^0 * 2^(2^10-1-1023) * (1 + 2^(-52)*0)</span></span><br><span class="line"><span class="comment">//  = 1 * 2^0 * (1+0)</span></span><br><span class="line"><span class="comment">//  = 1*1*1 </span></span><br><span class="line"><span class="comment">//  = 1</span></span><br></pre></td></tr></table></figure><br>转成long long类型，数值就是：2^62 - 2^52 = 4,607,182,418,800,017,408<br>转成目标值的整型：Ly=(3/2)2^52(1023-μ) - 1/2*Lx<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Ly = (<span class="number">3</span>/<span class="number">2</span>)*<span class="number">2</span>^<span class="number">52</span>*(<span class="number">1023</span>-μ) - <span class="number">1</span>/<span class="number">2</span>*Lx</span><br><span class="line">   = <span class="number">6755399441055744</span>‬ * (<span class="number">1023</span><span class="number">-0.04505</span>) - <span class="number">1</span>/<span class="number">2</span>*<span class="number">4607182418800017408</span></span><br><span class="line">   = <span class="number">6755399441055744</span> * <span class="number">1022.95495</span>‬ - <span class="number">2303591209400008704</span></span><br><span class="line">   = <span class="number">4606878088055197846</span></span><br></pre></td></tr></table></figure></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>位符号位 <span class="number">11</span>位指数    <span class="number">52</span>位指数</span><br><span class="line">S        E           M</span><br><span class="line"><span class="number">0</span>        <span class="number">01111111110</span> <span class="number">1110111010110011011001111010000011111001000000000000</span></span><br><span class="line"><span class="comment">// S = 0</span></span><br><span class="line"><span class="comment">// E = 2^10 - 1 - 1 = 1022</span></span><br><span class="line"><span class="comment">// M = 4199268882550784</span></span><br><span class="line"><span class="comment">// F = (-1)^s * (2^(E-1023)) * (1 + 2^-52 * M)</span></span><br><span class="line"><span class="comment">//   = 1 * 2^(1022-1023) * (1+2^-52 * 4199268882550784)</span></span><br><span class="line"><span class="comment">//   = 0.96621249999998</span></span><br></pre></td></tr></table></figure>
+<p>结果0.966是尚未进行牛顿迭代的结果，误差要大的多，进行一次迭代之后，数值是0.998323，进行两次迭代之后是0.999996。</p>
+<h2 id="5-角度误差对比"><a href="#5-角度误差对比" class="headerlink" title="5. 角度误差对比"></a>5. 角度误差对比</h2><p>虽然快速快速反平方根运算计算1的时候，误差在0.002，看起来也不是很大。但是在运算角度的时候，会放大这个误差，误差。特别是在角度80度~</p>
+<p><img src="/pics/inv_sqrt_101.png" alt="误差对比"></p>
+<p>一次迭代 vs 两次迭代 的误差</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>转向角度</th>
+<th>一次迭代</th>
+<th>二次迭代</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-10</td>
+<td>-1.03602</td>
+<td>-0.00275</td>
+</tr>
+<tr>
+<td>-9</td>
+<td>-1.14083</td>
+<td>-0.00306</td>
+</tr>
+<tr>
+<td>-8</td>
+<td>-1.26681</td>
+<td>-0.00341</td>
+</tr>
+<tr>
+<td>-7</td>
+<td>-1.42067</td>
+<td>-0.00392</td>
+</tr>
+<tr>
+<td>-6</td>
+<td>-1.61165</td>
+<td>-0.00464</td>
+</tr>
+<tr>
+<td>-5</td>
+<td>-1.85288</td>
+<td>-0.00556</td>
+</tr>
+<tr>
+<td>-4</td>
+<td>-2.16291</td>
+<td>-0.00695</td>
+</tr>
+<tr>
+<td>-3</td>
+<td>-2.56751</td>
+<td>-0.00925</td>
+</tr>
+<tr>
+<td>-2</td>
+<td>-3.09991</td>
+<td>-0.01385</td>
+</tr>
+<tr>
+<td>-1</td>
+<td>-3.79752</td>
+<td>-0.02741</td>
+</tr>
+<tr>
+<td>0</td>
+<td>-4.69231</td>
+<td>-0.23573</td>
+</tr>
+<tr>
+<td>1</td>
+<td>3.797516</td>
+<td>0.027412</td>
+</tr>
+<tr>
+<td>2</td>
+<td>3.099911</td>
+<td>0.013848</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2.567509</td>
+<td>0.009251</td>
+</tr>
+<tr>
+<td>4</td>
+<td>2.162912</td>
+<td>0.006946</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1.852875</td>
+<td>0.005561</td>
+</tr>
+<tr>
+<td>6</td>
+<td>1.611654</td>
+<td>0.004638</td>
+</tr>
+<tr>
+<td>7</td>
+<td>1.420678</td>
+<td>0.003922</td>
+</tr>
+<tr>
+<td>8</td>
+<td>1.26681</td>
+<td>0.003411</td>
+</tr>
+<tr>
+<td>9</td>
+<td>1.140832</td>
+<td>0.003056</td>
+</tr>
+<tr>
+<td>10</td>
+<td>1.036024</td>
+<td>0.002753</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>170</td>
+<td>-1.03599</td>
+<td>-0.00273</td>
+</tr>
+<tr>
+<td>171</td>
+<td>-1.14081</td>
+<td>-0.00303</td>
+</tr>
+<tr>
+<td>172</td>
+<td>-1.26684</td>
+<td>-0.00344</td>
+</tr>
+<tr>
+<td>173</td>
+<td>-1.42067</td>
+<td>-0.00392</td>
+</tr>
+<tr>
+<td>174</td>
+<td>-1.61162</td>
+<td>-0.00462</td>
+</tr>
+<tr>
+<td>175</td>
+<td>-1.85288</td>
+<td>-0.00556</td>
+</tr>
+<tr>
+<td>176</td>
+<td>-2.16292</td>
+<td>-0.00694</td>
+</tr>
+<tr>
+<td>177</td>
+<td>-2.56751</td>
+<td>-0.00925</td>
+</tr>
+<tr>
+<td>178</td>
+<td>-3.09991</td>
+<td>-0.01384</td>
+</tr>
+<tr>
+<td>179</td>
+<td>-3.79752</td>
+<td>-0.02742</td>
+</tr>
+<tr>
+<td>180</td>
+<td>4.692313</td>
+<td>0.235737</td>
+</tr>
+<tr>
+<td>181</td>
+<td>3.797517</td>
+<td>0.027416</td>
+</tr>
+<tr>
+<td>182</td>
+<td>3.099909</td>
+<td>0.013838</td>
+</tr>
+<tr>
+<td>183</td>
+<td>2.567509</td>
+<td>0.009248</td>
+</tr>
+<tr>
+<td>184</td>
+<td>2.16293</td>
+<td>0.006953</td>
+</tr>
+<tr>
+<td>185</td>
+<td>1.852853</td>
+<td>0.005532</td>
+</tr>
+<tr>
+<td>186</td>
+<td>1.611652</td>
+<td>0.004645</td>
+</tr>
+<tr>
+<td>187</td>
+<td>1.420666</td>
+<td>0.003921</td>
+</tr>
+<tr>
+<td>188</td>
+<td>1.266836</td>
+<td>0.003442</td>
+</tr>
+<tr>
+<td>189</td>
+<td>1.140806</td>
+<td>0.003033</td>
+</tr>
+<tr>
+<td>190</td>
+<td>1.03603</td>
+<td>0.002759</td>
+</tr>
+</tbody>
+</table>
+</div>
+<ul>
+<li>一次迭代里面，误差超过1度的在-10到10度，170到190度之间。</li>
+<li>在0度和180度达到了最大误差值，分别是-4.69度和4.69度。</li>
+<li>在0度到1度偏转的差值，来到了-4.69-3.79=-8.48度，将近10度了，也就是说有这10度，策划怎么调都调不到这个方向的。</li>
+<li>两次迭代之后，数据要好得多，最大误差只有0.23度，这个数值玩家已经很难观察到了。</li>
+</ul>
+<h2 id="6-修复方法"><a href="#6-修复方法" class="headerlink" title="6. 修复方法"></a>6. 修复方法</h2><p>修复问题有三种：</p>
+<ul>
+<li>第一种：在角度趋向于x轴，y轴的四个方向的时候，写死结果；</li>
+<li>第二种：把快速反平方根函数修改为 <code>1/sqrt(x)</code>，这样结果是没有误差的；</li>
+<li>第三种：在快速反平方根中，把结果进行两次牛顿迭代，提高精度。</li>
+</ul>
+<p>第一种可以解决部分情况，但是如果策划需要有偏差的时候，会把结果修改为没有偏差，会引入新的问题。第二种结果是最好的，但是不知道sqrt函数的内容，无法预估带来的内存影响，而且快速反平方根函数已经运行了多年。最后选了第三种，提高的精度已经完全足够使用了。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/c/" rel="tag"># c</a>
+              <a href="/tags/%E7%AE%97%E6%B3%95/" rel="tag"># 算法</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/12/20/870-collision_triangle/" rel="prev" title="判断一个点是否在三角形内">
+      <i class="fa fa-chevron-left"></i> 判断一个点是否在三角形内
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E9%97%AE%E9%A2%98%E7%8E%B0%E8%B1%A1"><span class="nav-number">1.</span> <span class="nav-text">1. 问题现象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%8E%92%E6%9F%A5%E9%97%AE%E9%A2%98"><span class="nav-number">2.</span> <span class="nav-text">2. 排查问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E9%AA%8C%E8%AF%81%E8%AF%AF%E5%B7%AE"><span class="nav-number">3.</span> <span class="nav-text">3. 验证误差</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E5%BF%AB%E9%80%9F%E5%8F%8D%E5%B9%B3%E6%96%B9%E6%A0%B9%E8%BF%90%E7%AE%97%E8%BF%87%E7%A8%8B"><span class="nav-number">4.</span> <span class="nav-text">4. 快速反平方根运算过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E8%A7%92%E5%BA%A6%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94"><span class="nav-number">5.</span> <span class="nav-text">5. 角度误差对比</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E4%BF%AE%E5%A4%8D%E6%96%B9%E6%B3%95"><span class="nav-number">6.</span> <span class="nav-text">6. 修复方法</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Ron</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">32</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2015 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ron</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+          load: ['[tex]/mhchem'],
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>

@@ -150,6 +150,318 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/07/09/321-q_rsqrt_deviation/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ron的BLOG">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/07/09/321-q_rsqrt_deviation/" class="post-title-link" itemprop="url">快速反平方根算法精度误差问题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-07-09 15:02:01" itemprop="dateCreated datePublished" datetime="2023-07-09T15:02:01+08:00">2023-07-09</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="1-问题现象"><a href="#1-问题现象" class="headerlink" title="1. 问题现象"></a>1. 问题现象</h2><p>我们策划在配置技能的时候，当技能方向趋向于y轴方向的时候，发现技能方向总是有一定的偏差，进行细节调整的时候，也达不到效果，一直微调，微调到一定大小后，方向会突然偏向于另一边。如下图：</p>
+<p>在趋向于x轴的时候，策划发现一直有4.69度想右边的偏差。进行微调也不会发生变化，直到微调到大约偏向于左边的时候，左边偏差却来到了3.79度。<br>也就是说有3.79+4.69=8.48度的角度，策划是指向的。<br><img src="/pics/inv_sqrt_102.png" alt="误差对比"></p>
+<h2 id="2-排查问题"><a href="#2-排查问题" class="headerlink" title="2. 排查问题"></a>2. 排查问题</h2><p>策划配置的角度是怪物站在(x1, y1)的位置，然后怪物技能的朝向目标坐标是(x1, y1-1000)的位置。策划进行微调的时候，是对目标坐标的x轴的值进行微调，发现无法调到想要的方向。</p>
+<p>游戏内的实现逻辑是，释放技能的时候，把怪物转到设定方向。原本怪物的方向是(0, 1)，虽然已经是策划需要的方向，但是此时也是会进行转向的运算。需要转到的目标方向也是(0, 1)。此时只要运算出怪物需要转向的角度为0即可。但事实是怪物转向逆时针转向了4.69度。</p>
+<p>排查发现，计算转向的函数返回了这4.69度，进一步排查发现<code>快速反平方根函数 fast_inv_sqrt</code> 返回的值是有一定误差的。在运行 <code>fast_inv_sqrt(1.0f)</code> 的时候，返回的是<code>0.998323</code>,虽然已经很接近1了，但是仍然是有误差的。就是这小小的0.002左右的误差，最终计算角度的时候出现了4.69度的误差。</p>
+<h2 id="3-验证误差"><a href="#3-验证误差" class="headerlink" title="3. 验证误差"></a>3. 验证误差</h2><p>下面代码是三种求反平方根的结果。调用math.h库的sqrt函数进行运算是没有误差的。<br>快速反平方根有<code>牛顿迭代</code>进行修正，一次迭代的时候，结果是<code>0.998323</code>，进行两次牛顿迭代的时候，数值会更加精确，来到了<code>0.999996</code>，小数点比一次迭代多精确3位数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">normal_inv_sqrt</span><span class="params">(<span class="keyword">double</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">1</span>/<span class="built_in">sqrt</span>(x);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">fast_inv_sqrt</span><span class="params">(<span class="keyword">double</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">double</span> y = x;</span><br><span class="line">	<span class="keyword">double</span> xhalf = (<span class="keyword">double</span>)<span class="number">0.5</span> * y;</span><br><span class="line">	<span class="keyword">long</span> <span class="keyword">long</span> i = *(<span class="keyword">long</span> <span class="keyword">long</span>*) (&amp;y);</span><br><span class="line">	i = <span class="number">0x5fe6ec85e7de30da</span>LL - (i &gt;&gt; <span class="number">1</span>);</span><br><span class="line">	y = *(<span class="keyword">double</span>*) (&amp;i);</span><br><span class="line">	y = y * ((<span class="keyword">double</span>)<span class="number">1.5</span> - xhalf * y * y);</span><br><span class="line">	<span class="comment">// y = y * ((double)1.5 - xhalf * y * y);</span></span><br><span class="line">	<span class="keyword">return</span> y;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">fast_inv_sqrt2</span><span class="params">(<span class="keyword">double</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">double</span> y = x;</span><br><span class="line">	<span class="keyword">double</span> xhalf = (<span class="keyword">double</span>)<span class="number">0.5</span> * y;</span><br><span class="line">	<span class="keyword">long</span> <span class="keyword">long</span> i = *(<span class="keyword">long</span> <span class="keyword">long</span>*) (&amp;y);</span><br><span class="line">	i = <span class="number">0x5fe6ec85e7de30da</span>LL - (i &gt;&gt; <span class="number">1</span>);</span><br><span class="line">	y = *(<span class="keyword">double</span>*) (&amp;i);</span><br><span class="line">	y = y * ((<span class="keyword">double</span>)<span class="number">1.5</span> - xhalf * y * y);</span><br><span class="line">	y = y * ((<span class="keyword">double</span>)<span class="number">1.5</span> - xhalf * y * y);</span><br><span class="line">	<span class="keyword">return</span> y;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">vec3</span> <span class="title">a</span> =</span> &#123; <span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span> &#125;;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">vec3</span> <span class="title">b</span> =</span> &#123; <span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span> &#125;;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;normal_inv_sqrt %f\n&quot;</span>, normal_inv_sqrt(<span class="number">1.0f</span>));</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;fast_inv_sqrt   %f\n&quot;</span>, fast_inv_sqrt(<span class="number">1.0f</span>));</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;fast_inv_sqrt2  %f\n&quot;</span>, fast_inv_sqrt2(<span class="number">1.0f</span>));</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;signed_angle_xz by normal_inv_sqrt %f\n&quot;</span>, signed_angle_xz(&amp;a, &amp;b, normal_inv_sqrt));</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;signed_angle_xz by fast_inv_sqrt   %f\n&quot;</span>, signed_angle_xz(&amp;a, &amp;b, fast_inv_sqrt));</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;signed_angle_xz by fast_inv_sqrt2  %f\n&quot;</span>, signed_angle_xz(&amp;a, &amp;b, fast_inv_sqrt2));</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出结果：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">normal_inv_sqrt <span class="number">1.000000</span></span><br><span class="line">fast_inv_sqrt   <span class="number">0.998323</span></span><br><span class="line">fast_inv_sqrt2  <span class="number">0.999996</span></span><br><span class="line">signed_angle_xz by normal_inv_sqrt <span class="number">-0.000000</span></span><br><span class="line">signed_angle_xz by fast_inv_sqrt   <span class="number">-0.081896</span></span><br><span class="line">signed_angle_xz by fast_inv_sqrt2  <span class="number">-0.004114</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="4-快速反平方根运算过程"><a href="#4-快速反平方根运算过程" class="headerlink" title="4. 快速反平方根运算过程"></a>4. 快速反平方根运算过程</h2><p>double 类型的数据中符号位占用 1 位，指数占用 11 位，尾数占用 52 位。<br>那么double表示1.0f，用64位表示就是<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>位符号位 <span class="number">11</span>位指数    <span class="number">52</span>位指数</span><br><span class="line">S        E           M</span><br><span class="line"><span class="number">0</span>        <span class="number">01111111111</span> <span class="number">0000000000000000000000000000000000000000000000000000</span></span><br><span class="line"><span class="comment">// 双精度的公式是 F = (-1)^s * (2^(E-1023)) * (1 + 2^-52 * M)</span></span><br><span class="line"><span class="comment">// F= (-1)^0 * 2^(2^10-1-1023) * (1 + 2^(-52)*0)</span></span><br><span class="line"><span class="comment">//  = 1 * 2^0 * (1+0)</span></span><br><span class="line"><span class="comment">//  = 1*1*1 </span></span><br><span class="line"><span class="comment">//  = 1</span></span><br></pre></td></tr></table></figure><br>转成long long类型，数值就是：2^62 - 2^52 = 4,607,182,418,800,017,408<br>转成目标值的整型：Ly=(3/2)2^52(1023-μ) - 1/2*Lx<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Ly = (<span class="number">3</span>/<span class="number">2</span>)*<span class="number">2</span>^<span class="number">52</span>*(<span class="number">1023</span>-μ) - <span class="number">1</span>/<span class="number">2</span>*Lx</span><br><span class="line">   = <span class="number">6755399441055744</span>‬ * (<span class="number">1023</span><span class="number">-0.04505</span>) - <span class="number">1</span>/<span class="number">2</span>*<span class="number">4607182418800017408</span></span><br><span class="line">   = <span class="number">6755399441055744</span> * <span class="number">1022.95495</span>‬ - <span class="number">2303591209400008704</span></span><br><span class="line">   = <span class="number">4606878088055197846</span></span><br></pre></td></tr></table></figure></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>位符号位 <span class="number">11</span>位指数    <span class="number">52</span>位指数</span><br><span class="line">S        E           M</span><br><span class="line"><span class="number">0</span>        <span class="number">01111111110</span> <span class="number">1110111010110011011001111010000011111001000000000000</span></span><br><span class="line"><span class="comment">// S = 0</span></span><br><span class="line"><span class="comment">// E = 2^10 - 1 - 1 = 1022</span></span><br><span class="line"><span class="comment">// M = 4199268882550784</span></span><br><span class="line"><span class="comment">// F = (-1)^s * (2^(E-1023)) * (1 + 2^-52 * M)</span></span><br><span class="line"><span class="comment">//   = 1 * 2^(1022-1023) * (1+2^-52 * 4199268882550784)</span></span><br><span class="line"><span class="comment">//   = 0.96621249999998</span></span><br></pre></td></tr></table></figure>
+<p>结果0.966是尚未进行牛顿迭代的结果，误差要大的多，进行一次迭代之后，数值是0.998323，进行两次迭代之后是0.999996。</p>
+<h2 id="5-角度误差对比"><a href="#5-角度误差对比" class="headerlink" title="5. 角度误差对比"></a>5. 角度误差对比</h2><p>虽然快速快速反平方根运算计算1的时候，误差在0.002，看起来也不是很大。但是在运算角度的时候，会放大这个误差，误差。特别是在角度80度~</p>
+<p><img src="/pics/inv_sqrt_101.png" alt="误差对比"></p>
+<p>一次迭代 vs 两次迭代 的误差</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>转向角度</th>
+<th>一次迭代</th>
+<th>二次迭代</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-10</td>
+<td>-1.03602</td>
+<td>-0.00275</td>
+</tr>
+<tr>
+<td>-9</td>
+<td>-1.14083</td>
+<td>-0.00306</td>
+</tr>
+<tr>
+<td>-8</td>
+<td>-1.26681</td>
+<td>-0.00341</td>
+</tr>
+<tr>
+<td>-7</td>
+<td>-1.42067</td>
+<td>-0.00392</td>
+</tr>
+<tr>
+<td>-6</td>
+<td>-1.61165</td>
+<td>-0.00464</td>
+</tr>
+<tr>
+<td>-5</td>
+<td>-1.85288</td>
+<td>-0.00556</td>
+</tr>
+<tr>
+<td>-4</td>
+<td>-2.16291</td>
+<td>-0.00695</td>
+</tr>
+<tr>
+<td>-3</td>
+<td>-2.56751</td>
+<td>-0.00925</td>
+</tr>
+<tr>
+<td>-2</td>
+<td>-3.09991</td>
+<td>-0.01385</td>
+</tr>
+<tr>
+<td>-1</td>
+<td>-3.79752</td>
+<td>-0.02741</td>
+</tr>
+<tr>
+<td>0</td>
+<td>-4.69231</td>
+<td>-0.23573</td>
+</tr>
+<tr>
+<td>1</td>
+<td>3.797516</td>
+<td>0.027412</td>
+</tr>
+<tr>
+<td>2</td>
+<td>3.099911</td>
+<td>0.013848</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2.567509</td>
+<td>0.009251</td>
+</tr>
+<tr>
+<td>4</td>
+<td>2.162912</td>
+<td>0.006946</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1.852875</td>
+<td>0.005561</td>
+</tr>
+<tr>
+<td>6</td>
+<td>1.611654</td>
+<td>0.004638</td>
+</tr>
+<tr>
+<td>7</td>
+<td>1.420678</td>
+<td>0.003922</td>
+</tr>
+<tr>
+<td>8</td>
+<td>1.26681</td>
+<td>0.003411</td>
+</tr>
+<tr>
+<td>9</td>
+<td>1.140832</td>
+<td>0.003056</td>
+</tr>
+<tr>
+<td>10</td>
+<td>1.036024</td>
+<td>0.002753</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>170</td>
+<td>-1.03599</td>
+<td>-0.00273</td>
+</tr>
+<tr>
+<td>171</td>
+<td>-1.14081</td>
+<td>-0.00303</td>
+</tr>
+<tr>
+<td>172</td>
+<td>-1.26684</td>
+<td>-0.00344</td>
+</tr>
+<tr>
+<td>173</td>
+<td>-1.42067</td>
+<td>-0.00392</td>
+</tr>
+<tr>
+<td>174</td>
+<td>-1.61162</td>
+<td>-0.00462</td>
+</tr>
+<tr>
+<td>175</td>
+<td>-1.85288</td>
+<td>-0.00556</td>
+</tr>
+<tr>
+<td>176</td>
+<td>-2.16292</td>
+<td>-0.00694</td>
+</tr>
+<tr>
+<td>177</td>
+<td>-2.56751</td>
+<td>-0.00925</td>
+</tr>
+<tr>
+<td>178</td>
+<td>-3.09991</td>
+<td>-0.01384</td>
+</tr>
+<tr>
+<td>179</td>
+<td>-3.79752</td>
+<td>-0.02742</td>
+</tr>
+<tr>
+<td>180</td>
+<td>4.692313</td>
+<td>0.235737</td>
+</tr>
+<tr>
+<td>181</td>
+<td>3.797517</td>
+<td>0.027416</td>
+</tr>
+<tr>
+<td>182</td>
+<td>3.099909</td>
+<td>0.013838</td>
+</tr>
+<tr>
+<td>183</td>
+<td>2.567509</td>
+<td>0.009248</td>
+</tr>
+<tr>
+<td>184</td>
+<td>2.16293</td>
+<td>0.006953</td>
+</tr>
+<tr>
+<td>185</td>
+<td>1.852853</td>
+<td>0.005532</td>
+</tr>
+<tr>
+<td>186</td>
+<td>1.611652</td>
+<td>0.004645</td>
+</tr>
+<tr>
+<td>187</td>
+<td>1.420666</td>
+<td>0.003921</td>
+</tr>
+<tr>
+<td>188</td>
+<td>1.266836</td>
+<td>0.003442</td>
+</tr>
+<tr>
+<td>189</td>
+<td>1.140806</td>
+<td>0.003033</td>
+</tr>
+<tr>
+<td>190</td>
+<td>1.03603</td>
+<td>0.002759</td>
+</tr>
+</tbody>
+</table>
+</div>
+<ul>
+<li>一次迭代里面，误差超过1度的在-10到10度，170到190度之间。</li>
+<li>在0度和180度达到了最大误差值，分别是-4.69度和4.69度。</li>
+<li>在0度到1度偏转的差值，来到了-4.69-3.79=-8.48度，将近10度了，也就是说有这10度，策划怎么调都调不到这个方向的。</li>
+<li>两次迭代之后，数据要好得多，最大误差只有0.23度，这个数值玩家已经很难观察到了。</li>
+</ul>
+<h2 id="6-修复方法"><a href="#6-修复方法" class="headerlink" title="6. 修复方法"></a>6. 修复方法</h2><p>修复问题有三种：</p>
+<ul>
+<li>第一种：在角度趋向于x轴，y轴的四个方向的时候，写死结果；</li>
+<li>第二种：把快速反平方根函数修改为 <code>1/sqrt(x)</code>，这样结果是没有误差的；</li>
+<li>第三种：在快速反平方根中，把结果进行两次牛顿迭代，提高精度。</li>
+</ul>
+<p>第一种可以解决部分情况，但是如果策划需要有偏差的时候，会把结果修改为没有偏差，会引入新的问题。第二种结果是最好的，但是不知道sqrt函数的内容，无法预估带来的内存影响，而且快速反平方根函数已经运行了多年。最后选了第三种，提高的精度已经完全足够使用了。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://example.com/2022/12/20/870-collision_triangle/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -270,63 +582,64 @@ a * x + b * y + c</script><p>以上表达式的结果有三种：</p>
           <h2 id="1-涉及知识"><a href="#1-涉及知识" class="headerlink" title="-1. 涉及知识"></a>-1. 涉及知识</h2><ol>
 <li>float单精度的内存表示方式；</li>
 <li>对数和指数；</li>
-<li>牛顿方法&#x2F;牛顿迭代。</li>
+<li>牛顿方法/牛顿迭代。</li>
 </ol>
 <h2 id="0-背景"><a href="#0-背景" class="headerlink" title="0. 背景"></a>0. 背景</h2><p>在标准化向量计算的时候，会频繁使用。譬如计算A点到B点的方向，需要计算标准化向量。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">float</span> len = <span class="built_in">sqrt</span>(x^<span class="number">2</span> + y^<span class="number">2</span> + z^<span class="number">2</span>);</span><br><span class="line"><span class="keyword">float</span> x_nor = x/len;</span><br><span class="line"><span class="keyword">float</span> y_nor = y/len;</span><br><span class="line"><span class="keyword">float</span> z_nor = z/len;</span><br></pre></td></tr></table></figure>
-
-<p>$$<br>x_nor &#x3D; x * 1&#x2F;\sqrt{x^2 +y^2 + z^2}<br>$$</p>
-<h2 id="1-计算下真实的-1-x2F-sqrt-5-x3D-？答案为：0-44721359"><a href="#1-计算下真实的-1-x2F-sqrt-5-x3D-？答案为：0-44721359" class="headerlink" title="1. 计算下真实的 $1&#x2F;\sqrt{5}$ &#x3D; ？答案为：0.44721359"></a>1. 计算下真实的 $1&#x2F;\sqrt{5}$ &#x3D; ？答案为：0.44721359</h2><h2 id="2-代码计算过程"><a href="#2-代码计算过程" class="headerlink" title="2. 代码计算过程"></a>2. 代码计算过程</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 快速反平方根</span></span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">Q_rsqrt</span><span class="params">( <span class="keyword">float</span> number )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">long</span> i;</span><br><span class="line">    <span class="keyword">float</span> x2, y;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">float</span> threehalfs = <span class="number">1.5F</span>;</span><br><span class="line"></span><br><span class="line">    x2 = number * <span class="number">0.5F</span>;</span><br><span class="line">    y = number;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;number为 = %f\n&quot;</span>, y);</span><br><span class="line">    i = * ( <span class="keyword">long</span> * ) &amp;y;         <span class="comment">// evil floating point bit hack</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;转换为long = %d\n&quot;</span>, i);</span><br><span class="line">    i = <span class="number">0x5f3759df</span> - ( i &gt;&gt; <span class="number">1</span> ); <span class="comment">// what the fuck?</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;long的结果 = %d\n&quot;</span>, i);</span><br><span class="line">    y = * ( <span class="keyword">float</span> * ) &amp;i;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;转换为float = %f\n&quot;</span>, y);</span><br><span class="line">    y = y * ( threehalfs - ( x2 * y * y ));  <span class="comment">// 1st iteration</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Netown 迭代1次 = %f\n&quot;</span>, y);</span><br><span class="line">    y = y * ( threehalfs - ( x2 * y * y ));  <span class="comment">// 2nd iteration, can be removed</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Netown 迭代2次 = %f\n&quot;</span>, y);</span><br><span class="line">    <span class="keyword">return</span> y;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//number为       = 5.000000</span></span><br><span class="line"><span class="comment">//转换为long     = 1084227584</span></span><br><span class="line"><span class="comment">//long的结果     = 1055349215</span></span><br><span class="line"><span class="comment">//转换为float    = 0.451858</span></span><br><span class="line"><span class="comment">//Netown 迭代1次 = 0.447141</span></span><br><span class="line"><span class="comment">//Netown 迭代2次 = 0.447214</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//number = 5.000000, ret = 0.447214</span></span><br></pre></td></tr></table></figure>
-
+<script type="math/tex; mode=display">
+x\_nor = x * 1/\sqrt{x^2 +y^2 + z^2}</script><h2 id="1-计算下真实的-1-sqrt-5-？答案为：0-44721359"><a href="#1-计算下真实的-1-sqrt-5-？答案为：0-44721359" class="headerlink" title="1. 计算下真实的 $1/\sqrt{5}$ = ？答案为：0.44721359"></a>1. 计算下真实的 $1/\sqrt{5}$ = ？答案为：0.44721359</h2><h2 id="2-代码计算过程"><a href="#2-代码计算过程" class="headerlink" title="2. 代码计算过程"></a>2. 代码计算过程</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 快速反平方根</span></span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">Q_rsqrt</span><span class="params">( <span class="keyword">float</span> number )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">long</span> i;</span><br><span class="line">    <span class="keyword">float</span> x2, y;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">float</span> threehalfs = <span class="number">1.5F</span>;</span><br><span class="line"></span><br><span class="line">    x2 = number * <span class="number">0.5F</span>;</span><br><span class="line">    y = number;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;number为 = %f\n&quot;</span>, y);</span><br><span class="line">    i = * ( <span class="keyword">long</span> * ) &amp;y;         <span class="comment">// evil floating point bit hack</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;转换为long = %d\n&quot;</span>, i);</span><br><span class="line">    i = <span class="number">0x5f3759df</span> - ( i &gt;&gt; <span class="number">1</span> ); <span class="comment">// what the fuck?</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;long的结果 = %d\n&quot;</span>, i);</span><br><span class="line">    y = * ( <span class="keyword">float</span> * ) &amp;i;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;转换为float = %f\n&quot;</span>, y);</span><br><span class="line">    y = y * ( threehalfs - ( x2 * y * y ));  <span class="comment">// 1st iteration</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Netown 迭代1次 = %f\n&quot;</span>, y);</span><br><span class="line">    y = y * ( threehalfs - ( x2 * y * y ));  <span class="comment">// 2nd iteration, can be removed</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Netown 迭代2次 = %f\n&quot;</span>, y);</span><br><span class="line">    <span class="keyword">return</span> y;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//number为       = 5.000000</span></span><br><span class="line"><span class="comment">//转换为long     = 1084227584</span></span><br><span class="line"><span class="comment">//long的结果     = 1055349215</span></span><br><span class="line"><span class="comment">//转换为float    = 0.451858</span></span><br><span class="line"><span class="comment">//Netown 迭代1次 = 0.447141</span></span><br><span class="line"><span class="comment">//Netown 迭代2次 = 0.447214</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//number = 5.000000, ret = 0.447214</span></span><br></pre></td></tr></table></figure>
 <p>可以发现代码计算的结果 0.447214 与真实结果 0.44721359 非常接近，小数点前五位都是一致的。</p>
 <h2 id="3-步骤说明"><a href="#3-步骤说明" class="headerlink" title="3. 步骤说明"></a>3. 步骤说明</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 快速反平方根</span></span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">Q_rsqrt</span><span class="params">( <span class="keyword">float</span> number )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">long</span> i;</span><br><span class="line">    <span class="keyword">float</span> x2, y;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">float</span> threehalfs = <span class="number">1.5F</span>;</span><br><span class="line"></span><br><span class="line">    x2 = number * <span class="number">0.5F</span>;</span><br><span class="line">    y = number;</span><br><span class="line">    i = * ( <span class="keyword">long</span> * ) &amp;y;                     <span class="comment">//step 1, evil floating point bit hack</span></span><br><span class="line">    i = <span class="number">0x5f3759df</span> - ( i &gt;&gt; <span class="number">1</span> );             <span class="comment">//step 2, what the fuck?</span></span><br><span class="line">    y = * ( <span class="keyword">float</span> * ) &amp;i;                    <span class="comment">//step 3,</span></span><br><span class="line">    y = y * ( threehalfs - ( x2 * y * y ));  <span class="comment">//step4, 1st iteration</span></span><br><span class="line">    y = y * ( threehalfs - ( x2 * y * y ));        <span class="comment">// 2nd iteration, can be removed</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <h3 id="3-1-第1步：讲number的地址转成long类型地址，并取long类型的值"><a href="#3-1-第1步：讲number的地址转成long类型地址，并取long类型的值" class="headerlink" title="3.1. 第1步：讲number的地址转成long类型地址，并取long类型的值"></a>3.1. 第1步：讲number的地址转成long类型地址，并取long类型的值</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">i = * ( <span class="keyword">long</span> * ) &amp;y;</span><br><span class="line"><span class="comment">// 让i生成与y一样的内容，但是i是 long类型，y是float</span></span><br><span class="line"><span class="comment">// 不能使用强制类型转换，因为强制类型转换会丢失bit信息</span></span><br><span class="line"><span class="comment">// 此处目的是对float类型的number进行位运算，而float是不能进行位运行的，所以需要转换为long</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// &amp;y 获取到y的地址</span></span><br><span class="line"><span class="comment">// ( long * ) &amp;y 然后将float的地址转换为 long的地址</span></span><br><span class="line"><span class="comment">// * ( long * ) &amp;y 然后获取地址上的数值</span></span><br></pre></td></tr></table></figure>
-
 <h3 id="3-2-第2步：计算出反平方根的值（long类型下）"><a href="#3-2-第2步：计算出反平方根的值（long类型下）" class="headerlink" title="3.2. 第2步：计算出反平方根的值（long类型下）"></a>3.2. 第2步：计算出反平方根的值（long类型下）</h3><p>此处只有一句代码 <code>i = 0x5f3759df - ( i &gt;&gt; 1 )</code> 但是这里非常复杂。这里得到的最终结果是 <code>Ly=(3/2)*2^23*(127-μ) - 1/2*Lx</code> (Lx是原来的i，Ly是计算结果，结果重新赋值给了i）。<br>这里μ为 <code>0.04505</code> ，所以最终结果为 <code>(3/2)*2^23*(127-μ) - 1/2*Lx</code> 既 <code>Ly = 0x5f3759df - (Lx &gt;&gt;1)</code></p>
 <p>关于此处的解释，后面举例具体来说明。</p>
-<p>F与L之间的转换关系为：log2(F)&#x3D;(2^-23)*L + μ - 127</p>
-<p>$$<br>log_2(F) &#x3D; 2^{-23} * L + μ - 127<br>$$</p>
-<h3 id="3-3-第3步：重新回为浮点数"><a href="#3-3-第3步：重新回为浮点数" class="headerlink" title="3.3. 第3步：重新回为浮点数"></a>3.3. 第3步：重新回为浮点数</h3><h3 id="3-4-第4步：使用牛顿迭代法提高精度"><a href="#3-4-第4步：使用牛顿迭代法提高精度" class="headerlink" title="3.4. 第4步：使用牛顿迭代法提高精度"></a>3.4. 第4步：使用牛顿迭代法提高精度</h3><p>牛顿迭代是可以提高精度，前面得到了一个靠近的数值，但是由于μ的存在，是存在误差的，这里可以使用牛顿迭代法求到更具体的数值。</p>
+<p>F与L之间的转换关系为：log2(F)=(2^-23)*L + μ - 127</p>
+<script type="math/tex; mode=display">
+log_2(F) = 2^{-23} * L + μ - 127</script><h3 id="3-3-第3步：重新回为浮点数"><a href="#3-3-第3步：重新回为浮点数" class="headerlink" title="3.3. 第3步：重新回为浮点数"></a>3.3. 第3步：重新回为浮点数</h3><h3 id="3-4-第4步：使用牛顿迭代法提高精度"><a href="#3-4-第4步：使用牛顿迭代法提高精度" class="headerlink" title="3.4. 第4步：使用牛顿迭代法提高精度"></a>3.4. 第4步：使用牛顿迭代法提高精度</h3><p>牛顿迭代是可以提高精度，前面得到了一个靠近的数值，但是由于μ的存在，是存在误差的，这里可以使用牛顿迭代法求到更具体的数值。</p>
 <p>牛顿迭代法的公式是：</p>
-<p>$$<br>x_{n+1} &#x3D; x_n - \frac{f(x_n)}{f^{‘}(x_n)}<br>$$</p>
-<p>这里的f(x)是 $f(x) &#x3D; \frac{1}{x^2}-a$，其导数函数是$f^{‘}(x)&#x3D;\frac{-2}{x^{-3}}$，把函数和导函数代入牛顿迭代法公式：</p>
-<p>$$<br>y_{n+1} &#x3D; y_n - \frac{f(y_n)}{f^{‘}(y_n)}&#x3D;y_n - \frac{\frac{1}{y^2}-a}{\frac{-2}{y^{-3}}}&#x3D;y_n(1.5-\frac{ay_n^2}{2})<br>$$</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">y = y * ( threehalfs - ( x2 * y * y ));    <span class="comment">// 1st iteration</span></span><br><span class="line"><span class="comment">// 代入值下</span></span><br><span class="line">y = y * ( <span class="number">1.5F</span>- ( <span class="number">0.5F</span> * number * y * y ));   <span class="comment">// 1st iteration</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="4-举例来说："><a href="#4-举例来说：" class="headerlink" title="4. 举例来说："></a>4. 举例来说：</h2><p>number &#x3D; 5.0F</p>
+<script type="math/tex; mode=display">
+x_{n+1} = x_n - \frac{f(x_n)}{f^{'}(x_n)}</script><p>这里的f(x)是 $f(x) = \frac{1}{x^2}-a$，其导数函数是$f^{‘}(x)=\frac{-2}{x^{-3}}$，把函数和导函数代入牛顿迭代法公式：</p>
+<script type="math/tex; mode=display">
+y_{n+1} = y_n - \frac{f(y_n)}{f^{'}(y_n)}=y_n - \frac{\frac{1}{y^2}-a}{\frac{-2}{y^{-3}}}=y_n(1.5-\frac{ay_n^2}{2})</script><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">y = y * ( threehalfs - ( x2 * y * y ));    <span class="comment">// 1st iteration</span></span><br><span class="line"><span class="comment">// 代入值下</span></span><br><span class="line">y = y * ( <span class="number">1.5F</span>- ( <span class="number">0.5F</span> * number * y * y ));   <span class="comment">// 1st iteration</span></span><br></pre></td></tr></table></figure>
+<h2 id="4-举例来说："><a href="#4-举例来说：" class="headerlink" title="4. 举例来说："></a>4. 举例来说：</h2><p>number = 5.0F</p>
 <p>float的二进制表示为</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">单精度的<span class="keyword">float</span>，有<span class="number">32b</span>it，</span><br><span class="line">第<span class="number">1</span>位位符号位，</span><br><span class="line">第<span class="number">2</span>~<span class="number">9</span>位为指数，表示为E</span><br><span class="line">最后<span class="number">23</span>位为尾数，表示为M</span><br><span class="line"></span><br><span class="line"><span class="number">1b</span>it     <span class="number">8b</span>it       <span class="number">23b</span>it</span><br><span class="line">符号位S  指数E       尾数M</span><br><span class="line"><span class="number">0</span>       <span class="number">10000001</span>   <span class="number">01000000000000000000000</span>  <span class="comment">// 表示为float的时候，值为5.0F</span></span><br><span class="line"><span class="number">0</span>       <span class="number">10000001</span>   <span class="number">01000000000000000000000</span>  <span class="comment">// 表示为long 的时候，值为1084227584</span></span><br></pre></td></tr></table></figure>
-
 <p>同样的一个32位的地址，可以解读成单精度的float，也可以解读成long类型的整型，下面是公式（F表示float类型的值，L表示long类型的值）：</p>
-<p>$$<br>F &#x3D; (-1)^S · 2^{E-127} · (1 + 2^{-23}M)<br>$$</p>
-<p>$$<br>L &#x3D; 2^{23} · E + M<br>$$</p>
-<p>根据上面两个公式，我们可以得到 <code>float</code>类型的值F，与 <code>long</code>类型的值L之间的关系如下(μ&#x3D;0.04505）：</p>
-<p>$$<br>log_2F&#x3D;(2^{-23})·L + μ - 127<br>$$</p>
-<p>我们再把我们想要的内容答案 X &#x3D; 1&#x2F;sqrt(number) 代进去。（如下，Fy是我们想要的值）</p>
-<p>$$<br>F_y &#x3D; 1&#x2F;\sqrt{F_x}<br>$$</p>
-<p>两边取以2为底的对数，等式是成立的</p>
-<p>$$<br>log_2F_y &#x3D; log_2(1&#x2F;\sqrt{F_x})\log_2F_y &#x3D; -\frac{1}{2}log_2F_x\<br>$$</p>
-<p>获取到了上面的公式之后，可以利用 <code>float</code>类型的F与 <code>long</code>类型L的关系，把F换成L</p>
-<p>$$<br>\begin{array}{c}<br>log_2F_y &#x3D; -\frac{1}{2}log_2F_x \ \<br>\because {\color{Red} log_2F&#x3D;2^{-23}·L + μ - 127 } \ \<br>\therefore {\color{Red} 2^{-23}·L_y + μ - 127 }  &#x3D; -\frac{1}{2}{\color{Red} (2^{-23}·Lx + μ - 127)} \ \<br>最终我们可以得到： \ \<br>L_y&#x3D;\frac{3}{2}·2^{23}·(127-μ) - \frac{1}{2}·L_x \ \<br>把μ代进去算一下 \ \<br>L_y&#x3D;\frac{3}{2}·2^{23}·(127-0.04505) - \frac{1}{2}·L_x &#x3D; 0x5f3759df - \frac{1}{2}·L_x \ \<br>\frac{1}{2}·L_x也可以转化为右移操作 \ \<br>{\color{Green} L_y&#x3D;0x5f3759df - (L_x &gt;&gt; 1) }<br>\end{array}</p>
-<p>$$</p>
-<p>至此，我们得到了代码中第2步的来由。</p>
+<script type="math/tex; mode=display">
+F = (-1)^S · 2^{E-127} · (1 + 2^{-23}M)</script><script type="math/tex; mode=display">
+L = 2^{23} · E + M</script><p>根据上面两个公式，我们可以得到 <code>float</code>类型的值F，与 <code>long</code>类型的值L之间的关系如下(μ=0.04505）：</p>
+<script type="math/tex; mode=display">
+log_2F=(2^{-23})·L + μ - 127</script><p>我们再把我们想要的内容答案 X = 1/sqrt(number) 代进去。（如下，Fy是我们想要的值）</p>
+<script type="math/tex; mode=display">
+F_y = 1/\sqrt{F_x}</script><p>两边取以2为底的对数，等式是成立的</p>
+<script type="math/tex; mode=display">
+log_2F_y = log_2(1/\sqrt{F_x})\\log_2F_y = -\frac{1}{2}log_2F_x\\</script><p>获取到了上面的公式之后，可以利用 <code>float</code>类型的F与 <code>long</code>类型L的关系，把F换成L</p>
+<script type="math/tex; mode=display">
+\begin{array}{c}
+log_2F_y = -\frac{1}{2}log_2F_x \\ \\
+\because {\color{Red} log_2F=2^{-23}·L + μ - 127 } \\ \\
+\therefore {\color{Red} 2^{-23}·L_y + μ - 127 }  = -\frac{1}{2}{\color{Red} (2^{-23}·Lx + μ - 127)} \\ \\
+最终我们可以得到： \\ \\
+L_y=\frac{3}{2}·2^{23}·(127-μ) - \frac{1}{2}·L_x \\ \\
+把μ代进去算一下 \\ \\
+L_y=\frac{3}{2}·2^{23}·(127-0.04505) - \frac{1}{2}·L_x = 0x5f3759df - \frac{1}{2}·L_x \\ \\
+\frac{1}{2}·L_x也可以转化为右移操作 \\ \\
+{\color{Green} L_y=0x5f3759df - (L_x >> 1) }
+\end{array}</script><p>至此，我们得到了代码中第2步的来由。</p>
 <p>然后我们将 <code>long</code> 类型的Ly的结果，转成 <code>float</code> 类型，就能得到我们初步的答案。</p>
-<h3 id="验证一下："><a href="#验证一下：" class="headerlink" title="验证一下："></a>验证一下：</h3><p>现在，F &#x3D; 0.5, L&#x3D; 1084227584 的情况下，log2(F)&#x3D;(2^-23)*L + μ - 127 是否成立</p>
-<p>log2(F) &#x3D; 2.3219280949</p>
-<p>(2^-23)*L + μ - 127 &#x3D; (2^-23)*L + 0.04505 - 127 &#x3D; 2.29505</p>
+<h3 id="验证一下："><a href="#验证一下：" class="headerlink" title="验证一下："></a>验证一下：</h3><p>现在，F = 0.5, L= 1084227584 的情况下，log2(F)=(2^-23)*L + μ - 127 是否成立</p>
+<p>log2(F) = 2.3219280949</p>
+<p>(2^-23)<em>L + μ - 127 = (2^-23)</em>L + 0.04505 - 127 = 2.29505</p>
 <p>此处答案接近。</p>
 <p>代入最终计算公式：</p>
-<p>Ly&#x3D;(3&#x2F;2)<em>2^23</em>(127-μ) - 1&#x2F;2*Lx</p>
-<p>&#x3D; (3&#x2F;2)<em>2^23</em>(127-0.04505) - 1&#x2F;2*1084227584</p>
-<p>&#x3D; 1055349171</p>
+<p>Ly=(3/2)<em>2^23</em>(127-μ) - 1/2*Lx</p>
+<p>= (3/2)<em>2^23</em>(127-0.04505) - 1/2*1084227584</p>
+<p>= 1055349171</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1b</span>it     <span class="number">8b</span>it       <span class="number">23b</span>it</span><br><span class="line">符号位S  指数E       尾数M</span><br><span class="line"><span class="number">0</span>       <span class="number">10000001</span>   <span class="number">01000000000000000000000</span></span><br><span class="line"><span class="number">0</span>       <span class="number">01111101</span>   <span class="number">11001110101100110110011</span></span><br></pre></td></tr></table></figure>
-
-<p>将Ly转为Fy &#x3D; 0.45185623</p>
+<p>将Ly转为Fy = 0.45185623</p>
 <p>牛顿迭代一次：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">y = y * ( threehalfs - ( x2 * y * y ))</span><br></pre></td></tr></table></figure>
-
-<p>y1 &#x3D; y * ( 1.5- ( 0.5<em>5 * y * y ))<br>&#x3D; 0.45185623 * ( 1.5- ( 0.5</em>5 * 0.45185623 * 0.45185623 ))<br>&#x3D; 0.44714105083</p>
+<p>y1 = y <em> ( 1.5- ( 0.5</em>5 <em> y </em> y ))<br>= 0.45185623 <em> ( 1.5- ( 0.5</em>5 <em> 0.45185623 </em> 0.45185623 ))<br>= 0.44714105083</p>
 <hr>
 <p>一些在线二进制转换的工具：</p>
 <p>浮点数表示：<br><a target="_blank" rel="noopener" href="https://tooltt.com/ieee/">https://tooltt.com/ieee/</a><br><a target="_blank" rel="noopener" href="https://tooltt.com/floatconverter/">https://tooltt.com/floatconverter/</a><br>进制转换：<br> <a target="_blank" rel="noopener" href="https://www.sojson.com/hexconvert.html">https://www.sojson.com/hexconvert.html</a><br>LaTeX公式编辑器：<br><a target="_blank" rel="noopener" href="https://www.latexlive.com/">https://www.latexlive.com/</a></p>
@@ -936,87 +1249,6 @@ a * x + b * y + c</script><p>以上表达式的结果有三种：</p>
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2019/08/16/910-Mysql_row_size_limit/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ron的BLOG">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/08/16/910-Mysql_row_size_limit/" class="post-title-link" itemprop="url">mysql innodb 的 row size上限</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-08-16 17:23:01" itemprop="dateCreated datePublished" datetime="2019-08-16T17:23:01+08:00">2019-08-16</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>在项目使用中，出现了以下报错：</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Error Code: <span class="number">1118</span> <span class="operator">-</span> <span class="type">Row</span> size too <span class="keyword">large</span> (<span class="operator">&gt;</span> <span class="number">8126</span>).</span><br><span class="line">Changing <span class="keyword">some</span> columns <span class="keyword">to</span> TEXT <span class="keyword">or</span> <span class="type">BLOB</span> <span class="keyword">or</span> <span class="keyword">using</span> ROW_FORMAT<span class="operator">=</span><span class="keyword">DYNAMIC</span> <span class="keyword">or</span> ROW_FORMAT<span class="operator">=</span>COMPRESSED may help.</span><br><span class="line"><span class="keyword">In</span> <span class="keyword">current</span> <span class="type">row</span> format, <span class="type">BLOB</span> prefix <span class="keyword">of</span> <span class="number">768</span> bytes <span class="keyword">is</span> stored inline.</span><br></pre></td></tr></table></figure>
-
-<p>上面报错，这就涉及到了row size的上限，也有可能会涉及到file format的设置。</p>
-<h2 id="一些上限"><a href="#一些上限" class="headerlink" title="一些上限"></a>一些上限</h2><ul>
-<li>创建表报错：maximum row size &gt; 65535</li>
-<li>创建表报错：row size too large &gt; 8126</li>
-<li>插入数据报错：row size too larget &gt; 8126</li>
-</ul>
-<p>这里主要讲第三种报错，插入数据的时候触发的报错。先要理清file format和row format两个概念。<br>个人理解修改这两个参数都有可能解决掉问题。为啥是有可能，因为file format只是部分长字段类型的设置。</p>
-<h2 id="File-format"><a href="#File-format" class="headerlink" title="File format"></a>File format</h2><p>先解释下file forma。这是用于varchat或者text字段存储数据的方案。file format有两种，分别是Antelope和Barracuda。</p>
-<h3 id="Antelope模式"><a href="#Antelope模式" class="headerlink" title="Antelope模式"></a>Antelope模式</h3><p>在MySQL 5.6之前的版本，默认file format是Antelope。<br>意思是，对于varchar和text字段，会将内容的前768字段放置在index record中，后面再接20个字节的指针。<br>剩下内容会放置在BLOB page中。</p>
-<p>假设有11个text字段，每个字段都是1000字节。那么在插入数据的时候，row size &#x3D; （768+20）* 11 &#x3D; 8668 &gt; 8126，将会触发<code>row size too larget &gt; 8126</code>报错。<br>如果使用Antelope模式，不建议使用超过10个text或varchar字段。</p>
-<h3 id="Barracuda模式"><a href="#Barracuda模式" class="headerlink" title="Barracuda模式"></a>Barracuda模式</h3><p>Barracude会将所有数据放在BLOB page中，在index record里面只放20个字节的指针。</p>
-<h3 id="设置切换"><a href="#设置切换" class="headerlink" title="设置切换"></a>设置切换</h3><p>查询File format设置：</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">show</span> variables <span class="keyword">like</span> &quot;%innodb_file%&quot;;</span><br></pre></td></tr></table></figure>
-<p>my.cnf 设置</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">innodb_file_format = Barracuda #</span><br><span class="line">innodb_file_per_table = 1</span><br><span class="line">innodb_large_prefix = 1</span><br></pre></td></tr></table></figure>
-
-<h2 id="Row-format"><a href="#Row-format" class="headerlink" title="Row format"></a>Row format</h2><p>innodb引擎的行格式（row format）有两种。分别是compact和dynamic&#x2F;compressed。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> test ROW_FORMAT<span class="operator">=</span>COMPRESSED;</span><br><span class="line"></span><br><span class="line"><span class="keyword">SHOW</span> <span class="keyword">TABLE</span> STATUS <span class="keyword">IN</span> test_db;</span><br></pre></td></tr></table></figure>
-
-<p>这里还是之说Antelope模式下使用text的问题。普通的数值类型，其实很难超8126的长度限制，就不说了。在Antelope模式下，text字段的前768会存储在index record中，会占用row size的768+2个字节。所以text&#x2F;varchar字段不能太多。除非确定不会太长。</p>
-<hr>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"># 验证测试的<span class="keyword">sql</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> text2</span><br><span class="line">  (</span><br><span class="line">   text1   longtext,</span><br><span class="line">   text2   longtext,</span><br><span class="line">   text3   longtext,</span><br><span class="line">   text4   longtext,</span><br><span class="line">   text5   longtext,</span><br><span class="line">   text6   longtext,</span><br><span class="line">   text7   longtext,</span><br><span class="line">   text8   longtext,</span><br><span class="line">   text9   longtext,</span><br><span class="line">   text10  longtext,</span><br><span class="line">   text11  longtext</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>ascii;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> text2 <span class="keyword">values</span>(</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>)</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> text2 <span class="keyword">values</span>(</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">197</span>)    # repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">198</span>) error</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">--------</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> text3</span><br><span class="line">  (</span><br><span class="line">   text1   longtext,</span><br><span class="line">   text2   longtext,</span><br><span class="line">   text3   longtext,</span><br><span class="line">   text4   longtext,</span><br><span class="line">   text5   longtext,</span><br><span class="line">   text6   longtext,</span><br><span class="line">   text7   longtext,</span><br><span class="line">   text8   longtext,</span><br><span class="line">   text9   longtext,</span><br><span class="line">   text10  longtext,</span><br><span class="line">   text11  longtext</span><br><span class="line">) ENGINE<span class="operator">=</span>INNODB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>ascii ROW_FORMAT<span class="operator">=</span>COMPRESSED;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> text3 <span class="keyword">values</span>(</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>),</span><br><span class="line">  repeat(<span class="string">&#x27;y&#x27;</span>,<span class="number">1000</span>)</span><br><span class="line">);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1086,7 +1318,7 @@ a * x + b * y + c</script><p>以上表达式的结果有三种：</p>
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">31</span>
+          <span class="site-state-item-count">32</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -1118,7 +1350,7 @@ a * x + b * y + c</script><p>以上表达式的结果有三种：</p>
 <div class="copyright">
   
   &copy; 2015 – 
-  <span itemprop="copyrightYear">2022</span>
+  <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
