@@ -150,6 +150,99 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2016/11/23/711-Cowboy_Handlers/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ron的BLOG">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/11/23/711-Cowboy_Handlers/" class="post-title-link" itemprop="url">[翻译][erlang]cowboy handler模块的使用</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-11-23 20:00:00" itemprop="dateCreated datePublished" datetime="2016-11-23T20:00:00+08:00">2016-11-23</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="关于Cowboy"><a href="#关于Cowboy" class="headerlink" title="关于Cowboy"></a>关于Cowboy</h3><p>Cowboy是基于Erlang实现的一个轻量级、快速、模块化的http web服务器。</p>
+<h3 id="Handlers"><a href="#Handlers" class="headerlink" title="Handlers"></a>Handlers</h3><p>用于处理HTTP请求的程序处理模块。</p>
+<h3 id="Plain-HTTP-Handlers（常规Handlers）"><a href="#Plain-HTTP-Handlers（常规Handlers）" class="headerlink" title="Plain HTTP Handlers（常规Handlers）"></a>Plain HTTP Handlers（常规Handlers）</h3><p>Cowboy里面的handler最基础的事情就是实现 <code>init/2</code> 回调函数，处理请求，发送客户端响应（可选），最后返回。<br>Cowboy根据 <code>router configuration</code> （路由配置）接收请求并初始化State。<br>下面是一个不做任何处理的handler：</p>
+<pre><code>init(Req, State) -&gt;
+    &#123;ok, Req, State&#125;
+</code></pre>
+<p>Cowboy为了保证每一个相应都能有客户端响应，尽管上面例子没有发送客户端返回，客户端仍然会收到一个 <code>204 No Content</code> 的响应。</p>
+<p>下面是一个有返回响应的例子：</p>
+<pre><code>init(Req0, State) -&gt;
+    Req = cowboy_req:reply(200, [
+        &#123;&lt;&lt;&quot;content-type&quot;&gt;&gt;, &lt;&lt;&quot;text/plain&quot;&gt;&gt;&#125;
+    ], &lt;&lt;&quot;Hello, World!&quot;&gt;&gt;, Req0),
+    &#123;ok, Req, State&#125;.
+</code></pre>
+<p>当调用了 <code>cowboy:req/4</code>, Cowboy会马上返回一个客户端响应。</p>
+<p>最后我们返回一个三元组。<code>ok</code> 表示handler允许成功，然后返回处理过后的 <code>Req</code> 给Cowboy。<br>三元组的最后一个元素是一个贯穿在handler所有回调一个state。常规的HTTP handlers一般只附加一个回调函数，<code>terminate/2</code>是一个很少使用的可选的回调函数。</p>
+<h3 id="Other-Handlers（其它Handlers）"><a href="#Other-Handlers（其它Handlers）" class="headerlink" title="Other Handlers（其它Handlers）"></a>Other Handlers（其它Handlers）</h3><p><code>init/2</code> 回调函数也可以用来告诉cowboy，这是一个不同类型的handler，Cowboy应该做一些其他处理。为了方便使用，如果返回handler类型的模块名称，就可以切换handler处理模块。</p>
+<p>Cowboy提供了三种可选handler类型：cowboy_reset, Cowboy_websocke和cowboy_loop。另外也可以自己定义handler类型。</p>
+<p>切换非常简单，用handler类型替换掉返回的 <code>ok</code> 就可以了。下面是一个切换为 Websocket handler 的代码片段。</p>
+<pre><code>init(Req, State) -&gt;
+    &#123;cowboy_websocket, Req, State&#125;.
+</code></pre>
+<p>也可以切换到一个自定义的handler模块：</p>
+<pre><code>init(Req, State) -&gt;
+    &#123;my_handler_type, Req, State&#125;.
+</code></pre>
+<p>如何使用自定义的handler类型可以查看<code>Sub protocols</code> 章节（<a target="_blank" rel="noopener" href="https://ninenines.eu/docs/en/cowboy/2.0/guide/sub_protocols%EF%BC%89%E3%80%82">https://ninenines.eu/docs/en/cowboy/2.0/guide/sub_protocols）。</a></p>
+<h3 id="Cleaning-up"><a href="#Cleaning-up" class="headerlink" title="Cleaning up"></a>Cleaning up</h3><p>除了Websocket handlers，其它所有类型都提供可选回调函数<code>terminate/3</code>：</p>
+<pre><code>terminate(_Reason, _Req, _State) -&gt;
+    ok.
+</code></pre>
+<p>这个回调函数是为了cleanup保留下来的。该函数不能发送响应给客户端。也没有其他返回值（只能返回<code>ok</code>）。</p>
+<p><code>terminate/3</code>之所以是可选是因为其极少会用到。Cleanup应该在各自的进程中直接处理。（通过监控handler进程来知道其何时退出）</p>
+<p>Cowboy不会在不同的请求重复使用进程（应该是http短链接设计引起的）。进程在返回之后很快就会被销毁。</p>
+<h3 id="Others"><a href="#Others" class="headerlink" title="Others"></a>Others</h3><p>英文官方原文：</p>
+<p><a target="_blank" rel="noopener" href="https://ninenines.eu/docs/en/cowboy/2.0/guide/handlers/#_plain_http_handlers">https://ninenines.eu/docs/en/cowboy/2.0/guide/handlers/#_plain_http_handlers</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://example.com/2016/11/23/710-Cowboy_Routing/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1378,87 +1471,6 @@ ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5   # 64位系
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2015/03/17/403-Set_svn_ignore/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ron的BLOG">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/03/17/403-Set_svn_ignore/" class="post-title-link" itemprop="url">[svn]如何在linux设置svn忽略列表</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2015-03-17 18:35:20" itemprop="dateCreated datePublished" datetime="2015-03-17T18:35:20+08:00">2015-03-17</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="管理属性变量的命令"><a href="#管理属性变量的命令" class="headerlink" title="管理属性变量的命令"></a>管理属性变量的命令</h3><p>svn客户端有个属性<code>ignore</code> 用于保存忽略的文件或者目录。除此之外，svn其实有好多属性变量用来自定义，如在windows下svn客户端里面属性截图：<br><img src="/images/301-01.png" alt="windows svn" title="windows svn"></p>
-<p>但是在linux 下，不可像windows那样有可视化界面进行管理。<br>执行svn help 命令可以知道有五个命令用于管理svn 属性变量。</p>
-<pre><code>propdel (pdel, pd)                # 删除属性
-propedit (pedit, pe)              # 编辑属性
-propget (pget, pg)                # 获取属性的值
-proplist (plist, pl)              # 列出所有的属性
-propset (pset, ps)                # 设置属性的值
-</code></pre>
-<p>那么有这几个命令，想要编辑<code>svn:ignore</code> 变量还不轻而易举。</p>
-<h3 id="方法1："><a href="#方法1：" class="headerlink" title="方法1："></a>方法1：</h3><p>首先要给SVN指定默认的编辑器，如下。当然改成其它编辑器也可以。</p>
-<ul>
-<li><code>export SVN_EDITOR=/usr/bin/vim</code> 已经设置的话，可以忽略这一步</li>
-<li><code>svn propedit svn:ignore [目录]</code></li>
-</ul>
-<p>然后可以在vim编辑器中写上需要过滤的目录或者文件。换行隔开，据说空格也可以，但是我没有试过。</p>
-<h3 id="方法2："><a href="#方法2：" class="headerlink" title="方法2："></a>方法2：</h3><p>除了propedit可以设置，当然propset 也可以设置。<br><img src="/images/301-02.png" alt="svn propset" title="svn propset"><br>图片表示将pet目录下的xg_pet.erl文件加入到忽略列表。</p>
-<h3 id="属性变量文件"><a href="#属性变量文件" class="headerlink" title="属性变量文件"></a>属性变量文件</h3><p>在当前目录，有一个<code>.svn</code> 目录。当有属性变量的时候，<code>.svn</code>目录会生成一个<code>dir-props</code>文件用来保存属性变量，如下：<br><img src="/images/301-03.png" alt="svn properties file" title=".svn/dir-props"></p>
-<h3 id="查看状态"><a href="#查看状态" class="headerlink" title="查看状态"></a>查看状态</h3><p>另外说一个linux下很常用的命令。相当于windows下commit的时候出现的文件列表。而linux下需要用<code>svn status</code>来查看。<br><code>svn status/svn st/svn stat</code></p>
-<p>延伸一下，下面两个命令：</p>
-<ul>
-<li><code>svn st | grep ^? | sed &#39;s/?    //&#39; | xargs svn add</code>  增加尚未增加到svn的文件</li>
-<li><code>svn st | grep ^! | sed &#39;s/!    //&#39; | xargs svn rm</code>    删除svn里面已经不存在的文件（本地尚存）</li>
-</ul>
-<p>当然避免误操作，我经常先执行<code>svn st | grep ^? | sed &#39;s/?    //&#39;</code> 先确认下文件列表。<br><img src="/images/301-04.png" alt="svn skill" title="svn skill"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1528,7 +1540,7 @@ propset (pset, ps)                # 设置属性的值
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">32</span>
+          <span class="site-state-item-count">33</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
