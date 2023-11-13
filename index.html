@@ -150,6 +150,82 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/11/12/857-lua_profile/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ron的BLOG">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/11/12/857-lua_profile/" class="post-title-link" itemprop="url">纯lua实现统计函数运行时间和调用次数</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-11-12 23:00:00" itemprop="dateCreated datePublished" datetime="2023-11-12T23:00:00+08:00">2023-11-12</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>lua没有专门查看cpu占用的工具，只能自己撸一个。得益于lua提供了debug.sethook函数，可以在函数调用和返回的时候调用一个设置好的hook函数。在hook函数可以进行数据的统计。<br>实现起来也极其简单，在函数调用的时候记录调用时间，在函数返回的时候进行时间差统计，这样就得到了一个函数的运行时间。</p>
+<h3 id="简单统计"><a href="#简单统计" class="headerlink" title="简单统计"></a>简单统计</h3><p>原理是基于debug.sethook，下面写逻辑统计时间就可以了。</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> <span class="function"><span class="keyword">function</span> <span class="title">cc</span><span class="params">(i)</span></span></span><br><span class="line">    <span class="keyword">if</span> i &lt;= <span class="number">0</span> <span class="keyword">then</span></span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    cc(i<span class="number">-1</span>)</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">local</span> <span class="function"><span class="keyword">function</span> <span class="title">aa</span><span class="params">()</span></span></span><br><span class="line">    <span class="keyword">local</span> j = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> i=<span class="number">1</span>, <span class="number">100</span> <span class="keyword">do</span></span><br><span class="line">        cc(<span class="number">10</span>)</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">local</span> lst_item = &#123;&#125;</span><br><span class="line"><span class="keyword">local</span> map_record = &#123;&#125;</span><br><span class="line"><span class="built_in">debug</span>.<span class="built_in">sethook</span>(<span class="function"><span class="keyword">function</span><span class="params">(hook_type)</span></span></span><br><span class="line">        <span class="keyword">local</span> func_info = <span class="built_in">debug</span>.<span class="built_in">getinfo</span>(<span class="number">2</span>, <span class="string">&#x27;nSl&#x27;</span>)</span><br><span class="line">        <span class="keyword">local</span> key = func_info.short_src ..<span class="string">&quot;:&quot;</span>.. func_info.linedefined</span><br><span class="line"></span><br><span class="line">        <span class="keyword">local</span> now = <span class="built_in">os</span>.<span class="built_in">clock</span>()</span><br><span class="line">        <span class="keyword">if</span> hook_type == <span class="string">&quot;call&quot;</span> <span class="keyword">then</span></span><br><span class="line">            <span class="built_in">table</span>.<span class="built_in">insert</span>(lst_item,&#123;</span><br><span class="line">                call_time = now,</span><br><span class="line">                key = key,</span><br><span class="line">            &#125;)</span><br><span class="line">        <span class="keyword">elseif</span> hook_type == <span class="string">&quot;return&quot;</span> <span class="keyword">then</span></span><br><span class="line">            <span class="keyword">local</span> item = <span class="built_in">table</span>.<span class="built_in">remove</span>(lst_item)</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> item <span class="keyword">then</span> <span class="keyword">return</span> <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">local</span> record = map_record[key]</span><br><span class="line">            <span class="keyword">if</span> record <span class="keyword">then</span></span><br><span class="line">                record.call_count = record.call_count + <span class="number">1</span></span><br><span class="line">                record.total_time = record.total_time + (now - item.call_time)</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                map_record[key] = &#123;</span><br><span class="line">                    call_count = <span class="number">1</span>,</span><br><span class="line">                    total_time = now - item.call_time,</span><br><span class="line">                    name = func_info.name,</span><br><span class="line">                    line = func_info.linedefined,</span><br><span class="line">                    source = func_info.short_src,</span><br><span class="line">                &#125;</span><br><span class="line">            <span class="keyword">end</span></span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span>, <span class="string">&#x27;cr&#x27;</span>, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">local</span> start_time = <span class="built_in">os</span>.<span class="built_in">clock</span>()</span><br><span class="line">aa()</span><br><span class="line"></span><br><span class="line"><span class="keyword">local</span> total_time = <span class="number">0</span></span><br><span class="line"><span class="keyword">for</span> k,v <span class="keyword">in</span> <span class="built_in">pairs</span>(map_record) <span class="keyword">do</span></span><br><span class="line">    total_time = total_time + v.total_time</span><br><span class="line">    <span class="keyword">local</span> use_time = <span class="built_in">string</span>.<span class="built_in">format</span>(<span class="string">&quot;%4.3f&quot;</span>, v.total_time)</span><br><span class="line">    <span class="built_in">print</span>(<span class="built_in">string</span>.<span class="built_in">format</span>(<span class="string">&quot;%7s  %10d  %20s  %s&quot;</span>, use_time, v.call_count, v.name, k))</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;-----------------------&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;total_time: &quot;</span>, total_time)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;real use time:&quot;</span>, <span class="built_in">os</span>.<span class="built_in">clock</span>() - start_time)</span><br></pre></td></tr></table></figure>
+<p>output:</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">  <span class="number">0.016</span>           <span class="number">1</span>                    aa  test.lua:<span class="number">8</span></span><br><span class="line">  <span class="number">0.062</span>        <span class="number">1100</span>                    cc  test.lua:<span class="number">1</span></span><br><span class="line"><span class="comment">-----------------------</span></span><br><span class="line">total_time:     <span class="number">0.078125</span></span><br><span class="line">real use <span class="built_in">time</span>:  <span class="number">0.015625</span></span><br></pre></td></tr></table></figure>
+<p>总耗时0.15625秒，但是统计的函数总时间却是0.078125秒，与实际不相符。</p>
+<h3 id="递归重复统计"><a href="#递归重复统计" class="headerlink" title="递归重复统计"></a>递归重复统计</h3><p>从上面的例子可以发现，只记录call和return进行插值统计时，当出现递归函数的时候，数据是有问题的，递归函数的时间会重叠，就会出现多余的情况。并且os.clock()函数的精度已经不够了，对于简单的函数内容，os.clock计算出来的差值是0，这样统计出来的结果也是有问题的。下面增加去除子函数运行的时间，并且把获取时间的函数替换成高精度时间函数。</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> lst_item = &#123;&#125;</span><br><span class="line"><span class="keyword">local</span> map_record = &#123;&#125;</span><br><span class="line"><span class="built_in">debug</span>.<span class="built_in">sethook</span>(<span class="function"><span class="keyword">function</span><span class="params">(hook_type)</span></span></span><br><span class="line">        <span class="keyword">local</span> func_info = <span class="built_in">debug</span>.<span class="built_in">getinfo</span>(<span class="number">2</span>, <span class="string">&#x27;nSl&#x27;</span>)</span><br><span class="line">        <span class="keyword">local</span> key = func_info.short_src ..<span class="string">&quot;:&quot;</span>.. func_info.linedefined</span><br><span class="line"></span><br><span class="line">        <span class="keyword">local</span> now = gettime()</span><br><span class="line">        <span class="keyword">if</span> hook_type == <span class="string">&quot;call&quot;</span> <span class="keyword">then</span></span><br><span class="line">            <span class="built_in">table</span>.<span class="built_in">insert</span>(lst_item,&#123;</span><br><span class="line">                call_time = now,</span><br><span class="line">                key = key,</span><br><span class="line">                sub_cost = <span class="number">0</span>,</span><br><span class="line">                name = func_info.name,</span><br><span class="line">            &#125;)</span><br><span class="line">        <span class="keyword">elseif</span> hook_type == <span class="string">&quot;return&quot;</span> <span class="keyword">then</span></span><br><span class="line">            <span class="keyword">local</span> item = <span class="built_in">table</span>.<span class="built_in">remove</span>(lst_item)</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> item <span class="keyword">then</span> <span class="keyword">return</span> <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">local</span> record = map_record[key]</span><br><span class="line">            <span class="keyword">if</span> record <span class="keyword">then</span></span><br><span class="line">                record.call_count = record.call_count + <span class="number">1</span></span><br><span class="line">                record.total_time = record.total_time + (now - item.call_time - item.sub_cost)</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                map_record[key] = &#123;</span><br><span class="line">                    call_count = <span class="number">1</span>,</span><br><span class="line">                    total_time = now - item.call_time - item.sub_cost,</span><br><span class="line">                    name = item.name,</span><br><span class="line">                    line = func_info.linedefined,</span><br><span class="line">                    source = func_info.short_src,</span><br><span class="line">                &#125;</span><br><span class="line">            <span class="keyword">end</span></span><br><span class="line">            <span class="keyword">if</span> #lst_item &gt; <span class="number">0</span> <span class="keyword">then</span></span><br><span class="line">                lst_item[#lst_item].sub_cost = lst_item[#lst_item].sub_cost + (now - item.call_time)</span><br><span class="line">            <span class="keyword">end</span></span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span>, <span class="string">&#x27;cr&#x27;</span>, <span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+<p>output:</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">  <span class="number">0.0001655</span>           <span class="number">1</span>                    aa  test.lua:<span class="number">12</span></span><br><span class="line">  <span class="number">0.0034916</span>        <span class="number">1100</span>                    cc  test.lua:<span class="number">5</span></span><br><span class="line"><span class="comment">-----------------------</span></span><br><span class="line">total_time:     <span class="number">0.0039355754852295</span></span><br><span class="line">real use <span class="built_in">time</span>:  <span class="number">0.0062041282653809</span></span><br></pre></td></tr></table></figure>
+<h3 id="尾递归问题"><a href="#尾递归问题" class="headerlink" title="尾递归问题"></a>尾递归问题</h3><p>下面把cc函数改成尾递归，执行结果如下：</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">  <span class="number">0.0000079</span>           <span class="number">5</span>               gettime  [C]:<span class="number">-1</span></span><br><span class="line">  <span class="number">0.0018032</span>         <span class="number">100</span>                    cc  test.lua:<span class="number">5</span></span><br><span class="line">  <span class="number">0.0002387</span>           <span class="number">1</span>                    aa  test.lua:<span class="number">12</span></span><br><span class="line"><span class="comment">-----------------------</span></span><br><span class="line">total_time:     <span class="number">0.0020496845245361</span></span><br><span class="line">real use <span class="built_in">time</span>:  <span class="number">0.0020508766174316</span></span><br></pre></td></tr></table></figure>
+<p>这里发现cc函数的调用次数统计也有1100次变成了100次。如果需要把尾递归调用也统计进去，那就需要监听hook_type为<code>tail call</code>类型的情况。因为尾递归只有一次return，所以需要在return的时候进行额外的处理。</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> lst_item = &#123;&#125;</span><br><span class="line"><span class="keyword">local</span> map_record = &#123;&#125;</span><br><span class="line"><span class="built_in">debug</span>.<span class="built_in">sethook</span>(<span class="function"><span class="keyword">function</span><span class="params">(hook_type)</span></span></span><br><span class="line">        <span class="keyword">local</span> func_info = <span class="built_in">debug</span>.<span class="built_in">getinfo</span>(<span class="number">2</span>, <span class="string">&#x27;nSl&#x27;</span>)</span><br><span class="line">        <span class="keyword">local</span> key = func_info.short_src ..<span class="string">&quot;:&quot;</span>.. func_info.linedefined</span><br><span class="line"></span><br><span class="line">        <span class="keyword">local</span> now = gettime()</span><br><span class="line">        <span class="keyword">if</span> hook_type == <span class="string">&quot;call&quot;</span> <span class="keyword">or</span> hook_type == <span class="string">&#x27;tail call&#x27;</span> <span class="keyword">then</span></span><br><span class="line">            <span class="built_in">table</span>.<span class="built_in">insert</span>(lst_item,&#123;</span><br><span class="line">                call_time = now,</span><br><span class="line">                key = key,</span><br><span class="line">                sub_cost = <span class="number">0</span>,</span><br><span class="line">                name = func_info.name,</span><br><span class="line">                is_tail = hook_type == <span class="string">&#x27;tail call&#x27;</span>,</span><br><span class="line">            &#125;)</span><br><span class="line">        <span class="keyword">elseif</span> hook_type == <span class="string">&quot;return&quot;</span> <span class="keyword">then</span></span><br><span class="line">            <span class="keyword">local</span> is_tail = <span class="literal">true</span></span><br><span class="line">            <span class="keyword">while</span> is_tail <span class="keyword">and</span> #lst_item &gt; <span class="number">0</span> <span class="keyword">do</span></span><br><span class="line">                <span class="keyword">local</span> item = <span class="built_in">table</span>.<span class="built_in">remove</span>(lst_item)</span><br><span class="line"></span><br><span class="line">                is_tail = item.is_tail</span><br><span class="line">                <span class="keyword">local</span> record = map_record[key]</span><br><span class="line">                <span class="keyword">if</span> record <span class="keyword">then</span></span><br><span class="line">                    record.call_count = record.call_count + <span class="number">1</span></span><br><span class="line">                    record.total_time = record.total_time + (now - item.call_time - item.sub_cost)</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                    map_record[key] = &#123;</span><br><span class="line">                        call_count = <span class="number">1</span>,</span><br><span class="line">                        total_time = now - item.call_time - item.sub_cost,</span><br><span class="line">                        name = item.name,</span><br><span class="line">                        line = func_info.linedefined,</span><br><span class="line">                        source = func_info.short_src,</span><br><span class="line">                    &#125;</span><br><span class="line">                <span class="keyword">end</span></span><br><span class="line">                <span class="keyword">if</span> #lst_item &gt; <span class="number">0</span> <span class="keyword">then</span></span><br><span class="line">                    lst_item[#lst_item].sub_cost = lst_item[#lst_item].sub_cost + (now - item.call_time)</span><br><span class="line">                <span class="keyword">end</span></span><br><span class="line">            <span class="keyword">end</span></span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span>, <span class="string">&#x27;cr&#x27;</span>, <span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+<p>output:</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">  <span class="number">0.0018744</span>        <span class="number">1100</span>                   <span class="literal">nil</span>  test.lua:<span class="number">5</span></span><br><span class="line">  <span class="number">0.0004456</span>           <span class="number">1</span>                    aa  test.lua:<span class="number">12</span></span><br><span class="line">  <span class="number">0.0010464</span>          <span class="number">15</span>               gettime  [C]:<span class="number">-1</span></span><br><span class="line"><span class="comment">-----------------------</span></span><br><span class="line">total_time:     <span class="number">0.0033664703369141</span></span><br><span class="line">real use <span class="built_in">time</span>:  <span class="number">0.0023291110992432</span></span><br></pre></td></tr></table></figure>
+<p>这里发现cc的函数名是没有成功获取到的，这是因为尾递归的缘故。其实这里也不一定要改成要统计尾递归函数，真实的lua堆栈也没有新的函数堆栈的，所以获取如上不分尾递归统计的结果更符合实际。</p>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><p>由于是使用了hook，这也是运行一次函数就会调用两次hook函数，这意味着带来了额外的开销，对实际统计函数的运行时间带来了额外的影响，数据也不准确。这里可以改成c语言来实现统计效果，性能会提升非常多，甚至可以在生产环境轻度使用。</p>
+<p>以上实现完整代码在：<a target="_blank" rel="noopener" href="https://github.com/rondsny/lua-profile">https://github.com/rondsny/lua-profile</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://example.com/2023/10/10/856-game_server_memory/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1179,80 +1255,6 @@ L_y=\frac{3}{2}·2^{23}·(127-0.04505) - \frac{1}{2}·L_x = 0x5f3759df - \frac{1
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2021/02/12/851-Game_AOI_Grid_Lua/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ron的BLOG">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/02/12/851-Game_AOI_Grid_Lua/" class="post-title-link" itemprop="url">九宫格AOI（lua版本）</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2021-02-12 22:28:01" itemprop="dateCreated datePublished" datetime="2021-02-12T22:28:01+08:00">2021-02-12</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="基本原理"><a href="#基本原理" class="headerlink" title="基本原理"></a>基本原理</h2><p>将场景区域划分为小格子，然后将玩家的视野统一设定为玩家所在的格子和周边的八个格子。这样在同步的时候就只需要同步九宫格内的数据。为此需要维护玩家进入和离开格子的数据。</p>
-<h2 id="基本接口"><a href="#基本接口" class="headerlink" title="基本接口"></a>基本接口</h2><p>主要有四个接口，其中进入场景（enter）和场景内移动（move）在这里合并为set接口。</p>
-<ul>
-<li>new_area: 新建aoi场景区域</li>
-<li>set: 进入场景或者场景内移动</li>
-<li>leave: 离开场景</li>
-<li>get_ids_by_grid: 根据格子id获取格子内对象id</li>
-</ul>
-<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><h3 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h3><p>所有数据都挂在场景内，此处称为area。area内包含了场景范围，对象列表，格子列表。new_area 接口也就是创建场景数据结构。</p>
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> tb_area = &#123;</span><br><span class="line">        min_x = args.min_x,  <span class="comment">-- 场景范围</span></span><br><span class="line">        min_y = args.min_y,</span><br><span class="line">        max_x = args.max_x,</span><br><span class="line">        max_y = args.max_y,</span><br><span class="line"></span><br><span class="line">        grid_x    = grid_x,  <span class="comment">-- x轴有几段</span></span><br><span class="line">        grid_y    = grid_y,  <span class="comment">-- y轴有几段</span></span><br><span class="line"></span><br><span class="line">        grid_max  = grid_max,  <span class="comment">-- 总格子数量</span></span><br><span class="line">        grid_size = grid_size, <span class="comment">-- 格子长度</span></span><br><span class="line"></span><br><span class="line">        map_actor = &#123;&#125;,  <span class="comment">-- 对象列表</span></span><br><span class="line">        lst_grid  = &#123;&#125;,  <span class="comment">-- 格子</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="进入场景和移动"><a href="#进入场景和移动" class="headerlink" title="进入场景和移动"></a>进入场景和移动</h3><p>进入场景非常简单，根据坐标计算出目标格子，然后分别加入 map_actor 列表和 lst_grid 列表即可。</p>
-<p>场景内移动分2种情况：</p>
-<p>第一种在格子内移动，这种情况，aoi没有变化。</p>
-<p>第二种跨格子移动，出现了离开旧格子加入新格子的情况。这里稍微注意的是，有可能旧的九宫格和新的九宫格存在重叠的区域，这样的情况，对于重叠的区域的对象视野来说，目标对象并没有离开过视野。</p>
-<h3 id="离开场景"><a href="#离开场景" class="headerlink" title="离开场景"></a>离开场景</h3><p>离开也非常简单，从 map_actor 列表和 lst_grid 列表删除即可。</p>
-<h2 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h2><p><a target="_blank" rel="noopener" href="https://github.com/rondsny/lua_aoi">GitHub - rondsny&#x2F;lua_aoi</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1322,7 +1324,7 @@ L_y=\frac{3}{2}·2^{23}·(127-0.04505) - \frac{1}{2}·L_x = 0x5f3759df - \frac{1
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-count">34</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>

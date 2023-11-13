@@ -150,6 +150,85 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2015/04/07/402-Stop_Selinux/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ron的BLOG">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/04/07/402-Stop_Selinux/" class="post-title-link" itemprop="url">[linux]windows无法访问samba的安全性问题(关闭selinux)</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2015-04-07 18:00:00" itemprop="dateCreated datePublished" datetime="2015-04-07T18:00:00+08:00">2015-04-07</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>在某一天重启了虚拟机的 <code>linux</code> 之后，我的 <code>windows</code> 在连接上 <code>samba</code> 之后，点击某些文件夹的时候，会出现没有权限打开的情况。这问题折腾了我一度重新配置了好几次 <code>samba</code> 的配置，然而无果。</p>
+<h4 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h4><p>经过搜索，发现有两个办法可以解决samba的某些文件夹无法访问的问题。</p>
+<ul>
+<li>方法一 修改文件和文件夹的安全策略；</li>
+<li>方法二 关闭 <code>selinux</code>；</li>
+</ul>
+<p>第一种方法并不合适，只是临时解决的一种方案。因为在 <code>windows</code> 下新建了一个 <code>linux</code> 文件夹之后，下一次重启了 <code>linux</code> ，新的文件夹又无法访问了。麻烦。第二种方法就简单了，一劳永逸。</p>
+<p>虽然网上又说关闭 <code>selinux</code> 会有安全问题。然而只是我虚拟机的 <code>linux</code> 开发机而已，并不是生产环境，没有太高的安全问题。</p>
+<h4 id="方法一-修改安全策略"><a href="#方法一-修改安全策略" class="headerlink" title="方法一 修改安全策略"></a>方法一 修改安全策略</h4><pre><code> chcon -t samba_share_t share
+</code></pre>
+<p>chcon 可以修改文件的安全上下文。重置windows建立的文件、文件夹的安全信息。也可以解决，但是比较麻烦，不方便。</p>
+<h4 id="方法二-关闭-selinux"><a href="#方法二-关闭-selinux" class="headerlink" title="方法二 关闭 selinux"></a>方法二 关闭 selinux</h4><h5 id="永久关闭"><a href="#永久关闭" class="headerlink" title="永久关闭"></a>永久关闭</h5><p>修改 <code>/etc/selinux/config</code> 文件，设置</p>
+<pre><code>SELINUX=disabled
+</code></pre>
+<p>然后重启linux。</p>
+<h5 id="临时关闭"><a href="#临时关闭" class="headerlink" title="临时关闭"></a>临时关闭</h5><p>使用 <code>setenforce</code> 命令可以修改 <code>selinux</code> 模式。</p>
+<ul>
+<li><code>setenforce 1</code> 设置 <code>selinux</code> 为 <code>enforcing</code> 模式；</li>
+<li><code>setenforce 0</code> 设置 <code>selinux</code> 为 <code>permissive</code> 模式。</li>
+</ul>
+<h4 id="其它方案"><a href="#其它方案" class="headerlink" title="其它方案"></a>其它方案</h4><p><a target="_blank" rel="noopener" href="https://wiki.centos.org/zh/HowTos/SetUpSamba" title="https://wiki.centos.org/zh/HowTos/SetUpSamba">https://wiki.centos.org/zh/HowTos/SetUpSamba</a> 有相当详细的解释和解决办法。有时间折腾的可以看看。</p>
+<p>以上。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://example.com/2015/03/17/403-Set_svn_ignore/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -455,7 +534,7 @@ hexo server       # hexo s
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-count">34</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
