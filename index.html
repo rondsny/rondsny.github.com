@@ -150,6 +150,90 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/11/16/858-lua_profile_c_function/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ron的BLOG">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/11/16/858-lua_profile_c_function/" class="post-title-link" itemprop="url">c语言实现lua函数调用次数和耗时统计</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-11-16 23:00:00" itemprop="dateCreated datePublished" datetime="2023-11-16T23:00:00+08:00">2023-11-16</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>之前写了一个纯lua实现的模块 <a href="/2023/11/12/857-lua_profile/">纯lua实现统计函数运行时间和调用次数</a>。但是统计的hook函数本身就太耗时了，简单使用还行，如果想要在本身就对性能比较敏感的地方使用，就完全不可行了。所以写了一版纯c语言的版本。</p>
+<p>实现的完整代码在：<a target="_blank" rel="noopener" href="https://github.com/rondsny/lua-profile/blob/main/lua-profiler.c">https://github.com/rondsny/lua-profile/blob/main/lua-profiler.c</a></p>
+<h3 id="设置hook"><a href="#设置hook" class="headerlink" title="设置hook"></a>设置hook</h3><p>原理是一样的，只是换了c实现而已。lua的c api提供了lua_sethook函数。</p>
+<pre><code>void lua_sethook (lua_State *L, lua_Hook f, int mask, int count);
+设置一个调试用钩子函数。
+
+参数 f 是钩子函数。 mask 指定在哪些事件时会调用： 它由下列一组位常量构成 LUA_MASKCALL， LUA_MASKRET， LUA_MASKLINE， LUA_MASKCOUNT。 参数 count 只在掩码中包含有 LUA_MASKCOUNT 才有意义。 对于每个事件，钩子被调用的情况解释如下：
+
+call hook: 在解释器调用一个函数时被调用。 钩子将于 Lua 进入一个新函数后， 函数获取参数前被调用。
+return hook: 在解释器从一个函数中返回时调用。 钩子将于 Lua 离开函数之前的那一刻被调用。 没有标准方法来访问被函数返回的那些值。
+line hook: 在解释器准备开始执行新的一行代码时， 或是跳转到这行代码中时（即使在同一行内跳转）被调用。 （这个事件仅仅在 Lua 执行一个 Lua 函数时发生。）
+count hook: 在解释器每执行 count 条指令后被调用。 （这个事件仅仅在 Lua 执行一个 Lua 函数时发生。）
+</code></pre>
+<p>我们同样监听<code>LUA_HOOKCALL</code>和<code>LUA_HOOKRET</code>这两种事件。对应的是一个函数被调用和返回时候的hook。对于尾调用其实意义不是很大，我们从上一层统计也能包含，只是统计的位置会不一样，所以这里不对尾调用的情况额外区分统计。</p>
+<p>在调用lua_sethook的时候，我们第三个参数传入LUA_MASKCALL和LUA_MASKRET。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lua_sethook(L, profiler_hook, LUA_MASKCALL | LUA_MASKRET, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="统计"><a href="#统计" class="headerlink" title="统计"></a>统计</h3><p>统计上也是类似的，只不过c这边需要一个map结构，本来是想起一个lua_State，然后用来记录统计数据，因为lua的table结构本身就是一个非常好的map结构。后来考虑尽量减少性能损耗，就额外实现了哈希表结构。这里其实只是需要一个哈希表而已，实现只要没问题都可以。</p>
+<p>首先是监听到call的时候，创建一个item用于记录调用时间和函数信息，然后塞入到一个后入先出的数组结构中。</p>
+<p>当发生return的时候，我们就从数组中拿出最后一个item，这个item必然是当前return的call（此处把尾调用的return记录到最开始的call里面）。此时进行时间差统计，并且去除调用函数的时间，则是当前函数的执行时间。然后统计到哈希表中。如果没有则创建记录，有则把执行时间和调用次数统计上去。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">profiler_hook</span><span class="params">(lua_State *L, lua_Debug *arv)</span> </span>&#123;</span><br><span class="line">    lua_Debug ar;</span><br><span class="line">    lua_getstack(L, <span class="number">0</span>, &amp;ar);</span><br><span class="line">    lua_getinfo(L, <span class="string">&quot;nSlf&quot;</span>, &amp;ar);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (arv-&gt;event == LUA_HOOKCALL) &#123;</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">void</span>* point = lua_topointer(L, <span class="number">-1</span>);</span><br><span class="line">        <span class="keyword">uint64_t</span> now = get_high_precision_time();</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">call_item</span>* <span class="title">item</span> =</span> (struct call_item*)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(struct call_item));</span><br><span class="line">        item-&gt;point = point;</span><br><span class="line">        item-&gt;name = ar.name ? ar.name : <span class="string">&quot;?&quot;</span>;</span><br><span class="line">        item-&gt;source = ar.source ? ar.source : <span class="string">&quot;?&quot;</span>;</span><br><span class="line">        item-&gt;line = ar.currentline;</span><br><span class="line">        item-&gt;call_time = now;</span><br><span class="line">        item-&gt;sub_cost = <span class="number">0</span>;</span><br><span class="line">        push_call_item(item);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (arv-&gt;event == LUA_HOOKRET) &#123;</span><br><span class="line">        struct call_item* item = pop_call_item();</span><br><span class="line">        <span class="keyword">if</span> (item == <span class="literal">NULL</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">uint64_t</span> now = get_high_precision_time();</span><br><span class="line">        <span class="keyword">uint64_t</span> cost = now - item-&gt;call_time;</span><br><span class="line">        <span class="keyword">uint64_t</span> key = (<span class="keyword">uint64_t</span>)((<span class="keyword">uintptr_t</span>)item-&gt;point);</span><br><span class="line">        profile_record* record = (profile_record*)game_hashtbl_get(hashtbl, key);</span><br><span class="line">        <span class="keyword">if</span>(record==<span class="literal">NULL</span>)&#123;</span><br><span class="line">            record = (profile_record*)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(profile_record));</span><br><span class="line">            record-&gt;call_count = <span class="number">1</span>;</span><br><span class="line">            record-&gt;total_time = cost - item-&gt;sub_cost;</span><br><span class="line">            record-&gt;line = item-&gt;line;</span><br><span class="line">            <span class="built_in">strncpy</span>(record-&gt;name, item-&gt;name, <span class="keyword">sizeof</span>(record-&gt;name));</span><br><span class="line">            <span class="built_in">strncpy</span>(record-&gt;source, item-&gt;source, <span class="keyword">sizeof</span>(record-&gt;source));</span><br><span class="line">            game_hashtbl_insert(hashtbl, key, record);</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            record-&gt;call_count++;</span><br><span class="line">            record-&gt;total_time += cost - item-&gt;sub_cost;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(CALL_STACK-&gt;head)&#123;</span><br><span class="line">            CALL_STACK-&gt;head-&gt;sub_cost += cost;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">free</span>(item);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="性能提升"><a href="#性能提升" class="headerlink" title="性能提升"></a>性能提升</h3><p>纯lua版本数据：</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">use profiler_pure_lua</span><br><span class="line">======== profiler start ========</span><br><span class="line">total <span class="built_in">time</span> is   <span class="number">22.453125</span></span><br><span class="line">========================================</span><br><span class="line">        <span class="built_in">time</span>, percent,   count, <span class="function"><span class="keyword">function</span></span></span><br><span class="line"><span class="function"><span class="comment">----------------------------------------</span></span></span><br><span class="line"><span class="function">52.5470021956,  99.52%, 8160000, <span class="title">deep2</span>                         : <span class="title">test_profiler.lua</span>:1</span></span><br><span class="line"><span class="function">0.2536309999,   0.48%,     200, <span class="title">call_func</span>                     : <span class="title">test_profiler.lua</span>:14</span></span><br><span class="line"><span class="function">0.0007711950,   0.00%,       2, <span class="title">loop</span>                          : <span class="title">test_profiler.lua</span>:23</span></span><br><span class="line"><span class="function">0.0006873300,   0.00%,      10, <span class="title">nono</span>                          : <span class="title">test_profiler.lua</span>:49</span></span><br><span class="line"><span class="function">0.0004256395,   0.00%,       5, <span class="title">clock</span>                         : [<span class="title">C</span>]:-1</span></span><br><span class="line"><span class="function">0.0001266750,   0.00%,       1, <span class="title">foo</span>                           : <span class="title">test_profiler.lua</span>:35</span></span><br><span class="line"><span class="function">0.0000041250,   0.00%,       1, <span class="title">foo2</span>                          : <span class="title">test_profiler.lua</span>:31</span></span><br><span class="line"><span class="function">0.0000000000,   0.00%,       1, <span class="title">stop</span>                          : ./<span class="title">profiler_pure_lua.lua</span>:80</span></span><br><span class="line"><span class="function">======== <span class="title">profiler</span> <span class="title">end</span> <span class="title">total_time</span> ==========     52.802648159995</span></span><br></pre></td></tr></table></figure>
+<p>c语言版本数据：</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">use c unction</span><br><span class="line">total <span class="built_in">time</span> is   <span class="number">2.0</span></span><br><span class="line"><span class="number">0.000321</span> (<span class="number">0.01</span>%)           <span class="number">1</span>                 <span class="built_in">print</span>  =[C]:<span class="number">-1</span></span><br><span class="line"><span class="number">0.000169</span> (<span class="number">0.00</span>%)           <span class="number">2</span>                     ?  =[C]:<span class="number">-1</span></span><br><span class="line"><span class="number">0.000011</span> (<span class="number">0.00</span>%)           <span class="number">1</span>                 <span class="built_in">clock</span>  =[C]:<span class="number">-1</span></span><br><span class="line"><span class="number">0.000021</span> (<span class="number">0.00</span>%)          <span class="number">10</span>                  nono  @test_profiler.lua:<span class="number">50</span></span><br><span class="line"><span class="number">0.000010</span> (<span class="number">0.00</span>%)           <span class="number">1</span>                   foo  @test_profiler.lua:<span class="number">36</span></span><br><span class="line"><span class="number">0.000000</span> (<span class="number">0.00</span>%)           <span class="number">1</span>                  foo2  @test_profiler.lua:<span class="number">32</span></span><br><span class="line"><span class="number">0.000167</span> (<span class="number">0.00</span>%)           <span class="number">2</span>                  loop  @test_profiler.lua:<span class="number">24</span></span><br><span class="line"><span class="number">0.035776</span> (<span class="number">0.68</span>%)         <span class="number">200</span>             call_func  @test_profiler.lua:<span class="number">15</span></span><br><span class="line"><span class="number">5.232884</span> (<span class="number">99.31</span>%)     <span class="number">8160000</span>                 deep2  @test_profiler.lua:<span class="number">2</span></span><br><span class="line">total <span class="built_in">time</span> is   <span class="number">5.269360</span></span><br></pre></td></tr></table></figure>
+<p>以上例子可以看到，c语言版本运行统计耗时是5.26秒，纯lua的耗时是52.8秒。而实际的运行时间，没有hook的耗时是0.59秒。c语言版本是2秒，纯lua的耗时是22.45秒。</p>
+<p>从数据上看，我们并不允许线上产生22秒的卡顿，但是极端情况下，卡2秒可能还是可以接收的。改成c语言实现后，甚至可以在线上使用。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://example.com/2023/11/12/857-lua_profile/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1186,75 +1270,6 @@ L_y=\frac{3}{2}·2^{23}·(127-0.04505) - \frac{1}{2}·L_x = 0x5f3759df - \frac{1
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2021/08/02/852-skynet_func_timout/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ron的BLOG">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/08/02/852-skynet_func_timout/" class="post-title-link" itemprop="url">skynet超时机制实现</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2021-08-02 23:28:01" itemprop="dateCreated datePublished" datetime="2021-08-02T23:28:01+08:00">2021-08-02</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p><code>skynet.call</code> 在设计的时候，是没有考虑超时的问题的。云风的解释是，加入之后会使得在其构建的系统增加不必要的复杂度。这个解释也是合理的，但是还是免不了有需求要使用到超时的机制。</p>
-<p>举个简单例子，skynet实现的web服务，一些http请求的时候，如果没有超时机制，http请求就会一直占用。</p>
-<p>云风给出了一种解决方案，就是增加一个代理服务，让其负责转发，然后代理服务增加超时的检查。也是一种不错的方式。</p>
-<p><code>skynet</code> 是支持协程的，应该说snlua服务，都是基于协程实现的。基于协程的特性，本身就能实现超时检测，逻辑也很简单。</p>
-<p>执行函数的时候，调用 <code>do_func_or_timeout</code> 传入 <code>msec</code> 和 <code>func</code> 。函数就会启用（fork）两个协程，并且让当前线程wait：</p>
-<ul>
-<li>第一个协程，sleep msec，之后检测 is_wait 如果为false，结束；否则wakeup原本协程；</li>
-<li>第二个线程则是执行 func函数，正常返回后，检查is_wait 如果为false，结束；否则wakeup原本协程。</li>
-</ul>
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> Skynet = <span class="built_in">require</span> <span class="string">&quot;skynet&quot;</span></span><br><span class="line"><span class="keyword">local</span> M = &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">local</span> STATUS_SUCC = <span class="number">0</span></span><br><span class="line"><span class="keyword">local</span> STATUS_TIMEOUT = <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">M.do_func_or_timeout</span><span class="params">(msec, func, ...)</span></span></span><br><span class="line">    <span class="keyword">local</span> args = ...</span><br><span class="line">    <span class="keyword">local</span> ctx = &#123;</span><br><span class="line">        is_wait = <span class="literal">true</span>,</span><br><span class="line">        corout  = <span class="built_in">coroutine</span>.<span class="built_in">running</span>(),</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Skynet.fork(<span class="function"><span class="keyword">function</span><span class="params">()</span></span></span><br><span class="line">        Skynet.sleep(msec)  <span class="comment">-- 超时等待msec 1/00秒</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> ctx.is_wait <span class="keyword">then</span></span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">        ctx.is_wait = <span class="literal">false</span></span><br><span class="line">        ctx.<span class="built_in">status</span> = STATUS_TIMEOUT</span><br><span class="line">        Skynet.wakeup(ctx.corout)</span><br><span class="line">    <span class="keyword">end</span>)</span><br><span class="line"></span><br><span class="line">    Skynet.fork(<span class="function"><span class="keyword">function</span><span class="params">()</span></span></span><br><span class="line">        <span class="keyword">local</span> <span class="built_in">status</span> = STATUS_SUCC</span><br><span class="line">        <span class="keyword">local</span> ret = func(args)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> ctx.is_wait <span class="keyword">then</span></span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">        ctx.is_wait = <span class="literal">false</span></span><br><span class="line">        ctx.<span class="built_in">status</span>  = <span class="built_in">status</span></span><br><span class="line">        ctx.ret     = ret</span><br><span class="line"></span><br><span class="line">        Skynet.wakeup(ctx.corout)</span><br><span class="line">    <span class="keyword">end</span>)</span><br><span class="line">    Skynet.wait()</span><br><span class="line">    <span class="keyword">return</span> ctx.<span class="built_in">status</span>, ctx.ret</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;== start test ==&quot;</span>, Skynet.<span class="built_in">time</span>())</span><br><span class="line"><span class="keyword">local</span> <span class="built_in">status</span>, ret = M.do_func_or_timeout(<span class="number">200</span>, <span class="function"><span class="keyword">function</span><span class="params">()</span></span></span><br><span class="line">    Skynet.sleep(<span class="number">300</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;ok&quot;</span></span><br><span class="line"><span class="keyword">end</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;== status ret 1 ==&quot;</span>, Skynet.<span class="built_in">time</span>(), <span class="built_in">status</span>, ret)</span><br><span class="line"></span><br><span class="line"><span class="keyword">local</span> <span class="built_in">status</span>, ret = M.do_func_or_timeout(<span class="number">600</span>, <span class="function"><span class="keyword">function</span><span class="params">()</span></span></span><br><span class="line">    Skynet.sleep(<span class="number">300</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;ok&quot;</span></span><br><span class="line"><span class="keyword">end</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;== status ret 2 ==&quot;</span>, Skynet.<span class="built_in">time</span>(), <span class="built_in">status</span>, ret)</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> M</span><br></pre></td></tr></table></figure>
-
-<p>输出：</p>
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">== start test ==        <span class="number">1631807810.97</span></span><br><span class="line">== <span class="built_in">status</span> ret <span class="number">1</span> ==      <span class="number">1631807812.97</span>   <span class="number">1</span>       <span class="literal">nil</span></span><br><span class="line">== <span class="built_in">status</span> ret <span class="number">2</span> ==      <span class="number">1631807815.97</span>   <span class="number">0</span>       ok</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1324,12 +1339,12 @@ L_y=\frac{3}{2}·2^{23}·(127-0.04505) - \frac{1}{2}·L_x = 0x5f3759df - \frac{1
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">34</span>
+          <span class="site-state-item-count">35</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-count">32</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>

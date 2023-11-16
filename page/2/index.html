@@ -150,6 +150,75 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/08/02/852-skynet_func_timout/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ron的BLOG">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/08/02/852-skynet_func_timout/" class="post-title-link" itemprop="url">skynet超时机制实现</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-08-02 23:28:01" itemprop="dateCreated datePublished" datetime="2021-08-02T23:28:01+08:00">2021-08-02</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p><code>skynet.call</code> 在设计的时候，是没有考虑超时的问题的。云风的解释是，加入之后会使得在其构建的系统增加不必要的复杂度。这个解释也是合理的，但是还是免不了有需求要使用到超时的机制。</p>
+<p>举个简单例子，skynet实现的web服务，一些http请求的时候，如果没有超时机制，http请求就会一直占用。</p>
+<p>云风给出了一种解决方案，就是增加一个代理服务，让其负责转发，然后代理服务增加超时的检查。也是一种不错的方式。</p>
+<p><code>skynet</code> 是支持协程的，应该说snlua服务，都是基于协程实现的。基于协程的特性，本身就能实现超时检测，逻辑也很简单。</p>
+<p>执行函数的时候，调用 <code>do_func_or_timeout</code> 传入 <code>msec</code> 和 <code>func</code> 。函数就会启用（fork）两个协程，并且让当前线程wait：</p>
+<ul>
+<li>第一个协程，sleep msec，之后检测 is_wait 如果为false，结束；否则wakeup原本协程；</li>
+<li>第二个线程则是执行 func函数，正常返回后，检查is_wait 如果为false，结束；否则wakeup原本协程。</li>
+</ul>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> Skynet = <span class="built_in">require</span> <span class="string">&quot;skynet&quot;</span></span><br><span class="line"><span class="keyword">local</span> M = &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">local</span> STATUS_SUCC = <span class="number">0</span></span><br><span class="line"><span class="keyword">local</span> STATUS_TIMEOUT = <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">M.do_func_or_timeout</span><span class="params">(msec, func, ...)</span></span></span><br><span class="line">    <span class="keyword">local</span> args = ...</span><br><span class="line">    <span class="keyword">local</span> ctx = &#123;</span><br><span class="line">        is_wait = <span class="literal">true</span>,</span><br><span class="line">        corout  = <span class="built_in">coroutine</span>.<span class="built_in">running</span>(),</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Skynet.fork(<span class="function"><span class="keyword">function</span><span class="params">()</span></span></span><br><span class="line">        Skynet.sleep(msec)  <span class="comment">-- 超时等待msec 1/00秒</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> ctx.is_wait <span class="keyword">then</span></span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">        ctx.is_wait = <span class="literal">false</span></span><br><span class="line">        ctx.<span class="built_in">status</span> = STATUS_TIMEOUT</span><br><span class="line">        Skynet.wakeup(ctx.corout)</span><br><span class="line">    <span class="keyword">end</span>)</span><br><span class="line"></span><br><span class="line">    Skynet.fork(<span class="function"><span class="keyword">function</span><span class="params">()</span></span></span><br><span class="line">        <span class="keyword">local</span> <span class="built_in">status</span> = STATUS_SUCC</span><br><span class="line">        <span class="keyword">local</span> ret = func(args)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> ctx.is_wait <span class="keyword">then</span></span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">        ctx.is_wait = <span class="literal">false</span></span><br><span class="line">        ctx.<span class="built_in">status</span>  = <span class="built_in">status</span></span><br><span class="line">        ctx.ret     = ret</span><br><span class="line"></span><br><span class="line">        Skynet.wakeup(ctx.corout)</span><br><span class="line">    <span class="keyword">end</span>)</span><br><span class="line">    Skynet.wait()</span><br><span class="line">    <span class="keyword">return</span> ctx.<span class="built_in">status</span>, ctx.ret</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;== start test ==&quot;</span>, Skynet.<span class="built_in">time</span>())</span><br><span class="line"><span class="keyword">local</span> <span class="built_in">status</span>, ret = M.do_func_or_timeout(<span class="number">200</span>, <span class="function"><span class="keyword">function</span><span class="params">()</span></span></span><br><span class="line">    Skynet.sleep(<span class="number">300</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;ok&quot;</span></span><br><span class="line"><span class="keyword">end</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;== status ret 1 ==&quot;</span>, Skynet.<span class="built_in">time</span>(), <span class="built_in">status</span>, ret)</span><br><span class="line"></span><br><span class="line"><span class="keyword">local</span> <span class="built_in">status</span>, ret = M.do_func_or_timeout(<span class="number">600</span>, <span class="function"><span class="keyword">function</span><span class="params">()</span></span></span><br><span class="line">    Skynet.sleep(<span class="number">300</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;ok&quot;</span></span><br><span class="line"><span class="keyword">end</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;== status ret 2 ==&quot;</span>, Skynet.<span class="built_in">time</span>(), <span class="built_in">status</span>, ret)</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> M</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">== start test ==        <span class="number">1631807810.97</span></span><br><span class="line">== <span class="built_in">status</span> ret <span class="number">1</span> ==      <span class="number">1631807812.97</span>   <span class="number">1</span>       <span class="literal">nil</span></span><br><span class="line">== <span class="built_in">status</span> ret <span class="number">2</span> ==      <span class="number">1631807815.97</span>   <span class="number">0</span>       ok</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://example.com/2021/02/12/851-Game_AOI_Grid_Lua/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1180,107 +1249,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2016/12/29/702-Erlang_Supervisor/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ron的BLOG">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/29/702-Erlang_Supervisor/" class="post-title-link" itemprop="url">[erlang]supervisor(监控树)的使用和重启策略</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2016-12-29 20:44:00" itemprop="dateCreated datePublished" datetime="2016-12-29T20:44:00+08:00">2016-12-29</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="supervisor-监控树-的使用和重启策略"><a href="#supervisor-监控树-的使用和重启策略" class="headerlink" title="supervisor(监控树)的使用和重启策略"></a>supervisor(监控树)的使用和重启策略</h2><h3 id="1-init函数"><a href="#1-init函数" class="headerlink" title="1. init函数"></a>1. init函数</h3><figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">init</span><span class="params">()</span> -&gt;</span></span><br><span class="line">    &#123;ok, &#123;SupFlags, [ChildSpec,...]&#125;&#125; | ignore.</span><br></pre></td></tr></table></figure>
-
-<p>[ChildSpec,…] 是在init之后默认要启动的子进程。</p>
-<h3 id="2-SupFlags参数"><a href="#2-SupFlags参数" class="headerlink" title="2. SupFlags参数"></a>2. SupFlags参数</h3><p>{Type, Times, Sec}</p>
-<ul>
-<li>Type: 重启策略<ul>
-<li>one_for_one: 一个子进程终止，只重启该进程，在init的时候会启动参数内的子进程</li>
-<li>simple_one_for_one: 同one_for_one，但是在init的时候不会启动子进程，需要动态调用启动</li>
-<li>one_for_all: 一个子进程终止，将重启所有子进程</li>
-<li>rest_for_one: 一个子进程终止，将按顺序重启这个子进程和之后顺序的子进程</li>
-</ul>
-</li>
-<li>Times: 次数(监控频率)</li>
-<li>Sec: 秒数(监控频率)，如果在Sec秒内重启次数超过Times，则终止所有进程，并终止监控树，将由父进程决定它的命运</li>
-</ul>
-<h3 id="3-ChildSpec参数如下"><a href="#3-ChildSpec参数如下" class="headerlink" title="3. ChildSpec参数如下"></a>3. ChildSpec参数如下</h3><figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;Id, StartFunc, Restart, Shutdown, Type, Modules&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">%% 或者</span></span><br><span class="line"></span><br><span class="line">#&#123;</span><br><span class="line">    id =&gt; child_id(),</span><br><span class="line">    start =&gt; mfaargs(),</span><br><span class="line">    restart =&gt; restart(),</span><br><span class="line">    shutdown =&gt; shutdown(),</span><br><span class="line">    type =&gt; work(),</span><br><span class="line">    modules =&gt; modules()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>Id 子进程ID标识符</li>
-<li>StartFunc &#x3D; {M, F, A}: 子程序启动入口</li>
-<li>Restart: 重启方案<ul>
-<li><code>permanent</code>: 如果app终止了，整个系统都会停止工作（application:stop&#x2F;1除外）。</li>
-<li><code>transient</code>: 如果app以normal的原因终止，没有影响。任何其它终止原因都谁导致整个系统关闭。</li>
-<li><code>temporary</code>: app可以以任何原因终止。只产生报告，没有其它任何影响。</li>
-</ul>
-</li>
-<li>Shutdown: 终止策略<ul>
-<li><code>brutal_kill</code>: 无条件终止</li>
-<li>超时值(毫秒): 终止时，如果超时，则强制终止</li>
-<li><code>infinity</code>: 如果子进程是监控树，设置为无限大，等待其终止为止</li>
-</ul>
-</li>
-<li>Type: <ul>
-<li><code>worker</code>: 普通子进程</li>
-<li><code>supervisor</code>: 子进程是监控树</li>
-</ul>
-</li>
-<li>Modules: <ul>
-<li><code>dynamic</code>: 当子进程是gen_event</li>
-<li><code>[Module]</code>: 当子进程是监控树、gen_server或者gen_fsm，表示回调模块名称</li>
-</ul>
-</li>
-</ul>
-<h3 id="4-监控树操作"><a href="#4-监控树操作" class="headerlink" title="4. 监控树操作"></a>4. 监控树操作</h3><p>Sup通常可以为<code>?MODULE</code></p>
-<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 启动监控树</span></span><br><span class="line">supervisor:start_link(Sup, []).</span><br><span class="line"></span><br><span class="line"><span class="comment">% 启动一个子进程</span></span><br><span class="line">supervisor:start_child(Sup, ChildSpec).</span><br><span class="line"></span><br><span class="line"><span class="comment">% 停止一个子进程</span></span><br><span class="line">supervisor:terminate(Sup, Id).</span><br><span class="line"></span><br><span class="line"><span class="comment">% 删除一个子进程</span></span><br><span class="line">supervisor:delete_child(Sup, Id).</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1350,12 +1318,12 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">34</span>
+          <span class="site-state-item-count">35</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-count">32</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>
