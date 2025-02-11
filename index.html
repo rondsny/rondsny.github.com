@@ -150,6 +150,84 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/01/16/859-skynet_mongodb_hint/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ron的BLOG">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2025/01/16/859-skynet_mongodb_hint/" class="post-title-link" itemprop="url">Skynet查询MongoDB全表过慢优化</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2025-01-16 23:00:00" itemprop="dateCreated datePublished" datetime="2025-01-16T23:00:00+08:00">2025-01-16</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>MongoDB 有一个叫覆盖索引的feature</p>
+<p><img src="/pics/mongo_hint.png" alt="覆盖索引"></p>
+<p>意思是查询数据的时候，过滤条件和查询字段刚好都是索引，那么MongoDB可能会选择从索引表查询结果，而不需要查询Document。</p>
+<p>为什么说是可能的，而不是必须的，这取决于MongoDB的查询计划。</p>
+<h3 id="出现问题"><a href="#出现问题" class="headerlink" title="出现问题"></a>出现问题</h3><p>最近收到运维的反馈，说某个版本之后开服时间大幅度变长了。这个版本确实是新增了一个数据库表，是从另一个表拆分出来的数据，且在开服的时候需要全表扫描。两个表加起来的数据量在更新前后是一致的。所以预期上不应该出现开服时间大幅度变长的情况。</p>
+<p>首先检查了两张表的差别，原来需要扫描的表是有索引字段的，且查询的结果刚好也是索引字段。而新增的是没有索引的。所以怀疑有索引的表，会触发MongoDB的覆盖索引查询，而没有增加的，只能全表扫描。通过对新表增加索引进行对比，发现没有显著的变化。</p>
+<h3 id="覆盖索引查询"><a href="#覆盖索引查询" class="headerlink" title="覆盖索引查询"></a>覆盖索引查询</h3><p>首先先定位一下，覆盖索引查询 到底有没有被执行。执行<code>db.setProfilingLevel(2);</code> 打开MongoDB的查询分析功能。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">use [db];</span><br><span class="line">db.setProfilingLevel(2);</span><br><span class="line"><span class="comment"># 参数 0 是关闭</span></span><br><span class="line"><span class="comment"># 参数 1 是记录慢查询</span></span><br><span class="line"><span class="comment"># 参数 2 是记录所有操作</span></span><br></pre></td></tr></table></figure>
+<p>然后等Skynet这边执行查询操作，查询后在mongo里面执行 <code>db.system.profile.find(&#123;&quot;ns&quot; : &quot;[db].[collection]&quot;&#125;).sort(&#123; ts: -1 &#125;).limit(10)</code> 查询某个集合的查询结果。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">use [db];</span><br><span class="line"><span class="comment"># 查看结果</span></span><br><span class="line">db.system.profile.find().sort( &#123; ts : -1 &#125; )</span><br><span class="line"><span class="comment"># 查看针对某个表的查询结果</span></span><br><span class="line">db.system.profile.find(&#123;<span class="string">&quot;ns&quot;</span> : <span class="string">&quot;[db].[collection]&quot;</span>&#125;).sort(&#123; ts: -1 &#125;).<span class="built_in">limit</span>(10);</span><br></pre></td></tr></table></figure>
+<p>在结果里面查看execStats.inputStage.stage 的结果就可以定位是否使用了覆盖索引。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">   <span class="string">&quot;op&quot;</span>:<span class="string">&quot;query&quot;</span>,</span><br><span class="line">   <span class="string">&quot;execStats&quot;</span>:&#123;</span><br><span class="line">      <span class="string">&quot;memLimit&quot;</span>:104857600,</span><br><span class="line">      <span class="string">&quot;type&quot;</span>:<span class="string">&quot;simple&quot;</span>,</span><br><span class="line">      <span class="string">&quot;totalDataSizeSorted&quot;</span>:0,</span><br><span class="line">      <span class="string">&quot;usedDisk&quot;</span>:<span class="literal">false</span>,</span><br><span class="line">      <span class="string">&quot;inputStage&quot;</span>:&#123;</span><br><span class="line">         <span class="string">&quot;stage&quot;</span>:<span class="string">&quot;COLLSCAN&quot;</span>,</span><br><span class="line">         <span class="string">&quot;nReturned&quot;</span>:0,</span><br><span class="line">         <span class="string">&quot;executionTimeMillisEstimate&quot;</span>:0,</span><br><span class="line">         <span class="string">&quot;works&quot;</span>:2,</span><br><span class="line">         <span class="string">&quot;advanced&quot;</span>:0,</span><br><span class="line">         <span class="string">&quot;needTime&quot;</span>:1,</span><br><span class="line">         <span class="string">&quot;needYield&quot;</span>:0,</span><br><span class="line">         <span class="string">&quot;saveState&quot;</span>:0,</span><br><span class="line">         <span class="string">&quot;restoreState&quot;</span>:0,</span><br><span class="line">         <span class="string">&quot;isEOF&quot;</span>:1,</span><br><span class="line">         <span class="string">&quot;direction&quot;</span>:<span class="string">&quot;forward&quot;</span>,</span><br><span class="line">         <span class="string">&quot;docsExamined&quot;</span>:0</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h3><p>出现这样的问题，是因为在查询数据的时候，过滤条件为空的时候，MongoDB会优先进行全表扫描。当过滤条件不为空，且条件字段刚好是索引的时候，基本上都能触发覆盖索引查询。</p>
+<p>针对这种情况，可以使用hint函数，告诉MongoDB，强制使用覆盖索引查询的方式，不在需要进行MongoDB的查询决策了。</p>
+<p>下面是未指定hint的查询情况，可以看到 executionStats.executionStages.inputStage.stage的结果是COLLSCAN。未使用覆盖索引查询。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">&gt; db.role.find(&#123;&#125;,&#123;uid:1,<span class="string">&#x27;_id&#x27;</span>:0&#125;).explain(<span class="string">&quot;executionStats&quot;</span>)</span><br><span class="line">&#123;</span><br><span class="line">        <span class="string">&quot;queryPlanner&quot;</span> : &#123;</span><br><span class="line">                ...</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="string">&quot;executionStats&quot;</span> : &#123;</span><br><span class="line">                <span class="string">&quot;executionSuccess&quot;</span> : <span class="literal">true</span>,</span><br><span class="line">                <span class="string">&quot;nReturned&quot;</span> : 7,</span><br><span class="line">                <span class="string">&quot;executionTimeMillis&quot;</span> : 0,</span><br><span class="line">                <span class="string">&quot;totalKeysExamined&quot;</span> : 0,</span><br><span class="line">                <span class="string">&quot;totalDocsExamined&quot;</span> : 7,</span><br><span class="line">                <span class="string">&quot;executionStages&quot;</span> : &#123;</span><br><span class="line">                        <span class="string">&quot;inputStage&quot;</span> : &#123;</span><br><span class="line">                                <span class="string">&quot;stage&quot;</span> : <span class="string">&quot;COLLSCAN&quot;</span>,</span><br><span class="line">                                <span class="string">&quot;nReturned&quot;</span> : 7,</span><br><span class="line">                                <span class="string">&quot;executionTimeMillisEstimate&quot;</span> : 0,</span><br><span class="line">                                <span class="string">&quot;works&quot;</span> : 9,</span><br><span class="line">                                <span class="string">&quot;advanced&quot;</span> : 7,</span><br><span class="line">                                <span class="string">&quot;needTime&quot;</span> : 1,</span><br><span class="line">                                <span class="string">&quot;needYield&quot;</span> : 0,</span><br><span class="line">                                <span class="string">&quot;saveState&quot;</span> : 0,</span><br><span class="line">                                <span class="string">&quot;restoreState&quot;</span> : 0,</span><br><span class="line">                                <span class="string">&quot;isEOF&quot;</span> : 1,</span><br><span class="line">                                <span class="string">&quot;direction&quot;</span> : <span class="string">&quot;forward&quot;</span>,</span><br><span class="line">                                <span class="string">&quot;docsExamined&quot;</span> : 7</span><br><span class="line">                        &#125;</span><br><span class="line">                &#125;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>下面是使用hint的情况，可以看到 executionStats.executionStages.inputStage.stage的结果是IXSCAN。未使用覆盖索引查询。查看 totalKeysExamined &#x3D;7，totalDocsExamined &#x3D; 0，也可以知道查询的7天数据全部来源于索引表，并未从文档查询过数据。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">&gt; db.role.find(&#123;&#125;,&#123;uid:1,<span class="string">&#x27;_id&#x27;</span>:0&#125;).hint(&#123;uid:1&#125;).explain(<span class="string">&quot;executionStats&quot;</span>)</span><br><span class="line">&#123;</span><br><span class="line">        <span class="string">&quot;queryPlanner&quot;</span> : &#123;</span><br><span class="line">                ...</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="string">&quot;executionStats&quot;</span> : &#123;</span><br><span class="line">                <span class="string">&quot;executionSuccess&quot;</span> : <span class="literal">true</span>,</span><br><span class="line">                <span class="string">&quot;nReturned&quot;</span> : 7,</span><br><span class="line">                <span class="string">&quot;executionTimeMillis&quot;</span> : 0,</span><br><span class="line">                <span class="string">&quot;totalKeysExamined&quot;</span> : 7,</span><br><span class="line">                <span class="string">&quot;totalDocsExamined&quot;</span> : 0,</span><br><span class="line">                <span class="string">&quot;executionStages&quot;</span> : &#123;</span><br><span class="line">                        <span class="string">&quot;stage&quot;</span> : <span class="string">&quot;PROJECTION_COVERED&quot;</span>,</span><br><span class="line">                        <span class="string">&quot;inputStage&quot;</span> : &#123;</span><br><span class="line">                                <span class="string">&quot;stage&quot;</span> : <span class="string">&quot;IXSCAN&quot;</span>,</span><br><span class="line">                                <span class="string">&quot;nReturned&quot;</span> : 7,</span><br><span class="line">                                <span class="string">&quot;executionTimeMillisEstimate&quot;</span> : 0,</span><br><span class="line">                                <span class="string">&quot;works&quot;</span> : 8,</span><br><span class="line">                                <span class="string">&quot;advanced&quot;</span> : 7,</span><br><span class="line">                                <span class="string">&quot;needTime&quot;</span> : 0,</span><br><span class="line">                                <span class="string">&quot;needYield&quot;</span> : 0,</span><br><span class="line">                                <span class="string">&quot;saveState&quot;</span> : 0,</span><br><span class="line">                                <span class="string">&quot;restoreState&quot;</span> : 0,</span><br><span class="line">                                <span class="string">&quot;isEOF&quot;</span> : 1,</span><br><span class="line">                                <span class="string">&quot;keyPattern&quot;</span> : &#123;</span><br><span class="line">                                        <span class="string">&quot;uid&quot;</span> : 1</span><br><span class="line">                                &#125;,</span><br><span class="line">                                <span class="string">&quot;indexName&quot;</span> : <span class="string">&quot;uid_1&quot;</span>,</span><br><span class="line">                                <span class="string">&quot;isMultiKey&quot;</span> : <span class="literal">false</span>,</span><br><span class="line">                                <span class="string">&quot;multiKeyPaths&quot;</span> : &#123;</span><br><span class="line">                                        <span class="string">&quot;uid&quot;</span> : [ ]</span><br><span class="line">                                &#125;,</span><br><span class="line">                                <span class="string">&quot;isUnique&quot;</span> : <span class="literal">true</span>,</span><br><span class="line">                                <span class="string">&quot;isSparse&quot;</span> : <span class="literal">false</span>,</span><br><span class="line">                                <span class="string">&quot;isPartial&quot;</span> : <span class="literal">false</span>,</span><br><span class="line">                                <span class="string">&quot;indexVersion&quot;</span> : 2,</span><br><span class="line">                                <span class="string">&quot;direction&quot;</span> : <span class="string">&quot;forward&quot;</span>,</span><br><span class="line">                                <span class="string">&quot;indexBounds&quot;</span> : &#123;</span><br><span class="line">                                        <span class="string">&quot;uid&quot;</span> : [</span><br><span class="line">                                                <span class="string">&quot;[MinKey, MaxKey]&quot;</span></span><br><span class="line">                                        ]</span><br><span class="line">                                &#125;,</span><br><span class="line">                                <span class="string">&quot;keysExamined&quot;</span> : 7,</span><br><span class="line">                                <span class="string">&quot;seeks&quot;</span> : 1,</span><br><span class="line">                                <span class="string">&quot;dupsTested&quot;</span> : 0,</span><br><span class="line">                                <span class="string">&quot;dupsDropped&quot;</span> : 0</span><br><span class="line">                        &#125;</span><br><span class="line">                &#125;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h3><p>针对一些要查询全表某些字段，而这些字段又刚好是索引的情况。可以使用hint来主动告诉MongoDB使用覆盖索引查询结果。另外因为MongoDB查询数据默认是会返回_id字段的，这个字段也会影响到是否触发覆盖索引查询的情况，可能会即使用了索引查询，也会查询文档的情况。所以如果这个字段不需要使用，是需要去除的。</p>
+<p>skynet比较旧的版本是不支持hint操作的。这个需要修改skynet源码或者升级skynet版本来支持。因为后面的版本skynet使用的是op_msg协议接入MongoDB了。而我们MongoDB版本还不支持，所以只能修改skynet源码才能实现。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://example.com/2023/11/16/858-lua_profile_c_function/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1158,118 +1236,6 @@ L_y=\frac{3}{2}·2^{23}·(127-0.04505) - \frac{1}{2}·L_x = 0x5f3759df - \frac{1
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2021/12/03/853-Game_NavMesh/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ron的BLOG">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/12/03/853-Game_NavMesh/" class="post-title-link" itemprop="url">[game]recastnavigation</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2021-12-03 22:30:00" itemprop="dateCreated datePublished" datetime="2021-12-03T22:30:00+08:00">2021-12-03</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="recastnavigation"><a href="#recastnavigation" class="headerlink" title="recastnavigation"></a>recastnavigation</h1><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>常见实现服务端地形的方式有使用数组保存地形的方式。例如使用一个二维数组，value为0表示不可行走，为1表示可以行走地板。也可以支持扩展其它地表，例如沙漠，水。此种方式优点是实现方式简单，缺点是寻路成本较大，只支持2d地形。</p>
-<p>还有一种方式是使用著名的recastnavigation库，使用导航网格navmesh来实现。库的地址是 <a target="_blank" rel="noopener" href="https://github.com/recastnavigation/recastnavigation">https://github.com/recastnavigation/recastnavigation</a> 。此方式可以大幅度减少网格数量，在寻路上具有较大优势，而且支持3d地形。但是也不是所有3d地形也是支持的，如果是角度小于90度的墙，是生成不了导航网格的。</p>
-<h2 id="导航网格"><a href="#导航网格" class="headerlink" title="导航网格"></a>导航网格</h2><h3 id="导航网格生成的参数"><a href="#导航网格生成的参数" class="headerlink" title="导航网格生成的参数"></a>导航网格生成的参数</h3><ul>
-<li><strong>cellSize</strong> 体素在XZ轴上的大小，越小越精细</li>
-<li><strong>cellHeight</strong> 体素在Y轴上的高度，越小越精细，但可能引起网格之间断裂</li>
-<li><strong>minTraversableHeight</strong> 最低可通过高度</li>
-<li><strong>maxTraversableStep</strong> 可跨越不同地形时的高度，多用于楼梯阈值</li>
-<li><strong>maxTraversableSlope</strong> 最大可通过的斜坡倾斜度</li>
-<li>clipLedges 边缘突出部分是否可以行走</li>
-<li>traversableAreaBorderSize 可行走区域与阻挡之间的距离大小，贴墙的程度，越小可能交叠越多</li>
-<li>smoonthingThreshold 距离场</li>
-<li>useComservativeExpansion </li>
-<li>minUnconnectedRegionSize 最小的无法被链接的区域，可以避免孤岛的网格的产生</li>
-<li>mergeRegionSize 合并区域尺寸，低于改数值，可能会被大区域吞并</li>
-<li>maxEdgeLength 网格边界的多边形最大的边</li>
-<li>edgeMaxDeviation 网格边界与原始集合图形的偏移量，越小产生的三角形越多，越贴近于原始图形</li>
-<li>maxVertsPerPoly 每个多边形的最大定点数，通常情况下6个顶点能够平衡需求和性能</li>
-<li>contourSampleDistance 采样距离</li>
-</ul>
-<h4 id="NavMesh的生成过程"><a href="#NavMesh的生成过程" class="headerlink" title="NavMesh的生成过程"></a>NavMesh的生成过程</h4><ul>
-<li>Voxelization 体素化，把原始几何转换成高度域</li>
-<li>Generate Regions 生成各个多边形区域</li>
-<li>Generate Contours 生成各个多边形的边界轮廓并标记起来</li>
-<li>Generate Polygon Mesh 合并重复边界轮廓信息，整合到网格里面去</li>
-<li>Generate Detailed Mesh</li>
-</ul>
-<h3 id="gamescene-map-方案"><a href="#gamescene-map-方案" class="headerlink" title="gamescene_map 方案"></a>gamescene_map 方案</h3><p><img src="/pics/nav_001.png" alt="undefined"> </p>
-<h3 id="navmesh-方案"><a href="#navmesh-方案" class="headerlink" title="navmesh 方案"></a>navmesh 方案</h3><p><img src="/pics/nav_002.png" alt="undefined"><br><img src="/pics/nav_003.png" alt="undefined"></p>
-<p>对象概念</p>
-<ul>
-<li>navmesh</li>
-<li>navmesh agent</li>
-<li>navmesh obstacle</li>
-<li>off-mesh link</li>
-</ul>
-<p><img src="/pics/nav_004.png" alt="undefined"><br>这个图用于解释数据结构非常有用</p>
-<ul>
-<li>tile - 片</li>
-<li>poly - 多边形</li>
-<li>vert - 顶点</li>
-</ul>
-<h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><p>有了navmesh之后，就可以使用Detour进行寻路等操作。</p>
-<ul>
-<li>构建一个 dtNavMeshQuery 实例</li>
-<li>findPath 查询到经过的多边形</li>
-<li>findStraightPath 将多边形转换成寻路坐标</li>
-</ul>
-<h3 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h3><p>todo</p>
-<h3 id="导出lua接口"><a href="#导出lua接口" class="headerlink" title="导出lua接口"></a>导出lua接口</h3><p>todo</p>
-<h3 id="局限性"><a href="#局限性" class="headerlink" title="局限性"></a>局限性</h3><ul>
-<li>无法对角度小于90度的墙生成导航网格，如塞尔达等游戏爬墙</li>
-<li>要小心掉落到两片网格夹缝中</li>
-<li>不适合开放世界，因为开放世界可能没有加载整个地图</li>
-<li>agent不能飞，不能跳</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1339,12 +1305,12 @@ L_y=\frac{3}{2}·2^{23}·(127-0.04505) - \frac{1}{2}·L_x = 0x5f3759df - \frac{1
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">35</span>
+          <span class="site-state-item-count">36</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">32</span>
+        <span class="site-state-item-count">33</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>
@@ -1371,7 +1337,7 @@ L_y=\frac{3}{2}·2^{23}·(127-0.04505) - \frac{1}{2}·L_x = 0x5f3759df - \frac{1
 <div class="copyright">
   
   &copy; 2015 – 
-  <span itemprop="copyrightYear">2023</span>
+  <span itemprop="copyrightYear">2025</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

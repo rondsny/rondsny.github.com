@@ -150,6 +150,118 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/12/03/853-Game_NavMesh/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ron的BLOG">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/12/03/853-Game_NavMesh/" class="post-title-link" itemprop="url">[game]recastnavigation</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-12-03 22:30:00" itemprop="dateCreated datePublished" datetime="2021-12-03T22:30:00+08:00">2021-12-03</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="recastnavigation"><a href="#recastnavigation" class="headerlink" title="recastnavigation"></a>recastnavigation</h1><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>常见实现服务端地形的方式有使用数组保存地形的方式。例如使用一个二维数组，value为0表示不可行走，为1表示可以行走地板。也可以支持扩展其它地表，例如沙漠，水。此种方式优点是实现方式简单，缺点是寻路成本较大，只支持2d地形。</p>
+<p>还有一种方式是使用著名的recastnavigation库，使用导航网格navmesh来实现。库的地址是 <a target="_blank" rel="noopener" href="https://github.com/recastnavigation/recastnavigation">https://github.com/recastnavigation/recastnavigation</a> 。此方式可以大幅度减少网格数量，在寻路上具有较大优势，而且支持3d地形。但是也不是所有3d地形也是支持的，如果是角度小于90度的墙，是生成不了导航网格的。</p>
+<h2 id="导航网格"><a href="#导航网格" class="headerlink" title="导航网格"></a>导航网格</h2><h3 id="导航网格生成的参数"><a href="#导航网格生成的参数" class="headerlink" title="导航网格生成的参数"></a>导航网格生成的参数</h3><ul>
+<li><strong>cellSize</strong> 体素在XZ轴上的大小，越小越精细</li>
+<li><strong>cellHeight</strong> 体素在Y轴上的高度，越小越精细，但可能引起网格之间断裂</li>
+<li><strong>minTraversableHeight</strong> 最低可通过高度</li>
+<li><strong>maxTraversableStep</strong> 可跨越不同地形时的高度，多用于楼梯阈值</li>
+<li><strong>maxTraversableSlope</strong> 最大可通过的斜坡倾斜度</li>
+<li>clipLedges 边缘突出部分是否可以行走</li>
+<li>traversableAreaBorderSize 可行走区域与阻挡之间的距离大小，贴墙的程度，越小可能交叠越多</li>
+<li>smoonthingThreshold 距离场</li>
+<li>useComservativeExpansion </li>
+<li>minUnconnectedRegionSize 最小的无法被链接的区域，可以避免孤岛的网格的产生</li>
+<li>mergeRegionSize 合并区域尺寸，低于改数值，可能会被大区域吞并</li>
+<li>maxEdgeLength 网格边界的多边形最大的边</li>
+<li>edgeMaxDeviation 网格边界与原始集合图形的偏移量，越小产生的三角形越多，越贴近于原始图形</li>
+<li>maxVertsPerPoly 每个多边形的最大定点数，通常情况下6个顶点能够平衡需求和性能</li>
+<li>contourSampleDistance 采样距离</li>
+</ul>
+<h4 id="NavMesh的生成过程"><a href="#NavMesh的生成过程" class="headerlink" title="NavMesh的生成过程"></a>NavMesh的生成过程</h4><ul>
+<li>Voxelization 体素化，把原始几何转换成高度域</li>
+<li>Generate Regions 生成各个多边形区域</li>
+<li>Generate Contours 生成各个多边形的边界轮廓并标记起来</li>
+<li>Generate Polygon Mesh 合并重复边界轮廓信息，整合到网格里面去</li>
+<li>Generate Detailed Mesh</li>
+</ul>
+<h3 id="gamescene-map-方案"><a href="#gamescene-map-方案" class="headerlink" title="gamescene_map 方案"></a>gamescene_map 方案</h3><p><img src="/pics/nav_001.png" alt="undefined"> </p>
+<h3 id="navmesh-方案"><a href="#navmesh-方案" class="headerlink" title="navmesh 方案"></a>navmesh 方案</h3><p><img src="/pics/nav_002.png" alt="undefined"><br><img src="/pics/nav_003.png" alt="undefined"></p>
+<p>对象概念</p>
+<ul>
+<li>navmesh</li>
+<li>navmesh agent</li>
+<li>navmesh obstacle</li>
+<li>off-mesh link</li>
+</ul>
+<p><img src="/pics/nav_004.png" alt="undefined"><br>这个图用于解释数据结构非常有用</p>
+<ul>
+<li>tile - 片</li>
+<li>poly - 多边形</li>
+<li>vert - 顶点</li>
+</ul>
+<h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><p>有了navmesh之后，就可以使用Detour进行寻路等操作。</p>
+<ul>
+<li>构建一个 dtNavMeshQuery 实例</li>
+<li>findPath 查询到经过的多边形</li>
+<li>findStraightPath 将多边形转换成寻路坐标</li>
+</ul>
+<h3 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h3><p>todo</p>
+<h3 id="导出lua接口"><a href="#导出lua接口" class="headerlink" title="导出lua接口"></a>导出lua接口</h3><p>todo</p>
+<h3 id="局限性"><a href="#局限性" class="headerlink" title="局限性"></a>局限性</h3><ul>
+<li>无法对角度小于90度的墙生成导航网格，如塞尔达等游戏爬墙</li>
+<li>要小心掉落到两片网格夹缝中</li>
+<li>不适合开放世界，因为开放世界可能没有加载整个地图</li>
+<li>agent不能飞，不能跳</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://example.com/2021/08/02/852-skynet_func_timout/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1137,118 +1249,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2017/02/06/301-bullet3_init_world/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ron">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ron的BLOG">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/02/06/301-bullet3_init_world/" class="post-title-link" itemprop="url">[Bullet3]创建世界(场景)及常见函数</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2017-02-06 20:16:57" itemprop="dateCreated datePublished" datetime="2017-02-06T20:16:57+08:00">2017-02-06</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="创建世界-场景-及常见函数"><a href="#创建世界-场景-及常见函数" class="headerlink" title="创建世界(场景)及常见函数"></a>创建世界(场景)及常见函数</h2><p>官方文档：<a target="_blank" rel="noopener" href="http://bulletphysics.org/">http://bulletphysics.org</a><br>开源代码：<a target="_blank" rel="noopener" href="https://github.com/bulletphysics/bullet3/releases">https://github.com/bulletphysics/bullet3/releases</a><br>API文档：<a target="_blank" rel="noopener" href="http://bulletphysics.org/Bullet/BulletFull/annotated.html">http://bulletphysics.org/Bullet/BulletFull/annotated.html</a></p>
-<h3 id="0-世界的继承类"><a href="#0-世界的继承类" class="headerlink" title="0. 世界的继承类"></a>0. 世界的继承类</h3><ul>
-<li><code>btCollisionWorld</code><ul>
-<li>基类</li>
-</ul>
-</li>
-<li><code>btDynamicsWorld</code><ul>
-<li>继承于<code>btCollisionWorld</code></li>
-<li>基础的动力学实现</li>
-</ul>
-</li>
-<li><code>btDiscreteDynamicsWorld</code><ul>
-<li>继承于<code>btDynamicsWorld</code></li>
-<li>刚体的运动模拟</li>
-</ul>
-</li>
-</ul>
-<h3 id="1-创建世界-场景"><a href="#1-创建世界-场景" class="headerlink" title="1. 创建世界(场景)"></a>1. 创建世界(场景)</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 初始化场景</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 用于配置碰撞检测堆栈大小，默认碰撞算法，接触副本池的大小</span></span><br><span class="line">btDefaultCollisionConfiguration* collisionConfiguration = <span class="keyword">new</span> <span class="built_in">btDefaultCollisionConfiguration</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 用于计算重叠对象（碰撞检测，接触点计算）（接触点会被封装成 btPersistentManifold 对象）</span></span><br><span class="line">btCollisionDispatcher* dispatcher = <span class="keyword">new</span> <span class="built_in">btCollisionDispatcher</span>(collisionConfiguration);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 提供成对的aabb重叠监测（重叠对象的管理，存储，增加删除等）</span></span><br><span class="line">btBroadphaseInterface* overlappingPairCache = <span class="keyword">new</span> <span class="built_in">btDbvtBroadphase</span>();</span><br><span class="line"></span><br><span class="line">btSequentialImpulseConstraintSolver* solver = <span class="keyword">new</span> btSequentialImpulseConstraintSolver;</span><br><span class="line">btDynamicsWorld* world = <span class="keyword">new</span> <span class="built_in">btDiscreteDynamicsWorld</span>(dispatcher, overlappingPairCache, solver, collisionConfiguration);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="2-场景函数"><a href="#2-场景函数" class="headerlink" title="2. 场景函数"></a>2. 场景函数</h3><ul>
-<li><code>void btDynamicsWorld::addRigidBody(btRigidBody* body)</code><ul>
-<li>添加一个刚体</li>
-</ul>
-</li>
-<li><code>void btCollisionWorld::removeCollisionObject(btCollisionObject* collisionObject)</code><ul>
-<li>删除对象</li>
-</ul>
-</li>
-<li><code>int btCollisionWorld::getNumCollisionObjects()</code><ul>
-<li>获取数量</li>
-</ul>
-</li>
-<li><code>btAlignedObjectArray&lt;btCollisionObject*&gt; btCollisionWorld::getCollisionObjectArray()</code><ul>
-<li>获取场景所有对象</li>
-</ul>
-</li>
-<li><code>void    btDynamicsWorld::setGravity(const btVector3&amp; gravity)</code><ul>
-<li>设置重力</li>
-<li>默认值：btVector3(0,0,0)</li>
-</ul>
-</li>
-<li><code>void    btDynamicsWorld::performDiscreteCollisionDetection()</code><ul>
-<li>碰撞检测</li>
-</ul>
-</li>
-<li><code>int btDynamicsWorld::stepSimulation(btScalar timeStep, int maxSubSteps = 1, btScalar fixedTimeStep = btScalar(1.)/btScalar(60.))</code><ul>
-<li>模拟运动</li>
-</ul>
-</li>
-</ul>
-<h3 id="3-举例"><a href="#3-举例" class="headerlink" title="3. 举例"></a>3. 举例</h3><ol>
-<li>场景场景；</li>
-<li>添加一个刚体；</li>
-<li>释放内存退出。</li>
-</ol>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;btBulletDynamicsCommon.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    <span class="comment">///-----initialization_start-----</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">///collision configuration contains default setup for memory, collision setup. Advanced users can create their own configuration.</span></span><br><span class="line">    btDefaultCollisionConfiguration* collisionConfiguration = <span class="keyword">new</span> <span class="built_in">btDefaultCollisionConfiguration</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">///use the default collision dispatcher. For parallel processing you can use a diffent dispatcher (see Extras/BulletMultiThreaded)</span></span><br><span class="line">    btCollisionDispatcher* dispatcher = <span class="keyword">new</span>	<span class="built_in">btCollisionDispatcher</span>(collisionConfiguration);</span><br><span class="line"></span><br><span class="line">    <span class="comment">///btDbvtBroadphase is a good general purpose broadphase. You can also try out btAxis3Sweep.</span></span><br><span class="line">    btBroadphaseInterface* overlappingPairCache = <span class="keyword">new</span> <span class="built_in">btDbvtBroadphase</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">///the default constraint solver. For parallel processing you can use a different solver (see Extras/BulletMultiThreaded)</span></span><br><span class="line">    btSequentialImpulseConstraintSolver* solver = <span class="keyword">new</span> btSequentialImpulseConstraintSolver;</span><br><span class="line"></span><br><span class="line">    btDiscreteDynamicsWorld* dynamicsWorld = <span class="keyword">new</span> <span class="built_in">btDiscreteDynamicsWorld</span>(dispatcher,overlappingPairCache,solver,collisionConfiguration);</span><br><span class="line"></span><br><span class="line">    dynamicsWorld-&gt;<span class="built_in">setGravity</span>(<span class="built_in">btVector3</span>(<span class="number">0</span>,<span class="number">-10</span>,<span class="number">0</span>));</span><br><span class="line"></span><br><span class="line">    <span class="comment">///-----initialization_end-----</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//keep track of the shapes, we release memory at exit.</span></span><br><span class="line">    <span class="comment">//make sure to re-use collision shapes among rigid bodies whenever possible!</span></span><br><span class="line">    btAlignedObjectArray&lt;btCollisionShape*&gt; collisionShapes;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">///create a few basic rigid bodies</span></span><br><span class="line">    btCollisionShape* groundShape = <span class="keyword">new</span> <span class="built_in">btBoxShape</span>(<span class="built_in">btVector3</span>(<span class="built_in">btScalar</span>(<span class="number">50.</span>),<span class="built_in">btScalar</span>(<span class="number">50.</span>),<span class="built_in">btScalar</span>(<span class="number">50.</span>)));</span><br><span class="line"></span><br><span class="line">    btTransform groundTransform;</span><br><span class="line">    groundTransform.<span class="built_in">setIdentity</span>();</span><br><span class="line">    groundTransform.<span class="built_in">setOrigin</span>(<span class="built_in">btVector3</span>(<span class="number">0</span>,<span class="number">-56</span>,<span class="number">0</span>));</span><br><span class="line"></span><br><span class="line">    <span class="function">btScalar <span class="title">mass</span><span class="params">(<span class="number">0.</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//rigidbody is dynamic if and only if mass is non zero, otherwise static</span></span><br><span class="line">    <span class="keyword">bool</span> isDynamic = (mass != <span class="number">0.f</span>);</span><br><span class="line"></span><br><span class="line">    <span class="function">btVector3 <span class="title">localInertia</span><span class="params">(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (isDynamic)</span><br><span class="line">        groundShape-&gt;<span class="built_in">calculateLocalInertia</span>(mass,localInertia);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//using motionstate is optional, it provides interpolation capabilities, and only synchronizes &#x27;active&#x27; objects</span></span><br><span class="line">    btDefaultMotionState* myMotionState = <span class="keyword">new</span> <span class="built_in">btDefaultMotionState</span>(groundTransform);</span><br><span class="line">    <span class="function">btRigidBody::btRigidBodyConstructionInfo <span class="title">rbInfo</span><span class="params">(mass,myMotionState,groundShape,localInertia)</span></span>;</span><br><span class="line">    btRigidBody* body = <span class="keyword">new</span> <span class="built_in">btRigidBody</span>(rbInfo);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//add the body to the dynamics world</span></span><br><span class="line">    dynamicsWorld-&gt;<span class="built_in">addRigidBody</span>(body);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//cleanup in the reverse order of creation/initialization</span></span><br><span class="line">    <span class="keyword">delete</span> body;</span><br><span class="line">    <span class="keyword">delete</span> myMotionState;</span><br><span class="line">    <span class="keyword">delete</span> groundShape;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">delete</span> dynamicsWorld;</span><br><span class="line">    <span class="keyword">delete</span> solver;</span><br><span class="line">    <span class="keyword">delete</span> overlappingPairCache;</span><br><span class="line">    <span class="keyword">delete</span> dispatcher;</span><br><span class="line">    <span class="keyword">delete</span> collisionConfiguration;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1318,12 +1318,12 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">35</span>
+          <span class="site-state-item-count">36</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">32</span>
+        <span class="site-state-item-count">33</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>
@@ -1350,7 +1350,7 @@
 <div class="copyright">
   
   &copy; 2015 – 
-  <span itemprop="copyrightYear">2023</span>
+  <span itemprop="copyrightYear">2025</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
