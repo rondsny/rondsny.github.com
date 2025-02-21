@@ -17,27 +17,27 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+    var CONFIG = {"hostname":"rondsny.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
   <meta name="description" content="1. 问题现象我们策划在配置技能的时候，当技能方向趋向于y轴方向的时候，发现技能方向总是有一定的偏差，进行细节调整的时候，也达不到效果，一直微调，微调到一定大小后，方向会突然偏向于另一边。如下图： 在趋向于x轴的时候，策划发现一直有4.69度想右边的偏差。进行微调也不会发生变化，直到微调到大约偏向于左边的时候，左边偏差却来到了3.79度。也就是说有3.79+4.69&#x3D;8.48度的角度，策">
 <meta property="og:type" content="article">
 <meta property="og:title" content="快速反平方根算法误差问题">
-<meta property="og:url" content="http://example.com/2023/07/09/321-q_rsqrt_error/index.html">
-<meta property="og:site_name" content="Ron的BLOG">
+<meta property="og:url" content="https://rondsny.github.io/2023/07/09/321-q_rsqrt_error/index.html">
+<meta property="og:site_name" content="Ron&#39;s BLOG">
 <meta property="og:description" content="1. 问题现象我们策划在配置技能的时候，当技能方向趋向于y轴方向的时候，发现技能方向总是有一定的偏差，进行细节调整的时候，也达不到效果，一直微调，微调到一定大小后，方向会突然偏向于另一边。如下图： 在趋向于x轴的时候，策划发现一直有4.69度想右边的偏差。进行微调也不会发生变化，直到微调到大约偏向于左边的时候，左边偏差却来到了3.79度。也就是说有3.79+4.69&#x3D;8.48度的角度，策">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/pics/inv_sqrt_102.png">
-<meta property="og:image" content="http://example.com/pics/inv_sqrt_101.png">
+<meta property="og:image" content="https://rondsny.github.io/pics/inv_sqrt_102.png">
+<meta property="og:image" content="https://rondsny.github.io/pics/inv_sqrt_101.png">
 <meta property="article:published_time" content="2023-07-09T07:02:01.000Z">
 <meta property="article:modified_time" content="2023-07-09T08:14:59.477Z">
 <meta property="article:author" content="Ron">
 <meta property="article:tag" content="c">
 <meta property="article:tag" content="算法">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/pics/inv_sqrt_102.png">
+<meta name="twitter:image" content="https://rondsny.github.io/pics/inv_sqrt_102.png">
 
-<link rel="canonical" href="http://example.com/2023/07/09/321-q_rsqrt_error/">
+<link rel="canonical" href="https://rondsny.github.io/2023/07/09/321-q_rsqrt_error/">
 
 
 <script id="page-configurations">
@@ -50,7 +50,7 @@
   };
 </script>
 
-  <title>快速反平方根算法误差问题 | Ron的BLOG</title>
+  <title>快速反平方根算法误差问题 | Ron's BLOG</title>
   
 
 
@@ -101,9 +101,10 @@
 
     <a href="/" class="brand" rel="start">
       <span class="logo-line-before"><i></i></span>
-      <h1 class="site-title">Ron的BLOG</h1>
+      <h1 class="site-title">Ron's BLOG</h1>
       <span class="logo-line-after"><i></i></span>
     </a>
+      <p class="site-subtitle" itemprop="description">学习、消化、沉淀</p>
   </div>
 
   <div class="site-nav-right">
@@ -160,7 +161,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2023/07/09/321-q_rsqrt_error/">
+    <link itemprop="mainEntityOfPage" href="https://rondsny.github.io/2023/07/09/321-q_rsqrt_error/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -169,7 +170,7 @@
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ron的BLOG">
+      <meta itemprop="name" content="Ron's BLOG">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">

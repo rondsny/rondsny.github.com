@@ -17,14 +17,14 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+    var CONFIG = {"hostname":"rondsny.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
   <meta name="description" content="游戏里面的AI实现一般是状态机或者行为树。 状态机状态机很好理解，就是AI会处于某一状态中，在不同条件下会进行切换，让AI处于正确的状态中。例如，一个怪物，有闲逛、战斗、逃跑三个状态。在没有遇到目标的时候，是处于【闲逛】状态，遇到了敌人，切换进入【战斗】状态；当血量低于5%或者远离出生点，进入【逃跑】状态。   行为树  行为树的执行就是从上到下，从左导游遍历整个树。每个节点执行之后都会返回tru">
 <meta property="og:type" content="article">
 <meta property="og:title" content="AI">
-<meta property="og:url" content="http://example.com/2021/12/26/860-Game_AI/index.html">
-<meta property="og:site_name" content="Ron的BLOG">
+<meta property="og:url" content="https://rondsny.github.io/2021/12/26/860-Game_AI/index.html">
+<meta property="og:site_name" content="Ron&#39;s BLOG">
 <meta property="og:description" content="游戏里面的AI实现一般是状态机或者行为树。 状态机状态机很好理解，就是AI会处于某一状态中，在不同条件下会进行切换，让AI处于正确的状态中。例如，一个怪物，有闲逛、战斗、逃跑三个状态。在没有遇到目标的时候，是处于【闲逛】状态，遇到了敌人，切换进入【战斗】状态；当血量低于5%或者远离出生点，进入【逃跑】状态。   行为树  行为树的执行就是从上到下，从左导游遍历整个树。每个节点执行之后都会返回tru">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-12-26T13:28:01.000Z">
@@ -34,7 +34,7 @@
 <meta property="article:tag" content="ai">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://example.com/2021/12/26/860-Game_AI/">
+<link rel="canonical" href="https://rondsny.github.io/2021/12/26/860-Game_AI/">
 
 
 <script id="page-configurations">
@@ -47,7 +47,7 @@
   };
 </script>
 
-  <title>AI | Ron的BLOG</title>
+  <title>AI | Ron's BLOG</title>
   
 
 
@@ -98,9 +98,10 @@
 
     <a href="/" class="brand" rel="start">
       <span class="logo-line-before"><i></i></span>
-      <h1 class="site-title">Ron的BLOG</h1>
+      <h1 class="site-title">Ron's BLOG</h1>
       <span class="logo-line-after"><i></i></span>
     </a>
+      <p class="site-subtitle" itemprop="description">学习、消化、沉淀</p>
   </div>
 
   <div class="site-nav-right">
@@ -157,7 +158,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2021/12/26/860-Game_AI/">
+    <link itemprop="mainEntityOfPage" href="https://rondsny.github.io/2021/12/26/860-Game_AI/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -166,7 +167,7 @@
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ron的BLOG">
+      <meta itemprop="name" content="Ron's BLOG">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
