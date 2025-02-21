@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
@@ -24,9 +24,9 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="[game]十字链表的AOI算法实现">
 <meta property="og:url" content="https://rondsny.github.io/2016/11/29/802-Game_AOI_Cross_Linked_List/index.html">
-<meta property="og:site_name" content="Ron&#39;s BLOG">
+<meta property="og:site_name" content="Ron&#39;s Blog">
 <meta property="og:description" content="AOI主要有九宫格、灯塔和十字链表的算法实现。本文阐述十字链表的实现和尝试。 1. 基本原理根据二维地图，将其分成x轴和y轴两个链表。如果是三维地图，则还需要维护多一个z轴的链表。将对象的坐标值按照大小相应的排列在相应的坐标轴上面。 2. 基本接口对对象的操作主要有以下三个接口：  add：对象进入地图； leave：对象离开地图； move：对象在地图内移动。  2. 算法实现既然是链表，很自然">
-<meta property="og:locale" content="en_US">
+<meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://rondsny.github.io/pics/cll_005.png">
 <meta property="og:image" content="https://rondsny.github.io/pics/cll_001.png">
 <meta property="og:image" content="https://rondsny.github.io/pics/cll_002.png">
@@ -50,11 +50,11 @@
     sidebar: "",
     isHome : false,
     isPost : true,
-    lang   : 'en'
+    lang   : 'zh-CN'
   };
 </script>
 
-  <title>[game]十字链表的AOI算法实现 | Ron's BLOG</title>
+  <title>[game]十字链表的AOI算法实现 | Ron's Blog</title>
   
 
 
@@ -94,7 +94,7 @@
     <header class="header" itemscope itemtype="http://schema.org/WPHeader">
       <div class="header-inner"><div class="site-brand-container">
   <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar">
+    <div class="toggle" aria-label="切换导航栏">
       <span class="toggle-line toggle-line-first"></span>
       <span class="toggle-line toggle-line-middle"></span>
       <span class="toggle-line toggle-line-last"></span>
@@ -105,7 +105,7 @@
 
     <a href="/" class="brand" rel="start">
       <span class="logo-line-before"><i></i></span>
-      <h1 class="site-title">Ron's BLOG</h1>
+      <h1 class="site-title">Ron's Blog</h1>
       <span class="logo-line-after"><i></i></span>
     </a>
       <p class="site-subtitle" itemprop="description">学习、消化、沉淀</p>
@@ -124,17 +124,17 @@
   <ul id="menu" class="menu">
         <li class="menu-item menu-item-home">
 
-    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
 
   </li>
         <li class="menu-item menu-item-about">
 
-    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
 
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
 
   </li>
   </ul>
@@ -164,7 +164,7 @@
     
   
   
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://rondsny.github.io/2016/11/29/802-Game_AOI_Cross_Linked_List/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -174,7 +174,7 @@
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ron's BLOG">
+      <meta itemprop="name" content="Ron's Blog">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
@@ -186,9 +186,9 @@
               <span class="post-meta-item-icon">
                 <i class="fa fa-calendar-o"></i>
               </span>
-              <span class="post-meta-item-text">Posted on</span>
+              <span class="post-meta-item-text">发表于</span>
 
-              <time title="Created: 2016-11-29 15:30:00" itemprop="dateCreated datePublished" datetime="2016-11-29T15:30:00+08:00">2016-11-29</time>
+              <time title="创建时间：2016-11-29 15:30:00" itemprop="dateCreated datePublished" datetime="2016-11-29T15:30:00+08:00">2016-11-29</time>
             </span>
 
           
@@ -312,10 +312,10 @@
 
       <ul class="sidebar-nav motion-element">
         <li class="sidebar-nav-toc">
-          Table of Contents
+          文章目录
         </li>
         <li class="sidebar-nav-overview">
-          Overview
+          站点概览
         </li>
       </ul>
 
@@ -336,12 +336,12 @@
           <a href="/archives/">
         
           <span class="site-state-item-count">36</span>
-          <span class="site-state-item-name">posts</span>
+          <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
         <span class="site-state-item-count">33</span>
-        <span class="site-state-item-name">tags</span>
+        <span class="site-state-item-name">标签</span>
       </div>
   </nav>
 </div>
@@ -373,7 +373,7 @@
   </span>
   <span class="author" itemprop="copyrightHolder">Ron</span>
 </div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
   </div>
 
         
